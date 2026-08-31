@@ -1,0 +1,19 @@
+#pragma once
+
+#include "version.h"
+
+/** @brief The Cutl version major. */
+#define CU_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+
+/** @brief The Cutl version minor. */
+#define CU_VERSION_MINOR @PROJECT_VERSION_MINOR@
+
+/** @brief The Cutl version patch. */
+#define CU_VERSION_PATCH @PROJECT_VERSION_PATCH@
+
+/** @brief The Cutl version. */
+constexpr CuVersion CU_VERSION = {
+    .major = CU_VERSION_MAJOR,
+    .minor = CU_VERSION_MINOR,
+    .patch = CU_VERSION_PATCH,
+};
