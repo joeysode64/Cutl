@@ -6,6 +6,8 @@
 #include "util.h"
 #include "vk.h"
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 #include <assert.h>
 #include <vulkan/vulkan_core.h>
 
@@ -20,11 +22,13 @@ CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo) {
         pCreateInfo = &CU_DEFAULT_CONTEXT_CREATE_INFO;
     }
 
-    cu_try_vk(create_vk_instance(&gContext.instance, pCreateInfo->appName, 0));
+    cu_assert_catch(glfwInit() == GLFW_TRUE, CU_ERROR_GLFW_INIT);
 
-    cu_try(choose_physical_device(&gContext.physicalDeviceInfo, gContext.instance));
+    cu_try_catch_vk(create_vk_instance(&gContext.instance, pCreateInfo->appName, 0));
 
-    cu_try_vk(create_device(
+    cu_try_catch(choose_physical_device(&gContext.physicalDeviceInfo, gContext.instance));
+
+    cu_try_catch_vk(create_device(
         &gContext.device, 
         gContext.physicalDeviceInfo.handle,
         gContext.physicalDeviceInfo.iQueueFamily
@@ -36,7 +40,7 @@ CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo) {
         &gContext.queue
     );
 
-    cu_try_vk(create_command_pool(
+    cu_try_catch_vk(create_command_pool(
         &gContext.commandPool,
         gContext.device,
         gContext.physicalDeviceInfo.iQueueFamily
@@ -51,6 +55,8 @@ FAIL:
 }
 
 void cu_context_terminate() {
+    glfwTerminate();
+
     if (gContext.device != VK_NULL_HANDLE) {
         vkDeviceWaitIdle(gContext.device);
         vkDestroyCommandPool(gContext.device, gContext.commandPool, nullptr);

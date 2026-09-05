@@ -11,7 +11,7 @@
 #include <vulkan/vulkan_core.h>
 
 /** @brief The Cutl version in Vulkan format. */
-constexpr uint32_t CU_VK_VERSION =
+constexpr uint32_t CUTL_VK_VERSION =
     VK_MAKE_VERSION(CU_VERSION_MAJOR, CU_VERSION_MINOR, CU_VERSION_PATCH);
 
 /** @brief The instance extensions. */
@@ -35,7 +35,9 @@ static const char* DEVICE_EXTENSIONS[] = {
 #endif
 };
 
-CuResult vk_result_to_cu_result(VkResult result) {
+CuResult vk_result_to_cu_result(
+    VkResult result)
+{
     switch (result) {
         case VK_SUCCESS:
             return CU_SUCCESS;
@@ -68,7 +70,7 @@ VkResult create_vk_instance(
         .pApplicationName = appName,
         .applicationVersion = appVersion,
         .pEngineName = "Cutl",
-        .engineVersion = CU_VK_VERSION,
+        .engineVersion = CUTL_VK_VERSION,
         .apiVersion = VK_API_VERSION_1_4,
     };
     constexpr VkInstanceCreateFlags flags =
@@ -119,7 +121,11 @@ VkResult create_device(
     return vkCreateDevice(physicalDevice, &createInfo, nullptr, pDevice);
 }
 
-VkResult create_command_pool(VkCommandPool* pCommandPool, VkDevice device, uint32_t iQueueFamily) {
+VkResult create_command_pool(
+    VkCommandPool* pCommandPool,
+    VkDevice device,
+    uint32_t iQueueFamily)
+{
     assert(pCommandPool != nullptr);
     assert(device != VK_NULL_HANDLE);
 
@@ -130,4 +136,56 @@ VkResult create_command_pool(VkCommandPool* pCommandPool, VkDevice device, uint3
         .queueFamilyIndex = iQueueFamily,
     };
     return vkCreateCommandPool(device, &createInfo, nullptr, pCommandPool);
+}
+
+VkResult create_image_view(
+    VkImageView* pImageView,
+    VkDevice device,
+    VkImage image,
+    VkFormat format)
+{
+    const VkComponentMapping componentMapping = {
+        .r = VK_COMPONENT_SWIZZLE_IDENTITY,
+        .g = VK_COMPONENT_SWIZZLE_IDENTITY,
+        .b = VK_COMPONENT_SWIZZLE_IDENTITY,
+        .a = VK_COMPONENT_SWIZZLE_IDENTITY,
+    };
+    const VkImageSubresourceRange subresourceRange = {
+        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1,
+    };
+    const VkImageViewCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .image = image,
+        .viewType = VK_IMAGE_VIEW_TYPE_2D,
+        .format = format,
+        .components = componentMapping,
+        .subresourceRange = subresourceRange,
+    };
+    return vkCreateImageView(device, &createInfo, nullptr, pImageView);
+}
+
+VkResult create_semaphore(
+    VkSemaphore* pSemaphore,
+    VkDevice device,
+    VkSemaphoreType type,
+    uint64_t x)
+{
+    const VkSemaphoreTypeCreateInfo typeCreateInfo = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
+        .pNext = nullptr,
+        .semaphoreType = type,
+        .initialValue = x,
+    };
+    const VkSemaphoreCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+        .pNext = &typeCreateInfo,
+        .flags = 0,
+    };
+    return vkCreateSemaphore(device, &createInfo, nullptr, pSemaphore);
 }

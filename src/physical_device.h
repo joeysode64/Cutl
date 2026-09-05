@@ -31,8 +31,9 @@ uint32_t find_memory_types(
     const PhysicalDeviceMemoryInfo* pMemoryInfo,
     VkMemoryPropertyFlags mRequired,
     VkMemoryPropertyFlags mPreferred,
-    uint32_t mAllowed
-);
+    uint32_t mAllowed);
 
 /** @brief Chooses the best-fit physical device. */
-CuResult choose_physical_device(PhysicalDeviceInfo* pPhysicalDeviceInfo, VkInstance vkInstance);
+CuResult choose_physical_device(
+    PhysicalDeviceInfo* pPhysicalDeviceInfo,
+    VkInstance vkInstance);

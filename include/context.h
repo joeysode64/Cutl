@@ -29,7 +29,8 @@ constexpr CuContextCreateInfo CU_DEFAULT_CONTEXT_CREATE_INFO = {
  * 
  * @return The result of creating the context.
  */
-CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo);
+CuResult cu_context_init(
+    const CuContextCreateInfo* pCreateInfo);
 
 /**
  * @brief Terminates the context.

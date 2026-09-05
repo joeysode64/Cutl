@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 /** @brief A result. */
-typedef enum {
+typedef enum : uint32_t {
     CU_SUCCESS = 0, /**< A success. */
 
     CU_ERROR_OUT_OF_RAM, /**< Out of RAM (allocation failed). */
@@ -15,6 +15,8 @@ typedef enum {
     CU_ERROR_UNSUPPORTED, /**< Some Vulkan requirements for Cutl are not met by the system. */
 
     CU_ERROR_NO_DEVICE, /**< No suitable graphics device was found. */
+
+    CU_ERROR_GLFW_INIT, /**< GLFW failed to initialize. */
 
     CU_ERROR_UNKNOWN, /**< An unhandled error. Sorry! */
 } CuResult;
