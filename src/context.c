@@ -13,7 +13,9 @@
 
 Context gContext = CU_NULL_CONTEXT;
 
-CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo) {
+CuResult cu_context_init(
+    const CuContextCreateInfo* pCreateInfo)
+{
     assert(!gContext.isInitialized);
 
     CuResult result = CU_ERROR_UNKNOWN;

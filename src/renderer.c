@@ -8,6 +8,7 @@
 #include "util.h"
 #include "vk.h"
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -18,6 +19,9 @@ CuResult cu_renderer_create(
     const CuRendererCreateInfo* pCreateInfo,
     const CuWindow* const pWindow)
 {
+    assert(pRenderer != nullptr);
+    assert(pWindow != nullptr);
+
     CuResult result = CU_ERROR_UNKNOWN;
 
     if (pCreateInfo == nullptr) {
@@ -64,6 +68,10 @@ FAIL:
 void cu_renderer_destroy(
     CuRenderer* const pRenderer)
 {
+    if (pRenderer == nullptr) {
+        return;
+    }
+
     destroy_frames(pRenderer->_pFramesInFlight, pRenderer->_nFramesInFlight, gContext.device);
     destroy_swapchain_images(
         pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages, gContext.device);

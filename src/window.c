@@ -5,14 +5,17 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <assert.h>
 #include <stdint.h>
 
 CuResult cu_window_create(
     CuWindow* const pWindow,
     const uint32_t w,
     const uint32_t h,
-    const char* const title
-) {
+    const char* const title)
+{
+    assert(pWindow != nullptr);
+
     CuResult result = CU_ERROR_UNKNOWN;
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -41,6 +44,8 @@ void cu_window_destroy(
 void cu_window_update(
     CuWindow* const pWindow)
 {
+    assert(pWindow != nullptr);
+
     glfwPollEvents();
 
     int w = 0;
@@ -55,17 +60,23 @@ void cu_window_update(
 uint32_t cu_window_get_width(
     const CuWindow* const pWindow)
 {
+    assert(pWindow != nullptr);
+
     return pWindow->_w;
 }
 
 uint32_t cu_window_get_height(
     const CuWindow* const pWindow)
 {
+    assert(pWindow != nullptr);
+
     return pWindow->_h;
 }
 
 bool cu_window_should_close(
     const CuWindow* const pWindow)
 {
+    assert(pWindow != nullptr);
+
     return pWindow->_shouldClose;
 }

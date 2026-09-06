@@ -3,6 +3,7 @@
 #include "g_context.h"
 #include "vk.h"
 
+#include <assert.h>
 #include <stddef.h>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
@@ -13,6 +14,11 @@ VkResult create_frames(
     const VkDevice device,
     const VkCommandPool commandPool)
 {
+    assert(pFrames != nullptr);
+    assert(nFrames > 0);
+    assert(device != VK_NULL_HANDLE);
+    assert(commandPool != VK_NULL_HANDLE);
+
     VkResult result = VK_ERROR_UNKNOWN;
 
     VkCommandBuffer commandBuffers[nFrames];
@@ -56,6 +62,10 @@ void destroy_frames(
     const size_t nFrames,
     const VkDevice device)
 {
+    assert(pFrames != nullptr);
+    assert(nFrames > 0);
+    assert(device != VK_NULL_HANDLE);
+
     VkCommandBuffer commandBuffers[nFrames];
 
     for (size_t i = 0; i < nFrames; i++) {

@@ -5,6 +5,7 @@
 #include "util.h"
 #include "vk.h"
 #include "window.h"
+#include <assert.h>
 #include <stddef.h>
 
 #define GLFW_INCLUDE_VULKAN
@@ -39,6 +40,13 @@ VkResult create_swapchain(
     const CuWindow* const pWindow,
     const VkSwapchainKHR oldSwapchain)
 {
+    assert(pSwapchainInfo != nullptr);
+    assert(pnSwapchainImages != nullptr);
+    assert(instance != VK_NULL_HANDLE);
+    assert(device != VK_NULL_HANDLE);
+    assert(physicalDevice != VK_NULL_HANDLE);
+    assert(pWindow != nullptr);
+
     VkSurfaceKHR surface = VK_NULL_HANDLE;
     vk_try(glfwCreateWindowSurface(instance, pWindow->_handle, nullptr, &surface));
     VkSurfaceCapabilitiesKHR capabilities = {};
@@ -88,6 +96,11 @@ VkResult create_swapchain_images(
     const VkDevice device,
     const CuSwapchainInfo* const pSwapchainInfo)
 {
+    assert(pSwapchainImages != nullptr);
+    assert(nSwapchainImages > 0);
+    assert(device != VK_NULL_HANDLE);
+    assert(pSwapchainImages != nullptr);
+
     VkImage images[nSwapchainImages];
     vk_try(vkGetSwapchainImagesKHR(device, pSwapchainInfo->_handle, &nSwapchainImages, images));
 
@@ -109,6 +122,10 @@ void destroy_swapchain_images(
     const uint32_t nSwapchainImages,
     const VkDevice device)
 {
+    assert(pSwapchainImages != nullptr);
+    assert(nSwapchainImages > 0);
+    assert(device != VK_NULL_HANDLE);
+
     for (uint32_t i = 0; i < nSwapchainImages; i++) {
         const CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
 
@@ -118,8 +135,12 @@ void destroy_swapchain_images(
 }
 
 VkExtent2D get_extent(
-    const VkSurfaceCapabilitiesKHR* const pCapabilities, const CuWindow* const pWindow)
+    const VkSurfaceCapabilitiesKHR* const pCapabilities,
+    const CuWindow* const pWindow)
 {
+    assert(pCapabilities != nullptr);
+    assert(pWindow != nullptr);
+
     const bool isExtentDefined = (pCapabilities->currentExtent.width != UINT32_MAX) ||
         (pCapabilities->currentExtent.height != UINT32_MAX);
     if (isExtentDefined) {
@@ -143,6 +164,10 @@ VkResult choose_surface_format(
     const VkSurfaceKHR surface,
     const VkPhysicalDevice physicalDevice)
 {
+    assert(pSurfaceFormat != nullptr);
+    assert(surface != VK_NULL_HANDLE);
+    assert(physicalDevice != VK_NULL_HANDLE);
+
     VkSurfaceFormatKHR* pSurfaceFormats AUTO_FREE = nullptr;
     uint32_t nSurfaceFormats = 0;
     vk_try(vkGetPhysicalDeviceSurfaceFormatsKHR(
@@ -172,6 +197,10 @@ VkResult choose_present_mode(
     const VkSurfaceKHR surface,
     const VkPhysicalDevice physicalDevice)
 {
+    assert(pPresentMode != nullptr);
+    assert(surface != VK_NULL_HANDLE);
+    assert(physicalDevice != VK_NULL_HANDLE);
+
     constexpr size_t MAX_PRESENT_MODES = 4;
     VkPresentModeKHR presentModes[MAX_PRESENT_MODES] = {};
     uint32_t nPresentModes = 0;

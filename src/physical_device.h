@@ -23,7 +23,7 @@ typedef struct {
     PhysicalDeviceMemoryInfo memoryInfo; /**< The memory info. */
 
     uint32_t iQueueFamily; /**< The first queue family index that supports compute, graphics,
-        trasnfer, and presentation. */
+        transfer, and presentation. */
 } PhysicalDeviceInfo;
 
 /** @brief Returns a bitmask of the best-fit memory types. */
@@ -36,4 +36,4 @@ uint32_t find_memory_types(
 /** @brief Chooses the best-fit physical device. */
 CuResult choose_physical_device(
     PhysicalDeviceInfo* pPhysicalDeviceInfo,
-    VkInstance vkInstance);
+    VkInstance instance);

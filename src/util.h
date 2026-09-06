@@ -95,7 +95,9 @@
 #define AUTO_FREE __attribute__((cleanup(auto_free_cb)))
 
 /** @brief The `AUTO_FREE` callback. */
-static inline void auto_free_cb(void* pp) {
+static inline void auto_free_cb(
+    void* pp)
+{
     void* const p = *(void**)pp;
     free(p);
 }

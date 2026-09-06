@@ -3,6 +3,7 @@
 #include "result.h"
 #include "util.h"
 
+#include <assert.h>
 #include <stdint.h>
 #include <vulkan/vulkan_core.h>
 
@@ -18,13 +19,13 @@ static bool is_physical_device_suitable(
 /** @brief Choose the queue family. Returns whether one was found. */
 static bool choose_queue_family(
     uint32_t* piQueueFamily,
-    VkInstance vkInstance,
+    VkInstance instance,
     VkPhysicalDevice physicalDevice);
 
 /** @brief Returns whether the queue family at the index supports presentation. */
 static bool queue_family_supports_presentation(
     uint32_t i, 
-    VkInstance vkInstance, 
+    VkInstance instance, 
     VkPhysicalDevice physicalDevice);
 
 /** @brief Returns a score for the physical device. A higher value is better. */
@@ -41,6 +42,8 @@ uint32_t find_memory_types(
     const VkMemoryPropertyFlags mPreferred,
     const uint32_t mAllowed)
 {
+    assert(pMemoryInfo != nullptr);
+
     const uint32_t mSuitable = get_memory_types(pMemoryInfo, mRequired) & mAllowed;
     const uint32_t mIdeal = get_memory_types(pMemoryInfo, mPreferred) & mSuitable;
 
@@ -50,13 +53,16 @@ uint32_t find_memory_types(
 /** @brief Chooses the best-fit physical device. */
 CuResult choose_physical_device(
     PhysicalDeviceInfo* const pPhysicalDeviceInfo,
-    const VkInstance vkInstance)
+    const VkInstance instance)
 {
+    assert(pPhysicalDeviceInfo != nullptr);
+    assert(instance != VK_NULL_HANDLE);
+
     VkPhysicalDevice* pPhysicalDevices AUTO_FREE = nullptr;
     uint32_t nPhysicalDevices = 0;
-    vkEnumeratePhysicalDevices(vkInstance, &nPhysicalDevices, nullptr);
+    vkEnumeratePhysicalDevices(instance, &nPhysicalDevices, nullptr);
     allocate_n(pPhysicalDevices, nPhysicalDevices);
-    vkEnumeratePhysicalDevices(vkInstance, &nPhysicalDevices, pPhysicalDevices);
+    vkEnumeratePhysicalDevices(instance, &nPhysicalDevices, pPhysicalDevices);
 
     uint64_t bestScore = 0;
     bool found = false;
@@ -67,7 +73,7 @@ CuResult choose_physical_device(
         }
 
         uint32_t iQueueFamily = 0;
-        if (!choose_queue_family(&iQueueFamily, vkInstance, contestant)) {
+        if (!choose_queue_family(&iQueueFamily, instance, contestant)) {
             continue;
         }
 
@@ -90,6 +96,8 @@ uint32_t get_memory_types(
     const PhysicalDeviceMemoryInfo* const pMemoryInfo,
     const VkMemoryPropertyFlags flags)
 {
+    assert(pMemoryInfo != nullptr);
+
     uint32_t m = 0;
     if (ones_overlap(flags, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
         m |= pMemoryInfo->mDeviceLocal;
@@ -109,15 +117,21 @@ uint32_t get_memory_types(
 bool is_physical_device_suitable(
     const VkPhysicalDevice physicalDevice)
 {
+    assert(physicalDevice);
+
     (void)physicalDevice;
     return true;
 }
 
 bool choose_queue_family(
     uint32_t* const piQueueFamily,
-    const VkInstance vkInstance,
+    const VkInstance instance,
     const VkPhysicalDevice physicalDevice)
 {
+    assert(piQueueFamily != nullptr);
+    assert(instance != VK_NULL_HANDLE);
+    assert(physicalDevice != VK_NULL_HANDLE);
+
     VkQueueFamilyProperties* pQueueFamilies AUTO_FREE = nullptr;
     uint32_t nQueueFamilies = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &nQueueFamilies, nullptr);
@@ -129,7 +143,7 @@ bool choose_queue_family(
             VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
         const bool hasFlags = ones_match(pQueueFamilies[i].queueFlags, flags);
 
-        if (hasFlags && queue_family_supports_presentation(i, vkInstance, physicalDevice)) {
+        if (hasFlags && queue_family_supports_presentation(i, instance, physicalDevice)) {
             *piQueueFamily = i;
             return true;
         }
@@ -140,11 +154,14 @@ bool choose_queue_family(
 
 bool queue_family_supports_presentation(
     const uint32_t i, 
-    const VkInstance vkInstance, 
+    const VkInstance instance,
     const VkPhysicalDevice physicalDevice)
 {
+    assert(instance != VK_NULL_HANDLE);
+    assert(physicalDevice != VK_NULL_HANDLE);
+
     (void)i;
-    (void)vkInstance;
+    (void)instance;
     (void)physicalDevice;
 
 #if ON_APPLE
@@ -160,6 +177,8 @@ bool queue_family_supports_presentation(
 uint32_t grade_physical_device(
     VkPhysicalDevice physicalDevice)
 {
+    assert(physicalDevice != VK_NULL_HANDLE);
+
     uint32_t score = 0;
     VkPhysicalDeviceProperties properties = {};
     vkGetPhysicalDeviceProperties(physicalDevice, &properties);
@@ -177,6 +196,8 @@ uint32_t grade_physical_device(
 PhysicalDeviceMemoryInfo get_physical_device_memory_info(
     VkPhysicalDevice physicalDevice)
 {
+    assert(physicalDevice != VK_NULL_HANDLE);
+
     VkPhysicalDeviceMemoryProperties memoryProperties = {};
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 

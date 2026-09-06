@@ -139,11 +139,15 @@ VkResult create_command_pool(
 }
 
 VkResult create_image_view(
-    VkImageView* pImageView,
-    VkDevice device,
-    VkImage image,
-    VkFormat format)
+    VkImageView* const pImageView,
+    const VkDevice device,
+    const VkImage image,
+    const VkFormat format)
 {
+    assert(pImageView != nullptr);
+    assert(device != VK_NULL_HANDLE);
+    assert(image != VK_NULL_HANDLE);
+
     const VkComponentMapping componentMapping = {
         .r = VK_COMPONENT_SWIZZLE_IDENTITY,
         .g = VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -171,11 +175,14 @@ VkResult create_image_view(
 }
 
 VkResult create_semaphore(
-    VkSemaphore* pSemaphore,
-    VkDevice device,
-    VkSemaphoreType type,
-    uint64_t x)
+    VkSemaphore* const pSemaphore,
+    const VkDevice device,
+    const VkSemaphoreType type,
+    const uint64_t x)
 {
+    assert(pSemaphore != nullptr);
+    assert(device != VK_NULL_HANDLE);
+
     const VkSemaphoreTypeCreateInfo typeCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
         .pNext = nullptr,
