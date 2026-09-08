@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 /** @brief A version. */
-typedef struct {
+typedef struct CuVersion_T {
     uint16_t major; /**< The version major. */
 
     uint16_t minor; /**< The version minor. */

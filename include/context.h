@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 /** @brief Create info for the context. */
-typedef struct {
+typedef struct CuContextCreateInfo_T {
     const char* appName; /**< The application name. Can be null. Default is null. */
 
     CuVersion appVersion; /**< The application version. Default is v0.0.0. */

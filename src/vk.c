@@ -196,3 +196,75 @@ VkResult create_semaphore(
     };
     return vkCreateSemaphore(device, &createInfo, nullptr, pSemaphore);
 }
+
+VkResult create_frames(
+    CuFrame* const pFrames,
+    const size_t nFrames,
+    const VkDevice device,
+    const VkCommandPool commandPool)
+{
+    assert(pFrames != nullptr);
+    assert(nFrames > 0);
+    assert(device != VK_NULL_HANDLE);
+    assert(commandPool != VK_NULL_HANDLE);
+
+    VkResult result = VK_ERROR_UNKNOWN;
+
+    VkCommandBuffer commandBuffers[nFrames];
+    const VkCommandBufferAllocateInfo allocateInfo = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .pNext = nullptr,
+        .commandPool = commandPool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = nFrames,
+    };
+    vk_try_catch(vkAllocateCommandBuffers(device, &allocateInfo, commandBuffers));
+
+    for (size_t i = 0; i < nFrames; i++) {
+        CuFrame* const pFrame = &pFrames[i];
+
+        const VkSemaphoreCreateInfo semaphoreCreateInfo = {
+            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+        };
+        vk_try_catch(vkCreateSemaphore(
+            device,
+            &semaphoreCreateInfo,
+            nullptr,
+            &pFrame->_imageAvailable
+        ));
+        vk_try_catch(create_semaphore(
+            &pFrame->_imageAvailable, device, VK_SEMAPHORE_TYPE_BINARY, 0));
+        pFrame->_commandBuffer = commandBuffers[i];
+    }
+
+    return VK_SUCCESS;
+
+FAIL:
+    destroy_frames(pFrames, nFrames, device, commandPool);
+    return result;
+}
+
+void destroy_frames(
+    CuFrame* const pFrames,
+    const size_t nFrames,
+    const VkDevice device,
+    const VkCommandPool commandPool)
+{
+    assert(pFrames != nullptr);
+    assert(nFrames > 0);
+    assert(device != VK_NULL_HANDLE);
+
+    VkCommandBuffer commandBuffers[nFrames];
+
+    for (size_t i = 0; i < nFrames; i++) {
+        CuFrame* const pFrame = &pFrames[i];
+
+        commandBuffers[i] = pFrame->_commandBuffer;
+        vkDestroySemaphore(device, pFrame->_imageAvailable, nullptr);
+    }
+
+    vkFreeCommandBuffers(device, commandPool, nFrames, commandBuffers);
+}
+

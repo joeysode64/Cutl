@@ -1,5 +1,7 @@
 #pragma once
 
+#include "format.h"
+
 #include <stdint.h>
 #include <vulkan/vulkan_core.h>
 
@@ -15,12 +17,12 @@
 #define cu_vk_dispatch_t(t) struct Vk##t##_T*
 
 /** @brief A swapchain's information. */
-typedef struct {
+typedef struct CuSwapchainInfo_T {
     cu_vk_t(SwapchainKHR) _handle; /**< The swapchain handle. */
 
     cu_vk_t(SurfaceKHR) _surface; /**< The target surface handle. */
 
-    uint32_t _format; /**< The swapchain's format. */
+    CuFormat _format; /**< The swapchain's format. */
 
     uint32_t _w; /**< The swapchain's width. */
 
@@ -28,7 +30,7 @@ typedef struct {
 } CuSwapchainInfo;
 
 /** @brief A swapchain image. */
-typedef struct {
+typedef struct CuSwapchainImage_T {
     cu_vk_t(Image) _image; /**< The image handle. */
 
     cu_vk_t(ImageView) _imageView; /**< The image view handle. */

@@ -6,7 +6,7 @@
 #include <vulkan/vulkan_core.h>
 
 /** @brief A physical device/s memory type info. */
-typedef struct {
+typedef struct PhysicalDeviceMemoryInfo_T {
     uint32_t mDeviceLocal; /**< A bitmask of the device local memory types. */
 
     uint32_t mHostVisible; /**< A bitmask of the host visible memory types. */
@@ -17,7 +17,7 @@ typedef struct {
 } PhysicalDeviceMemoryInfo;
 
 /** @brief A physical device's info. */
-typedef struct {
+typedef struct PhysicalDeviceInfo_T {
     VkPhysicalDevice handle; /**< The physical device handle. */
 
     PhysicalDeviceMemoryInfo memoryInfo; /**< The memory info. */

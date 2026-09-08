@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /** @brief A window. */
-typedef struct {
+typedef struct CuWindow_T {
     struct GLFWwindow* _handle; /**< The GLFW window handle. */
 
     uint32_t _w; /**< The window's cached framebuffer width. */

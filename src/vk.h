@@ -1,5 +1,6 @@
 #pragma once
 
+#include "frame.h"
 #include "result.h"
 #include "util.h"
 
@@ -47,13 +48,16 @@ CuResult vk_result_to_cu_result(VkResult result);
 
 /** @brief Tries to allocate to the elements and returns `VK_ERROR_OUT_OF_HOST_MEMORY` if it fails. */
 #define vk_allocate_n(p, n)                                                                        \
-    p = (typeof(*p)*)calloc(n, sizeof(*p));                                                        \
-    if (p == nullptr) {                                                                            \
+    p = (typeof(*(p))*)calloc(n, sizeof(*(p)));                                                    \
+    if ((p) == nullptr) {                                                                          \
         return VK_ERROR_OUT_OF_HOST_MEMORY;                                                        \
     }
 
 /** @brief Tries to allocate to the pointer and returns `VK_ERROR_OUT_OF_HOST_MEMORY` if it fails. */
 #define vk_allocate(p) allocate_n(p, 1)
+
+/** @brief The timeout time. */
+constexpr uint64_t TIMEOUT_NANOS = 2'000'000'000;
 
 /** @brief Creates a Vulkan instance. */
 VkResult create_vk_instance(
@@ -86,3 +90,17 @@ VkResult create_semaphore(
     VkDevice device,
     VkSemaphoreType type,
     uint64_t x);
+
+/** @brief Creates N frames. */
+VkResult create_frames(
+    CuFrame* pFrames,
+    size_t nFrames,
+    VkDevice device,
+    VkCommandPool commandPool);
+
+/** @brief Destroys N frames. */
+void destroy_frames(
+    CuFrame* pFrames,
+    size_t nFrames,
+    VkDevice device,
+    VkCommandPool commandPool);
