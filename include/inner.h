@@ -16,6 +16,10 @@
 /** @brief Maps a dispatchable Vulkan type name to its defined Vulkan type. */
 #define cu_vk_dispatch_t(t) struct Vk##t##_T*
 
+typedef struct CuFrame_T CuFrame;
+
+typedef struct CuRenderer_T CuRenderer;
+
 /** @brief A swapchain's information. */
 typedef struct CuSwapchainInfo_T {
     cu_vk_t(SwapchainKHR) _handle; /**< The swapchain handle. */

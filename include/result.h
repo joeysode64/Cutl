@@ -8,6 +8,8 @@ typedef enum : uint32_t {
 
     CU_ERROR_OUT_OF_RAM, /**< Out of RAM (allocation failed). */
 
+    CU_ERROR_FILE_IO, /**< File I/O error. */
+
     CU_ERROR_TIMEOUT, /**< Operation hit a timeout. */
 
     CU_ERROR_OUT_OF_VRAM, /**< Out of VRAM (device memory). */

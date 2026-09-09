@@ -1,7 +1,6 @@
 #pragma once
 
 #include "format.h"
-#include "frame.h"
 #include "inner.h"
 #include "result.h"
 #include "window.h"
@@ -10,7 +9,7 @@
 #include <stdint.h>
 
 /** @brief A renderer. */
-typedef struct CuRenderer_T {
+struct CuRenderer_T {
     CuSwapchainInfo _swapchainInfo; /**< The swapchain info. */
 
     void* _pData; /**< A pointer to the allocated data. */
@@ -28,7 +27,7 @@ typedef struct CuRenderer_T {
     uint64_t _frameCounter; /**< The frame counter. */
 
     uint32_t _iSwapchainImage; /**< The current target swapchain image's index. */
-} CuRenderer;
+};
 
 /** @brief Create info for a renderer. */
 typedef struct CuRendererCreateInfo_T {

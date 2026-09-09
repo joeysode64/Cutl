@@ -107,9 +107,30 @@ VkResult create_device(
             .pQueuePriorities = queuePriorities,
         },
     };
+
+    const VkPhysicalDeviceVulkan14Features features14 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+        .pNext = nullptr,
+        .maintenance5 = VK_TRUE,
+    };
+    const VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .pNext = (void*)&features14,
+        .synchronization2 = VK_TRUE,
+    };
+    const VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        .pNext = (void*)&features13,
+        .bufferDeviceAddress = VK_TRUE,
+    };
+    const VkPhysicalDeviceVulkan11Features features11 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+        .pNext = (void*)&features12,
+    };
+
     const VkDeviceCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        .pNext = nullptr,
+        .pNext = &features11,
         .flags = 0,
         .queueCreateInfoCount = arr_len(queueCreateInfos),
         .pQueueCreateInfos = queueCreateInfos,
