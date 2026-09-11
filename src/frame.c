@@ -4,21 +4,21 @@
 
 #include <vulkan/vulkan.h>
 
-void cu_frame_begin_render(CuFrame* const pFrame, CuRenderer* const pRenderer) {
-    const VkRect2D area = {
-        .offset =
-            {
-                .x = 0,
-                .y = 0,
-            },
-        .extent =
-            {
-                .width = pRenderer->_swapchainInfo._w,
-                .height = pRenderer->_swapchainInfo._h,
-            },
-    };
-
+void cu_frame_begin_render(
+    CuFrame* const pFrame,
+    CuRenderer* const pRenderer)
+{
     // Set the viewport and scissor.
+    const VkRect2D area = {
+        .offset = {
+            .x = 0,
+            .y = 0,
+        },
+        .extent = {
+            .width = pRenderer->_swapchainInfo._w,
+            .height = pRenderer->_swapchainInfo._h,
+        },
+    };
     const VkViewport viewport = {
         .x = 0.0F,
         .y = 0.0F,
@@ -42,7 +42,7 @@ void cu_frame_begin_render(CuFrame* const pFrame, CuRenderer* const pRenderer) {
         &pRenderer->_pSwapchainImages[pRenderer->_iSwapchainImage];
     const VkImageMemoryBarrier2 imageBarrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-        .pNext = NULL,
+        .pNext = nullptr,
         .srcStageMask = VK_PIPELINE_STAGE_2_NONE,
         .srcAccessMask = VK_ACCESS_2_NONE,
         .dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -51,17 +51,17 @@ void cu_frame_begin_render(CuFrame* const pFrame, CuRenderer* const pRenderer) {
         .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         .srcQueueFamilyIndex = 0,
         .dstQueueFamilyIndex = 0,
-        .image = (VkImage)pSwapchainImage->_image,
+        .image = pSwapchainImage->_image,
         .subresourceRange = subresourceRange,
     };
     const VkDependencyInfo dependencyInfo = {
         .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-        .pNext = NULL,
+        .pNext = nullptr,
         .dependencyFlags = 0,
         .memoryBarrierCount = 0,
-        .pMemoryBarriers = NULL,
+        .pMemoryBarriers = nullptr,
         .bufferMemoryBarrierCount = 0,
-        .pBufferMemoryBarriers = NULL,
+        .pBufferMemoryBarriers = nullptr,
         .imageMemoryBarrierCount = 1,
         .pImageMemoryBarriers = &imageBarrier,
     };
@@ -73,8 +73,8 @@ void cu_frame_begin_render(CuFrame* const pFrame, CuRenderer* const pRenderer) {
     };
     const VkRenderingAttachmentInfo colorAttachment = {
         .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-        .pNext = NULL,
-        .imageView = (VkImageView)pSwapchainImage->_imageView,
+        .pNext = nullptr,
+        .imageView = pSwapchainImage->_imageView,
         .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         .resolveMode = VK_RESOLVE_MODE_NONE,
         .resolveImageView = VK_NULL_HANDLE,
@@ -85,20 +85,23 @@ void cu_frame_begin_render(CuFrame* const pFrame, CuRenderer* const pRenderer) {
     };
     const VkRenderingInfo renderingInfo = {
         .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-        .pNext = NULL,
+        .pNext = nullptr,
         .flags = 0,
         .renderArea = area,
         .layerCount = 1,
         .viewMask = 0,
         .colorAttachmentCount = 1,
         .pColorAttachments = &colorAttachment,
-        .pDepthAttachment = NULL,
-        .pStencilAttachment = NULL,
+        .pDepthAttachment = nullptr,
+        .pStencilAttachment = nullptr,
     };
     vkCmdBeginRendering(pFrame->_commandBuffer, &renderingInfo);
 }
 
-void cu_frame_end_render(CuFrame* const pFrame, CuRenderer* const pRenderer) {
+void cu_frame_end_render(
+    CuFrame* const pFrame,
+    CuRenderer* const pRenderer)
+{
     // End the render.
     vkCmdEndRendering(pFrame->_commandBuffer);
 
@@ -112,7 +115,7 @@ void cu_frame_end_render(CuFrame* const pFrame, CuRenderer* const pRenderer) {
     };
     const VkImageMemoryBarrier2 imageBarrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-        .pNext = NULL,
+        .pNext = nullptr,
         .srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
         .srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
         .dstStageMask = VK_PIPELINE_STAGE_2_NONE,
@@ -121,17 +124,17 @@ void cu_frame_end_render(CuFrame* const pFrame, CuRenderer* const pRenderer) {
         .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
         .srcQueueFamilyIndex = 0,
         .dstQueueFamilyIndex = 0,
-        .image = (VkImage)pRenderer->_pSwapchainImages[pRenderer->_iSwapchainImage]._image,
+        .image = pRenderer->_pSwapchainImages[pRenderer->_iSwapchainImage]._image,
         .subresourceRange = subresourceRange,
     };
     const VkDependencyInfo dependencyInfo = {
         .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-        .pNext = NULL,
+        .pNext = nullptr,
         .dependencyFlags = 0,
         .memoryBarrierCount = 0,
-        .pMemoryBarriers = NULL,
+        .pMemoryBarriers = nullptr,
         .bufferMemoryBarrierCount = 0,
-        .pBufferMemoryBarriers = NULL,
+        .pBufferMemoryBarriers = nullptr,
         .imageMemoryBarrierCount = 1,
         .pImageMemoryBarriers = &imageBarrier,
     };

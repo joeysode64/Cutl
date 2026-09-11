@@ -84,6 +84,8 @@ void cu_renderer_destroy(
         return;
     }
 
+    vkDeviceWaitIdle(gContext.device);
+
     destroy_frames(
         pRenderer->_pFramesInFlight,
         pRenderer->_nFramesInFlight,
