@@ -45,6 +45,9 @@
 /** @brief Returns whether the first value contains all the bits of the second value. */
 #define ones_match(a, b) (((a) & (b)) == (b))
 
+/** @brief Rounds the value up to the nearest multiple of the alignment, which must be a power of two. */
+#define align_up(v, a) (((v) + (a) - 1) & ~((a) - 1))
+
 /** @brief Tries to allocate the size and returns `CU_ERROR_BAD_ALLOC` if it fails. */
 #define allocate_z(p, z)                                                                           \
     p = (typeof(*p)*)calloc(z, 1);                                                        \

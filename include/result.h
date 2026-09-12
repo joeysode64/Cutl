@@ -14,6 +14,10 @@ typedef enum : uint32_t {
 
     CU_ERROR_OUT_OF_VRAM, /**< Out of VRAM (device memory). */
 
+    CU_ERROR_ALLOCATION_TOO_LARGE, /**< Asked for an allocation too large for its allocator. */
+
+    CU_ERROR_ARENA_FULL, /**< Tried to allocate to an arena allocator that doesn't have enough room. */
+
     CU_ERROR_UNSUPPORTED, /**< Some Vulkan requirements for Cutl are not met by the system. */
 
     CU_ERROR_NO_DEVICE, /**< No suitable graphics device was found. */

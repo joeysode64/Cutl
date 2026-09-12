@@ -25,7 +25,7 @@ typedef struct CuAllocationMode_T {
     CuAllocator* _pAllocator;
 
     /// @brief The allocator's callback functions.
-    CuAllocatorFns* _pFns;
+    const CuAllocatorFns* _pFns;
 } CuAllocationMode;
 
 /// @brief The dedicated allocator callback functions.
@@ -34,3 +34,6 @@ extern const CuAllocatorFns* CU_DEDICATED_ALLOCATOR_FNS;
 /// @brief The dedicated allocator allocation mode.
 #define CU_DEDICATED_ALLOCATOR_MODE \
     ((CuAllocationMode){._pAllocator = nullptr, ._pFns = CU_DEDICATED_ALLOCATOR_FNS})
+
+/// @brief The arena allocator callback functions.
+extern const CuAllocatorFns* CU_ARENA_ALLOCATOR_FNS;

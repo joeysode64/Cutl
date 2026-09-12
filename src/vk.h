@@ -91,6 +91,18 @@ VkResult create_semaphore(
     VkSemaphoreType type,
     uint64_t x);
 
+/// @brief Allocates the memory.
+/// @param [out] pMemory A pointer to the memory handle.
+/// @param device The device handle.
+/// @param size The size of the allocation.
+/// @param i The index of the memory type.
+/// @return The result of allocationg the memory.
+VkResult allocate_memory(
+    VkDeviceMemory* pMemory,
+    VkDevice device,
+    uint64_t size,
+    uint32_t i);
+
 /** @brief Creates N frames. */
 VkResult create_frames(
     CuFrame* pFrames,

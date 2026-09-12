@@ -218,6 +218,27 @@ VkResult create_semaphore(
     return vkCreateSemaphore(device, &createInfo, nullptr, pSemaphore);
 }
 
+VkResult allocate_memory(
+    VkDeviceMemory* const pMemory,
+    const VkDevice device,
+    const uint64_t size,
+    const uint32_t i)
+{
+    const VkMemoryAllocateFlagsInfo allocateFlagsInfo = {
+        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
+        .pNext = nullptr,
+        .flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT,
+        .deviceMask = 1,
+    };
+    const VkMemoryAllocateInfo allocateInfo = {
+        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+        .pNext = &allocateFlagsInfo,
+        .allocationSize = size,
+        .memoryTypeIndex = i,
+    };
+    return vkAllocateMemory(device, &allocateInfo, nullptr, pMemory);
+}
+
 VkResult create_frames(
     CuFrame* const pFrames,
     const size_t nFrames,
