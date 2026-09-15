@@ -7,7 +7,7 @@
 /**
  * @brief A command buffer.
  *
- * @note This is any type that can be dereferenced as a `VkCommandBuffer.
+ * @note This is any type that can be dereferenced as a `VkCommandBuffer`.
  */
 typedef void* CuCmdBuffer;
 

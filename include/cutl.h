@@ -1,8 +1,10 @@
 #pragma once
 
 #include "allocation.h"
+#include "buffer.h"
 #include "cmd_buffer.h"
 #include "context.h"
+#include "dynamic_buffer.h"
 #include "format.h"
 #include "frame.h"
 #include "info.h"

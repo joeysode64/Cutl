@@ -1,5 +1,8 @@
 #include "vk.h"
 
+#include "allocation.h"
+#include "allocation_fns.h"
+#include "g_context.h"
 #include "info.h"
 #include "result.h"
 #include "util.h"
@@ -7,33 +10,9 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <vulkan/vk_platform.h>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
-
-/** @brief The Cutl version in Vulkan format. */
-constexpr uint32_t CUTL_VK_VERSION =
-    VK_MAKE_VERSION(CU_VERSION_MAJOR, CU_VERSION_MINOR, CU_VERSION_PATCH);
-
-/** @brief The instance extensions. */
-static const char* INSTANCE_EXTENSIONS[] = {
-    "VK_KHR_surface",
-#if ON_APPLE
-    "VK_EXT_metal_surface",
-    "VK_KHR_portability_enumeration",
-#elif ON_LINUX
-    "VK_KHR_xcb_surface",
-#elif ON_WINDOWS
-    "VK_KHR_win32_surface",
-#endif
-};
-
-/** @brief The device extensions. */
-static const char* DEVICE_EXTENSIONS[] = {
-    "VK_KHR_swapchain",
-#if ON_APPLE
-    "VK_KHR_portability_subset",
-#endif
-};
 
 CuResult vk_result_to_cu_result(
     VkResult result)
@@ -55,108 +34,6 @@ CuResult vk_result_to_cu_result(
         default:
             return CU_ERROR_UNKNOWN;
     }
-}
-
-VkResult create_vk_instance(
-    VkInstance* const pInstance,
-    const char* const appName,
-    const uint32_t appVersion
-) {
-    assert(pInstance != nullptr);
-
-    const VkApplicationInfo appInfo = {
-        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .pNext = nullptr,
-        .pApplicationName = appName,
-        .applicationVersion = appVersion,
-        .pEngineName = "Cutl",
-        .engineVersion = CUTL_VK_VERSION,
-        .apiVersion = VK_API_VERSION_1_4,
-    };
-    constexpr VkInstanceCreateFlags flags =
-        ON_APPLE ? VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR : 0;
-    const VkInstanceCreateInfo createInfo = {
-        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = flags,
-        .pApplicationInfo = &appInfo,
-        .enabledLayerCount = 0,
-        .ppEnabledLayerNames = nullptr,
-        .enabledExtensionCount = arr_len(INSTANCE_EXTENSIONS),
-        .ppEnabledExtensionNames = INSTANCE_EXTENSIONS,
-    };
-    return vkCreateInstance(&createInfo, nullptr, pInstance);
-}
-
-VkResult create_device(
-    VkDevice* const pDevice,
-    const VkPhysicalDevice physicalDevice,
-    const uint32_t iQueueFamily
-) {
-    assert(pDevice != nullptr);
-    assert(physicalDevice != VK_NULL_HANDLE);
-
-    const float queuePriorities[] = { 1.0F };
-    const VkDeviceQueueCreateInfo queueCreateInfos[] = {
-        {
-            .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = 0,
-            .queueFamilyIndex = iQueueFamily,
-            .queueCount = 1,
-            .pQueuePriorities = queuePriorities,
-        },
-    };
-
-    const VkPhysicalDeviceVulkan14Features features14 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
-        .pNext = nullptr,
-        .maintenance5 = VK_TRUE,
-    };
-    const VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-        .pNext = (void*)&features14,
-        .synchronization2 = VK_TRUE,
-    };
-    const VkPhysicalDeviceVulkan12Features features12 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-        .pNext = (void*)&features13,
-        .bufferDeviceAddress = VK_TRUE,
-    };
-    const VkPhysicalDeviceVulkan11Features features11 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-        .pNext = (void*)&features12,
-    };
-
-    const VkDeviceCreateInfo createInfo = {
-        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        .pNext = &features11,
-        .flags = 0,
-        .queueCreateInfoCount = arr_len(queueCreateInfos),
-        .pQueueCreateInfos = queueCreateInfos,
-        .enabledLayerCount = 0,
-        .ppEnabledLayerNames = nullptr,
-        .enabledExtensionCount = arr_len(DEVICE_EXTENSIONS),
-        .ppEnabledExtensionNames = DEVICE_EXTENSIONS,
-    };
-    return vkCreateDevice(physicalDevice, &createInfo, nullptr, pDevice);
-}
-
-VkResult create_command_pool(
-    VkCommandPool* pCommandPool,
-    VkDevice device,
-    uint32_t iQueueFamily)
-{
-    assert(pCommandPool != nullptr);
-    assert(device != VK_NULL_HANDLE);
-
-    const VkCommandPoolCreateInfo createInfo = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .queueFamilyIndex = iQueueFamily,
-    };
-    return vkCreateCommandPool(device, &createInfo, nullptr, pCommandPool);
 }
 
 VkResult create_image_view(
@@ -239,6 +116,69 @@ VkResult allocate_memory(
     return vkAllocateMemory(device, &allocateInfo, nullptr, pMemory);
 }
 
+CuResult create_buffer(
+    VkBuffer* const pBuffer,
+    CuAllocation* const pAllocation,
+    void** const ppData,
+    const size_t z,
+    const VkBufferUsageFlags usage,
+    const CuAllocationMode mode,
+    const VkMemoryPropertyFlags mRequired,
+    const VkMemoryPropertyFlags mPreferred)
+{
+    CuResult result = CU_ERROR_UNKNOWN;
+
+    const VkBufferCreateInfo bufferCreateInfo = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .size = z,
+        .usage = usage,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .queueFamilyIndexCount = 0,
+        .pQueueFamilyIndices = nullptr,
+    };
+    VkBuffer buffer = VK_NULL_HANDLE;
+    cu_try_catch_vk(vkCreateBuffer(gContext.device, &bufferCreateInfo, nullptr, &buffer));
+
+    VkMemoryRequirements memoryRequirements = {};
+    vkGetBufferMemoryRequirements(gContext.device, buffer, &memoryRequirements);
+
+    cu_try_catch(mode_allocate(
+        pAllocation,
+        ppData,
+        mode,
+        &memoryRequirements,
+        mRequired,
+        mPreferred));
+    
+    cu_try_catch_vk(vkBindBufferMemory(
+        gContext.device,
+        buffer,
+        pAllocation->_memory,
+        pAllocation->_offset));
+
+    *pBuffer = buffer;
+
+    return CU_SUCCESS;
+
+FAIL:
+    vkDestroyBuffer(gContext.device, buffer, nullptr);
+    mode_free(pAllocation, mode);
+    return result;
+}
+
+VkDeviceAddress get_buffer_device_address(
+    const VkBuffer buffer)
+{
+    const VkBufferDeviceAddressInfo info = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
+        .pNext = nullptr,
+        .buffer = buffer,
+    };
+    return vkGetBufferDeviceAddress(gContext.device, &info);
+}
+
 VkResult create_frames(
     CuFrame* const pFrames,
     const size_t nFrames,
@@ -309,4 +249,3 @@ void destroy_frames(
 
     vkFreeCommandBuffers(device, commandPool, nFrames, commandBuffers);
 }
-

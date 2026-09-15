@@ -1,9 +1,11 @@
 #pragma once
 
+#include "allocation.h"
 #include "frame.h"
 #include "result.h"
 #include "util.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
@@ -59,24 +61,6 @@ CuResult vk_result_to_cu_result(VkResult result);
 /** @brief The timeout time. */
 constexpr uint64_t TIMEOUT_NANOS = 2'000'000'000;
 
-/** @brief Creates a Vulkan instance. */
-VkResult create_vk_instance(
-    VkInstance* pInstance,
-    const char* appName,
-    uint32_t appVersion);
-
-/** @brief Creates a logical device. */
-VkResult create_device(
-    VkDevice* pDevice,
-    VkPhysicalDevice physicalDevice,
-    uint32_t iQueueFamily);
-
-/** @brief Creates a command pool. */
-VkResult create_command_pool(
-    VkCommandPool* pCommandPool,
-    VkDevice device,
-    uint32_t iQueueFamily);
-
 /** @brief Creates an image view. */
 VkResult create_image_view(
     VkImageView* pImageView,
@@ -102,6 +86,32 @@ VkResult allocate_memory(
     VkDevice device,
     uint64_t size,
     uint32_t i);
+
+/// @brief Creates the buffer and its allication.
+/// @param [out] pBuffer A pointer to the buffer.
+/// @param [out] pAllocation A pointer to the allocation.
+/// @param [out] ppData A pointer to the mapped memory (ignored if null).
+/// @param z The size of the buffer.
+/// @param usage A bitmap of the buffer usage flags.
+/// @param mode The allocation mode.
+/// @param mRequired A bitmap of the required memory type properties.
+/// @param mPreferred A bitmap of the preferred memory type properties.
+/// @return The result of the buffer's creation.
+CuResult create_buffer(
+    VkBuffer* pBuffer,
+    CuAllocation* pAllocation,
+    void** ppData,
+    size_t z,
+    VkBufferUsageFlags usage,
+    CuAllocationMode mode,
+    VkMemoryPropertyFlags mRequired,
+    VkMemoryPropertyFlags mPreferred);
+
+/// @brief Returns the buffer's device address.
+/// @param buffer The buffer to get the device address of.
+/// @return The buffer's device address.
+VkDeviceAddress get_buffer_device_address(
+    VkBuffer buffer);
 
 /** @brief Creates N frames. */
 VkResult create_frames(
