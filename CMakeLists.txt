@@ -3,7 +3,7 @@ set(CMAKE_C_STANDARD 23)
 
 project(
     Cutl
-    VERSION 0.4.0
+    VERSION 0.5.0
     LANGUAGES C
 )
 
@@ -75,7 +75,6 @@ endforeach()
 if(COMPILED_SHADERS)
     add_custom_target(test_shaders ALL DEPENDS ${COMPILED_SHADERS})
     
-    # Make tests depend on shaders
     file(GLOB TEST_SOURCES "${CMAKE_SOURCE_DIR}/tests/*.c")
     foreach(test_file ${TEST_SOURCES})
         get_filename_component(test_name ${test_file} NAME_WE)

@@ -72,6 +72,20 @@ VkResult create_image_view(
     return vkCreateImageView(device, &createInfo, nullptr, pImageView);
 }
 
+VkResult allocate_command_buffers(
+    VkCommandBuffer* const pCommandBuffers,
+    const size_t nCommandBuffers)
+{
+    const VkCommandBufferAllocateInfo allocateInfo = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .pNext = nullptr,
+        .commandPool = gContext.commandPool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = nCommandBuffers,
+    };
+    return vkAllocateCommandBuffers(gContext.device, &allocateInfo, pCommandBuffers);
+}
+
 VkResult create_semaphore(
     VkSemaphore* const pSemaphore,
     const VkDevice device,
@@ -193,14 +207,7 @@ VkResult create_frames(
     VkResult result = VK_ERROR_UNKNOWN;
 
     VkCommandBuffer commandBuffers[nFrames];
-    const VkCommandBufferAllocateInfo allocateInfo = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .pNext = nullptr,
-        .commandPool = commandPool,
-        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        .commandBufferCount = nFrames,
-    };
-    vk_try_catch(vkAllocateCommandBuffers(device, &allocateInfo, commandBuffers));
+    vk_try_catch(allocate_command_buffers(commandBuffers, nFrames));
 
     for (size_t i = 0; i < nFrames; i++) {
         CuFrame* const pFrame = &pFrames[i];

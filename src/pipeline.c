@@ -52,7 +52,7 @@ CuResult cu_compute_pipeline_create(
         .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .codeSize = n,
+        .codeSize = n * sizeof(uint32_t),
         .pCode = pCode,
     };
     const VkComputePipelineCreateInfo createInfo = {

@@ -68,6 +68,14 @@ VkResult create_image_view(
     VkImage image,
     VkFormat format);
 
+/// @brief Allocates the command buffers.
+/// @param [out] pCommandBuffers A pointer to the command buffers.
+/// @param nCommandBuffers The number of command buffers.
+/// @return The result of allocating the command buffers.
+VkResult allocate_command_buffers(
+    VkCommandBuffer* pCommandBuffers,
+    size_t nCommandBuffers);
+
 /** @brief Creates a semaphore. */
 VkResult create_semaphore(
     VkSemaphore* pSemaphore,
