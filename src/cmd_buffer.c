@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-/** @return The dereferenced command buffer. */
+/// @return The dereferenced command buffer.
 #define deref(p) (*(VkCommandBuffer*)p)
 
 void cu_cmd_bind_graphics_pipeline(
@@ -46,7 +46,7 @@ void cu_cmd_dispatch(
 }
 
 void cu_cmd_write_push_constants(
-    CuCmdBuffer commandBuffer,
+    const CuCmdBuffer commandBuffer,
     const CuPipelineLayout pipelineLayout,
     const void* const p,
     const size_t z,

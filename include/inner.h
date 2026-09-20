@@ -6,38 +6,46 @@
 #include <vulkan/vulkan_core.h>
 
 #if (VK_USE_64_BIT_PTR_DEFINES == 1) || (SIZE_MAX == UINT64_MAX)
-/** @brief Maps a non-dispatchable Vulkan type name to its defined Vulkan type. */
+/// @brief Maps a non-dispatchable Vulkan type name to its defined Vulkan type.
 #define cu_vk_t(t) struct Vk##t##_T*
 #else
-/** @brief Maps a non-dispatchable Vulkan type name to its defined Vulkan type. */
+/// @brief Maps a non-dispatchable Vulkan type name to its defined Vulkan type.
 #define cu_vk_t(t) uint64_t
 #endif
 
-/** @brief Maps a dispatchable Vulkan type name to its defined Vulkan type. */
+/// @brief Maps a dispatchable Vulkan type name to its defined Vulkan type.
 #define cu_vk_dispatch_t(t) struct Vk##t##_T*
 
 typedef struct CuFrame_T CuFrame;
 
 typedef struct CuRenderer_T CuRenderer;
 
-/** @brief A swapchain's information. */
+/// @brief A swapchain's information.
 typedef struct CuSwapchainInfo_T {
-    cu_vk_t(SwapchainKHR) _handle; /**< The swapchain handle. */
+    /// @brief The swapchain handle.
+    cu_vk_t(SwapchainKHR) _handle;
 
-    cu_vk_t(SurfaceKHR) _surface; /**< The target surface handle. */
+    /// @brief The target surface handle.
+    cu_vk_t(SurfaceKHR) _surface;
 
-    CuFormat _format; /**< The swapchain's format. */
+    /// @brief The swapchain's format.
+    CuFormat _format;
 
-    uint32_t _w; /**< The swapchain's width. */
+    /// @brief The swapchain's width.
+    uint32_t _w;
 
-    uint32_t _h; /**< The swapchain's height. */
+    /// @brief The swapchain's height.
+    uint32_t _h;
 } CuSwapchainInfo;
 
-/** @brief A swapchain image. */
+/// @brief A swapchain image.
 typedef struct CuSwapchainImage_T {
-    cu_vk_t(Image) _image; /**< The image handle. */
+    /// @brief The image handle.
+    cu_vk_t(Image) _image;
 
-    cu_vk_t(ImageView) _imageView; /**< The image view handle. */
+    /// @brief The image view handle.
+    cu_vk_t(ImageView) _imageView;
 
-    cu_vk_t(Semaphore) _renderFinished; /**< The "render finished" semaphore handle. */
+    /// @brief The "render finished" semaphore handle.
+    cu_vk_t(Semaphore) _renderFinished;
 } CuSwapchainImage;

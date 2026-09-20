@@ -27,45 +27,45 @@
 
 #endif
 
-/** @return The smaller of the two values. */
+/// @return The smaller of the two values.
 #define min(a, b) ((a) <= (b) ? (a) : (b))
 
-/** @return The larger of the two values. */
+/// @return The larger of the two values.
 #define max(a, b) ((a) >= (b) ? (a) : (b))
 
-/** @return The value clamped between the min and max. */
+/// @return The value clamped between the min and max.
 #define clamp(v, a, b) max(a, min(v, b))
 
-/** @brief Returns the length of the array. */
+/// @brief Returns the length of the array.
 #define arr_len(a) (sizeof(a) / (sizeof(a[0])))
 
-/** @brief Returns whether the two values have any matching 1-bits. */
+/// @brief Returns whether the two values have any matching 1-bits.
 #define ones_overlap(a, b) (((a) & (b)) != 0)
 
-/** @brief Returns whether the first value contains all the bits of the second value. */
+/// @brief Returns whether the first value contains all the bits of the second value.
 #define ones_match(a, b) (((a) & (b)) == (b))
 
-/** @brief Rounds the value up to the nearest multiple of the alignment, which must be a power of two. */
+/// @brief Rounds the value up to the nearest multiple of the alignment, which must be a power of two.
 #define align_up(v, a) (((v) + (a) - 1) & ~((a) - 1))
 
-/** @brief Tries to allocate the size and returns `CU_ERROR_BAD_ALLOC` if it fails. */
+/// @brief Tries to allocate the size and returns `CU_ERROR_BAD_ALLOC` if it fails.
 #define allocate_z(p, z)                                                                           \
     p = (typeof(*p)*)calloc(z, 1);                                                        \
     if (p == nullptr) {                                                                            \
         return CU_ERROR_OUT_OF_RAM;                                                                \
     }
 
-/** @brief Tries to allocate to the elements and returns `CU_ERROR_BAD_ALLOC` if it fails. */
+/// @brief Tries to allocate to the elements and returns `CU_ERROR_BAD_ALLOC` if it fails.
 #define allocate_n(p, n)                                                                           \
     p = (typeof(*p)*)calloc(n, sizeof(*p));                                                        \
     if (p == nullptr) {                                                                            \
         return CU_ERROR_OUT_OF_RAM;                                                                \
     }
 
-/** @brief Tries to allocate to the pointer and returns `CU_ERROR_BAD_ALLOC` if it fails. */
+/// @brief Tries to allocate to the pointer and returns `CU_ERROR_BAD_ALLOC` if it fails.
 #define allocate(p) allocate_n(p, 1)
 
-/** @brief Queries the Cutl result and returns it if it's not `CU_SUCCESS`. */
+/// @brief Queries the Cutl result and returns it if it's not `CU_SUCCESS`.
 #define cu_try(e)                                                                                  \
     do {                                                                                           \
         const CuResult _result = (e);                                                              \
@@ -74,30 +74,26 @@
         }                                                                                          \
     } while(false)
 
-/**
- * @brief Queries the result and stores it in the local `CuResult result` variable. If it is not
- * `CU_SUCCESS`, jumps to `FAIL`.
- */
+/// @brief Queries the result and stores it in the local `CuResult result` variable. If it is not
+/// `CU_SUCCESS`, jumps to `FAIL`.
 #define cu_try_catch(e)                                                                            \
     result = (e);                                                                                  \
     if (!cu_is_success(result)) {                                                                  \
         goto FAIL;                                                                                 \
     }
 
-/**
- * @brief Asserts the given expression is true, and if it's not, sets the local `CuResult result`
- * to the error and jumps to `FAIL`.
- */
+/// @brief Asserts the given expression is true, and if it's not, sets the local `CuResult result`
+/// to the error and jumps to `FAIL`.
 #define cu_assert_catch(e, r)                                                                      \
     if (!(e)) {                                                                                    \
         result = (r);                                                                              \
         goto FAIL;                                                                                 \
     }
 
-/** @brief An attribute to automatically call `free` on a variable. */
+/// @brief An attribute to automatically call `free` on a variable.
 #define AUTO_FREE __attribute__((cleanup(auto_free_cb)))
 
-/** @brief The `AUTO_FREE` callback. */
+/// @brief The `AUTO_FREE` callback.
 static inline void auto_free_cb(
     void* pp)
 {

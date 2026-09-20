@@ -6,23 +6,29 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 
-/** @brief A Vulkan context. */
+/// @brief A Vulkan context.
 typedef struct {
-    VkInstance instance; /**< The Vulkan instance handle. */
+    /// @brief The Vulkan instance handle.
+    VkInstance instance;
 
-    PhysicalDeviceInfo physicalDeviceInfo; /**< The physical device info. */
+    /// @brief The physical device info.
+    PhysicalDeviceInfo physicalDeviceInfo;
 
-    VkDevice device; /**< The logical device handle. */
+    /// @brief The logical device handle.
+    VkDevice device;
 
-    VkQueue queue; /**< The device queue handle. */
+    /// @brief The device queue handle.
+    VkQueue queue;
 
-    VkCommandPool commandPool; /**< The command pool handle. */
+    /// @brief The command pool handle.
+    VkCommandPool commandPool;
 
-    bool isInitialized; /**< Whether the context is fully initialized. */
+    /// @brief Whether the context is fully initialized.
+    bool isInitialized;
 } Context;
 
-/** @brief An uninitialized context. */
+/// @brief An uninitialized context.
 #define CU_NULL_CONTEXT ((Context){ .isInitialized = false, })
 
-/** @brief The global Vulkan context. */
+/// @brief The global Vulkan context.
 extern Context gContext;

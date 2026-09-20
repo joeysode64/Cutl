@@ -30,11 +30,11 @@ static VkResult create_device();
 /// @warning This requires the context's device and physical device info to be initialized.
 static VkResult create_command_pool();
 
-/** @brief The Cutl version in Vulkan format. */
+/// @brief The Cutl version in Vulkan format.
 constexpr uint32_t CUTL_VK_VERSION =
     VK_MAKE_VERSION(CU_VERSION_MAJOR, CU_VERSION_MINOR, CU_VERSION_PATCH);
 
-/** @brief The instance extensions. */
+/// @brief The instance extensions.
 static const char* INSTANCE_EXTENSIONS[] = {
     "VK_KHR_surface",
 #if ON_APPLE
@@ -47,7 +47,7 @@ static const char* INSTANCE_EXTENSIONS[] = {
 #endif
 };
 
-/** @brief The device extensions. */
+/// @brief The device extensions.
 static const char* DEVICE_EXTENSIONS[] = {
     "VK_KHR_swapchain",
 #if ON_APPLE

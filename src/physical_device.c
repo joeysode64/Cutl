@@ -7,32 +7,32 @@
 #include <stdint.h>
 #include <vulkan/vulkan_core.h>
 
-/** @brief Returns a bitmask of the memory types that contain all the memory properties. */
+/// @brief Returns a bitmask of the memory types that contain all the memory properties.
 static uint32_t get_memory_types(
     const PhysicalDeviceMemoryInfo* pMemoryInfo,
     VkMemoryPropertyFlags flags);
 
-/** @brief Returns whether the physical device is suitable. */
+/// @brief Returns whether the physical device is suitable.
 static bool is_physical_device_suitable(
     VkPhysicalDevice physicalDevice);
 
-/** @brief Choose the queue family. Returns whether one was found. */
+/// @brief Choose the queue family. Returns whether one was found.
 static bool choose_queue_family(
     uint32_t* piQueueFamily,
     VkInstance instance,
     VkPhysicalDevice physicalDevice);
 
-/** @brief Returns whether the queue family at the index supports presentation. */
+/// @brief Returns whether the queue family at the index supports presentation.
 static bool queue_family_supports_presentation(
-    uint32_t i, 
-    VkInstance instance, 
+    uint32_t i,
+    VkInstance instance,
     VkPhysicalDevice physicalDevice);
 
-/** @brief Returns a score for the physical device. A higher value is better. */
+/// @brief Returns a score for the physical device. A higher value is better.
 static uint32_t grade_physical_device(
     VkPhysicalDevice physicalDevice);
 
-/** @brief Returns the physical device's memory type info. */
+/// @brief Returns the physical device's memory type info.
 static PhysicalDeviceMemoryInfo get_physical_device_memory_info(
     VkPhysicalDevice physicalDevice);
 
@@ -50,7 +50,7 @@ uint32_t find_memory_types(
     return (mIdeal != 0) ? mIdeal : mSuitable;
 }
 
-/** @brief Chooses the best-fit physical device. */
+/// @brief Chooses the best-fit physical device.
 CuResult choose_physical_device(
     PhysicalDeviceInfo* const pPhysicalDeviceInfo,
     const VkInstance instance)

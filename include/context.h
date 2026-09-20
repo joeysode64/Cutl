@@ -5,14 +5,16 @@
 
 #include <stdint.h>
 
-/** @brief Create info for the context. */
+/// @brief Create info for the context.
 typedef struct CuContextCreateInfo_T {
-    const char* appName; /**< The application name. Can be null. Default is null. */
+    /// @brief The application name. Can be null. Default is null.
+    const char* appName;
 
-    CuVersion appVersion; /**< The application version. Default is v0.0.0. */
+    /// @brief The application version. Default is v0.0.0.
+    CuVersion appVersion;
 } CuContextCreateInfo;
 
-/** @brief The default context create info. */
+/// @brief The default context create info.
 constexpr CuContextCreateInfo CU_DEFAULT_CONTEXT_CREATE_INFO = {
     .appName = nullptr,
     .appVersion = {
@@ -22,22 +24,15 @@ constexpr CuContextCreateInfo CU_DEFAULT_CONTEXT_CREATE_INFO = {
     },
 };
 
-/**
- * @brief Creates the context
- *
- * @param pCreateInfo A pointer to the create info, or `nullptr` for defaults.
- * 
- * @return The result of creating the context.
- */
+/// @brief Creates the context
+/// @param pCreateInfo A pointer to the create info, or `nullptr` for defaults.
+/// @return The result of creating the context.
 CuResult cu_context_init(
     const CuContextCreateInfo* pCreateInfo);
 
-/**
- * @brief Terminates the context.
- *
- * @warning All of the Cutl GPU library relies on the context. Call this only after cleanup.
- */
+/// @brief Terminates the context.
+/// @warning All of the Cutl GPU library relies on the context. Call this only after cleanup.
 void cu_context_terminate();
 
-/** @brief Waits for the context to idle. */
+/// @brief Waits for the context to idle.
 void cu_context_wait_for_idle();

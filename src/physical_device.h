@@ -5,35 +5,42 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 
-/** @brief A physical device/s memory type info. */
+/// @brief A physical device/s memory type info.
 typedef struct PhysicalDeviceMemoryInfo_T {
-    uint32_t mDeviceLocal; /**< A bitmask of the device local memory types. */
+    /// @brief A bitmask of the device local memory types.
+    uint32_t mDeviceLocal;
 
-    uint32_t mHostVisible; /**< A bitmask of the host visible memory types. */
+    /// @brief A bitmask of the host visible memory types.
+    uint32_t mHostVisible;
 
-    uint32_t mHostCoherent; /**< A bitmask of the host coherent memory types. */
+    /// @brief A bitmask of the host coherent memory types.
+    uint32_t mHostCoherent;
 
-    uint32_t mHostCached; /**< A bitmask of the host cached memory types. */
+    /// @brief A bitmask of the host cached memory types.
+    uint32_t mHostCached;
 } PhysicalDeviceMemoryInfo;
 
-/** @brief A physical device's info. */
+/// @brief A physical device's info.
 typedef struct PhysicalDeviceInfo_T {
-    VkPhysicalDevice handle; /**< The physical device handle. */
+    /// @brief The physical device handle.
+    VkPhysicalDevice handle;
 
-    PhysicalDeviceMemoryInfo memoryInfo; /**< The memory info. */
+    /// @brief The memory info.
+    PhysicalDeviceMemoryInfo memoryInfo;
 
-    uint32_t iQueueFamily; /**< The first queue family index that supports compute, graphics,
-        transfer, and presentation. */
+    /// @brief The first queue family index that supports compute, graphics, transfer, and
+    /// presentation.
+    uint32_t iQueueFamily;
 } PhysicalDeviceInfo;
 
-/** @brief Returns a bitmask of the best-fit memory types. */
+/// @brief Returns a bitmask of the best-fit memory types.
 uint32_t find_memory_types(
     const PhysicalDeviceMemoryInfo* pMemoryInfo,
     VkMemoryPropertyFlags mRequired,
     VkMemoryPropertyFlags mPreferred,
     uint32_t mAllowed);
 
-/** @brief Chooses the best-fit physical device. */
+/// @brief Chooses the best-fit physical device.
 CuResult choose_physical_device(
     PhysicalDeviceInfo* pPhysicalDeviceInfo,
     VkInstance instance);

@@ -13,18 +13,18 @@
 #include <stdint.h>
 #include <vulkan/vulkan_core.h>
 
-/** @return The extent best fit for the window. */
+/// @return The extent best fit for the window.
 static VkExtent2D get_extent(
     const VkSurfaceCapabilitiesKHR* pCapabilities,
     const CuWindow* pWindow);
 
-/** @brief Chooses the surface format best suited for the swapchain. */
+/// @brief Chooses the surface format best suited for the swapchain.
 static VkResult choose_surface_format(
     VkSurfaceFormatKHR* pSurfaceFormat,
     VkSurfaceKHR surface,
     VkPhysicalDevice physicalDevice);
 
-/** @brief Chooses the present mode best suited for the swapchain. */
+/// @brief Chooses the present mode best suited for the swapchain.
 static VkResult choose_present_mode(
     VkPresentModeKHR* pPresentMode,
     VkSurfaceKHR surface,
