@@ -4,6 +4,7 @@
 #include "buffer.h"
 #include "cmd_buffer.h"
 #include "context.h"
+#include "dedicated_allocator.h"
 #include "dynamic_buffer.h"
 #include "format.h"
 #include "frame.h"

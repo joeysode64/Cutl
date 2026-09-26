@@ -33,6 +33,9 @@ typedef struct CuArena_T {
     size_t _size;
 } CuArena;
 
+/// @brief The arena allocator allocation callback functions.
+extern const CuAllocatorFns CU_ARENA_ALLOCATOR_FNS;
+
 /// @brief Creates an arena allocator.
 /// @param [out] pArena A pointer to the arena allocator.
 /// @param size The arena's slot size.
@@ -49,11 +52,11 @@ void cu_arena_destroy(
 /// @brief Creates an allocation mode to use the arena allocator.
 /// @param [in, out] pArena A pointer to the arena allocator.
 /// @return The allocation mode for the arena allocator.
-inline static CuAllocationMode cu_arena_mode(
+static inline CuAllocationMode cu_arena_mode(
     CuArena* const pArena)
 {
     return (CuAllocationMode){
         ._pAllocator = pArena,
-        ._pFns = CU_ARENA_ALLOCATOR_FNS,
+        ._pFns = &CU_ARENA_ALLOCATOR_FNS,
     };
 }

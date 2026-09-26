@@ -9,8 +9,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <assert.h>
-#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.h>
 
 /// @brief Creates the global context's Vulkan instance.
 /// @param appName The application name.
@@ -60,8 +59,6 @@ Context gContext = CU_NULL_CONTEXT;
 CuResult cu_context_init(
     const CuContextCreateInfo* pCreateInfo)
 {
-    assert(!gContext.isInitialized);
-
     CuResult result = CU_ERROR_UNKNOWN;
 
     if (pCreateInfo == nullptr) {
@@ -112,8 +109,6 @@ void cu_context_terminate()
 
 void cu_context_wait_for_idle()
 {
-    assert(gContext.isInitialized);
-
     vkDeviceWaitIdle(gContext.device);
 }
 

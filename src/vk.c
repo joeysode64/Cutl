@@ -1,18 +1,15 @@
 #include "vk.h"
 
 #include "allocation.h"
-#include "allocation_fns.h"
 #include "g_context.h"
 #include "info.h"
 #include "result.h"
 #include "util.h"
 
-#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vk_platform.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 CuResult vk_result_to_cu_result(
     VkResult result)
@@ -42,10 +39,6 @@ VkResult create_image_view(
     const VkImage image,
     const VkFormat format)
 {
-    assert(pImageView != nullptr);
-    assert(device != VK_NULL_HANDLE);
-    assert(image != VK_NULL_HANDLE);
-
     const VkComponentMapping componentMapping = {
         .r = VK_COMPONENT_SWIZZLE_IDENTITY,
         .g = VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -92,9 +85,6 @@ VkResult create_semaphore(
     const VkSemaphoreType type,
     const uint64_t x)
 {
-    assert(pSemaphore != nullptr);
-    assert(device != VK_NULL_HANDLE);
-
     const VkSemaphoreTypeCreateInfo typeCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
         .pNext = nullptr,
@@ -199,11 +189,6 @@ VkResult create_frames(
     const VkDevice device,
     const VkCommandPool commandPool)
 {
-    assert(pFrames != nullptr);
-    assert(nFrames > 0);
-    assert(device != VK_NULL_HANDLE);
-    assert(commandPool != VK_NULL_HANDLE);
-
     VkResult result = VK_ERROR_UNKNOWN;
 
     VkCommandBuffer commandBuffers[nFrames];
@@ -241,10 +226,6 @@ void destroy_frames(
     const VkDevice device,
     const VkCommandPool commandPool)
 {
-    assert(pFrames != nullptr);
-    assert(nFrames > 0);
-    assert(device != VK_NULL_HANDLE);
-
     VkCommandBuffer commandBuffers[nFrames];
 
     for (size_t i = 0; i < nFrames; i++) {

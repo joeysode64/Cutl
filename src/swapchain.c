@@ -1,17 +1,18 @@
 #include "swapchain.h"
 
+#include "enumerator.h"
 #include "inner.h"
 #include "result.h"
 #include "util.h"
 #include "vk.h"
 #include "window.h"
-#include <assert.h>
-#include <stddef.h>
+#include <vulkan/vulkan_core.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <stddef.h>
 #include <stdint.h>
-#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.h>
 
 /// @return The extent best fit for the window.
 static VkExtent2D get_extent(
@@ -40,13 +41,6 @@ VkResult create_swapchain(
     const CuWindow* const pWindow,
     const VkSwapchainKHR oldSwapchain)
 {
-    assert(pSwapchainInfo != nullptr);
-    assert(pnSwapchainImages != nullptr);
-    assert(instance != VK_NULL_HANDLE);
-    assert(device != VK_NULL_HANDLE);
-    assert(physicalDevice != VK_NULL_HANDLE);
-    assert(pWindow != nullptr);
-
     VkSurfaceKHR surface = VK_NULL_HANDLE;
     vk_try(glfwCreateWindowSurface(instance, pWindow->_handle, nullptr, &surface));
     VkSurfaceCapabilitiesKHR capabilities = {};
@@ -96,11 +90,6 @@ VkResult create_swapchain_images(
     const VkDevice device,
     const CuSwapchainInfo* const pSwapchainInfo)
 {
-    assert(pSwapchainImages != nullptr);
-    assert(nSwapchainImages > 0);
-    assert(device != VK_NULL_HANDLE);
-    assert(pSwapchainImages != nullptr);
-
     VkImage images[nSwapchainImages];
     vk_try(vkGetSwapchainImagesKHR(device, pSwapchainInfo->_handle, &nSwapchainImages, images));
 
@@ -122,10 +111,6 @@ void destroy_swapchain_images(
     const uint32_t nSwapchainImages,
     const VkDevice device)
 {
-    assert(pSwapchainImages != nullptr);
-    assert(nSwapchainImages > 0);
-    assert(device != VK_NULL_HANDLE);
-
     for (uint32_t i = 0; i < nSwapchainImages; i++) {
         const CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
 
@@ -138,9 +123,6 @@ VkExtent2D get_extent(
     const VkSurfaceCapabilitiesKHR* const pCapabilities,
     const CuWindow* const pWindow)
 {
-    assert(pCapabilities != nullptr);
-    assert(pWindow != nullptr);
-
     const bool isExtentDefined = (pCapabilities->currentExtent.width != UINT32_MAX) ||
         (pCapabilities->currentExtent.height != UINT32_MAX);
     if (isExtentDefined) {
@@ -164,21 +146,12 @@ VkResult choose_surface_format(
     const VkSurfaceKHR surface,
     const VkPhysicalDevice physicalDevice)
 {
-    assert(pSurfaceFormat != nullptr);
-    assert(surface != VK_NULL_HANDLE);
-    assert(physicalDevice != VK_NULL_HANDLE);
+    Enumerator(VkSurfaceFormatKHR) surfaceFormats ENUMERATOR_AUTO_FREE = {};
+    enumerate_vk(surfaceFormats, vkGetPhysicalDeviceSurfaceFormatsKHR, physicalDevice, surface);
 
-    VkSurfaceFormatKHR* pSurfaceFormats AUTO_FREE = nullptr;
-    uint32_t nSurfaceFormats = 0;
-    vk_try(vkGetPhysicalDeviceSurfaceFormatsKHR(
-        physicalDevice, surface, &nSurfaceFormats, nullptr));
-    vk_allocate_n(pSurfaceFormats, nSurfaceFormats);
-    vk_try(vkGetPhysicalDeviceSurfaceFormatsKHR(
-        physicalDevice, surface, &nSurfaceFormats, pSurfaceFormats));
-
-    *pSurfaceFormat = pSurfaceFormats[0];
-    for (uint32_t i = 0; i < nSurfaceFormats; i++) {
-        const VkSurfaceFormatKHR surfaceFormat = pSurfaceFormats[i];
+    *pSurfaceFormat = surfaceFormats.p[0];
+    for (uint32_t i = 0; i < surfaceFormats.n; i++) {
+        const VkSurfaceFormatKHR surfaceFormat = surfaceFormats.p[i];
         const bool hasGoodFormat = (surfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB) ||
             (surfaceFormat.format == VK_FORMAT_R8G8B8A8_SRGB);
         const bool hasGoodColorSpace =
@@ -197,21 +170,12 @@ VkResult choose_present_mode(
     const VkSurfaceKHR surface,
     const VkPhysicalDevice physicalDevice)
 {
-    assert(pPresentMode != nullptr);
-    assert(surface != VK_NULL_HANDLE);
-    assert(physicalDevice != VK_NULL_HANDLE);
-
-    constexpr size_t MAX_PRESENT_MODES = 4;
-    VkPresentModeKHR presentModes[MAX_PRESENT_MODES] = {};
-    uint32_t nPresentModes = 0;
-    vk_try(vkGetPhysicalDeviceSurfacePresentModesKHR(
-        physicalDevice, surface, &nPresentModes, nullptr));
-    vk_try(vkGetPhysicalDeviceSurfacePresentModesKHR(
-        physicalDevice, surface, &nPresentModes, presentModes));
+    Enumerator(VkPresentModeKHR) presentModes ENUMERATOR_AUTO_FREE = {};
+    enumerate_vk(presentModes, vkGetPhysicalDeviceSurfacePresentModesKHR, physicalDevice, surface);
 
     *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
-    for (uint32_t i = 0; i < nPresentModes; i++) {
-        if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+    for (uint32_t i = 0; i < presentModes.n; i++) {
+        if (presentModes.p[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
             *pPresentMode = VK_PRESENT_MODE_MAILBOX_KHR;
             break;
         }

@@ -10,7 +10,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 /// @brief Returns whether the arena slot has room for the allocation.
 /// @param [in] pArena A pointer to the arena.
@@ -67,7 +66,7 @@ void cu_arena_destroy(
     }
 }
 
-CuResult arena_allocator_allocate(
+CuResult arena_allocate(
     CuAllocation* const pAllocation,
     void** const ppData,
     CuAllocator* const pAllocator,
@@ -106,7 +105,7 @@ CuResult arena_allocator_allocate(
     return CU_ERROR_ARENA_FULL;
 }
 
-void arena_allocator_free(
+void arena_free(
     CuAllocation* const _pAllocation,
     CuAllocator* const _pAllocator)
 {
@@ -165,3 +164,8 @@ CuResult allocate_slot(
 
     return CU_SUCCESS;
 }
+
+const CuAllocatorFns CU_ARENA_ALLOCATOR_FNS = {
+    ._fAllocate = &arena_allocate,
+    ._fFree = &arena_free,
+};

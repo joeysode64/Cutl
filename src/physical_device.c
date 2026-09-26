@@ -1,10 +1,11 @@
 #include "physical_device.h"
 
+#include "enumerator.h"
 #include "result.h"
 #include "util.h"
 
-#include <assert.h>
 #include <stdint.h>
+#include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 
 /// @brief Returns a bitmask of the memory types that contain all the memory properties.
@@ -42,8 +43,6 @@ uint32_t find_memory_types(
     const VkMemoryPropertyFlags mPreferred,
     const uint32_t mAllowed)
 {
-    assert(pMemoryInfo != nullptr);
-
     const uint32_t mSuitable = get_memory_types(pMemoryInfo, mRequired) & mAllowed;
     const uint32_t mIdeal = get_memory_types(pMemoryInfo, mPreferred) & mSuitable;
 
@@ -55,19 +54,13 @@ CuResult choose_physical_device(
     PhysicalDeviceInfo* const pPhysicalDeviceInfo,
     const VkInstance instance)
 {
-    assert(pPhysicalDeviceInfo != nullptr);
-    assert(instance != VK_NULL_HANDLE);
-
-    VkPhysicalDevice* pPhysicalDevices AUTO_FREE = nullptr;
-    uint32_t nPhysicalDevices = 0;
-    vkEnumeratePhysicalDevices(instance, &nPhysicalDevices, nullptr);
-    allocate_n(pPhysicalDevices, nPhysicalDevices);
-    vkEnumeratePhysicalDevices(instance, &nPhysicalDevices, pPhysicalDevices);
+    Enumerator(VkPhysicalDevice) physicalDevices ENUMERATOR_AUTO_FREE = {};
+    enumerate_cu(physicalDevices, vkEnumeratePhysicalDevices, instance);
 
     uint64_t bestScore = 0;
     bool found = false;
-    for (uint32_t i = 0; i < nPhysicalDevices; i++) {
-        const VkPhysicalDevice contestant = pPhysicalDevices[i];
+    for (uint32_t i = 0; i < physicalDevices.n; i++) {
+        const VkPhysicalDevice contestant = physicalDevices.p[i];
         if (!is_physical_device_suitable(contestant)) {
             continue;
         }
@@ -96,8 +89,6 @@ uint32_t get_memory_types(
     const PhysicalDeviceMemoryInfo* const pMemoryInfo,
     const VkMemoryPropertyFlags flags)
 {
-    assert(pMemoryInfo != nullptr);
-
     uint32_t m = 0;
     if (ones_overlap(flags, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
         m |= pMemoryInfo->mDeviceLocal;
@@ -117,9 +108,8 @@ uint32_t get_memory_types(
 bool is_physical_device_suitable(
     const VkPhysicalDevice physicalDevice)
 {
-    assert(physicalDevice);
-
     (void)physicalDevice;
+    // TODO
     return true;
 }
 
@@ -128,20 +118,13 @@ bool choose_queue_family(
     const VkInstance instance,
     const VkPhysicalDevice physicalDevice)
 {
-    assert(piQueueFamily != nullptr);
-    assert(instance != VK_NULL_HANDLE);
-    assert(physicalDevice != VK_NULL_HANDLE);
+    Enumerator(VkQueueFamilyProperties) queueFamilies ENUMERATOR_AUTO_FREE = {};
+    enumerate(queueFamilies, false, vkGetPhysicalDeviceQueueFamilyProperties, physicalDevice);
 
-    VkQueueFamilyProperties* pQueueFamilies AUTO_FREE = nullptr;
-    uint32_t nQueueFamilies = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &nQueueFamilies, nullptr);
-    allocate_n(pQueueFamilies, nQueueFamilies);
-    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &nQueueFamilies, pQueueFamilies);
-
-    for (uint32_t i = 0; i < nQueueFamilies; i++) {
+    for (uint32_t i = 0; i < queueFamilies.n; i++) {
         constexpr VkQueueFlags flags =
             VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
-        const bool hasFlags = ones_match(pQueueFamilies[i].queueFlags, flags);
+        const bool hasFlags = ones_match(queueFamilies.p[i].queueFlags, flags);
 
         if (hasFlags && queue_family_supports_presentation(i, instance, physicalDevice)) {
             *piQueueFamily = i;
@@ -157,9 +140,6 @@ bool queue_family_supports_presentation(
     const VkInstance instance,
     const VkPhysicalDevice physicalDevice)
 {
-    assert(instance != VK_NULL_HANDLE);
-    assert(physicalDevice != VK_NULL_HANDLE);
-
     (void)i;
     (void)instance;
     (void)physicalDevice;
@@ -177,8 +157,6 @@ bool queue_family_supports_presentation(
 uint32_t grade_physical_device(
     VkPhysicalDevice physicalDevice)
 {
-    assert(physicalDevice != VK_NULL_HANDLE);
-
     uint32_t score = 0;
     VkPhysicalDeviceProperties properties = {};
     vkGetPhysicalDeviceProperties(physicalDevice, &properties);
@@ -196,8 +174,6 @@ uint32_t grade_physical_device(
 PhysicalDeviceMemoryInfo get_physical_device_memory_info(
     VkPhysicalDevice physicalDevice)
 {
-    assert(physicalDevice != VK_NULL_HANDLE);
-
     VkPhysicalDeviceMemoryProperties memoryProperties = {};
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 

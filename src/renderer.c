@@ -8,28 +8,21 @@
 #include "util.h"
 #include "vk.h"
 
-#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.h>
 
 CuResult cu_renderer_create(
     CuRenderer* const  pRenderer,
     const CuRendererCreateInfo* pCreateInfo,
     const CuWindow* const pWindow)
 {
-    assert(pRenderer != nullptr);
-    assert(pWindow != nullptr);
-
     CuResult result = CU_ERROR_UNKNOWN;
 
     if (pCreateInfo == nullptr) {
         pCreateInfo = &CU_DEFAULT_RENDERER_CREATE_INFO;
     }
-
-    assert(pCreateInfo->maxFramesInFlight > 0);
-    assert(pCreateInfo->minSwapchainImages > 0);
 
     cu_try_catch_vk(create_swapchain(
         &pRenderer->_swapchainInfo,

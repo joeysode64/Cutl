@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 /// @brief Map a `VkResult` to a `CuResult`.
 CuResult vk_result_to_cu_result(VkResult result);

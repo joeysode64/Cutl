@@ -1,7 +1,6 @@
 #include "dynamic_buffer.h"
 
 #include "allocation.h"
-#include "allocation_fns.h"
 #include "buffer.h"
 #include "g_context.h"
 #include "result.h"

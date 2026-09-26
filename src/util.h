@@ -1,6 +1,8 @@
 #pragma once
 
+#include "allocation.h"
 #include "result.h"
+
 #include <stdlib.h>
 
 #if defined(__APPLE__)
@@ -91,12 +93,45 @@
     }
 
 /// @brief An attribute to automatically call `free` on a variable.
-#define AUTO_FREE __attribute__((cleanup(auto_free_cb)))
+#define AUTO_FREE __attribute__((cleanup(auto_free_)))
 
 /// @brief The `AUTO_FREE` callback.
-static inline void auto_free_cb(
+static inline void auto_free_(
     void* pp)
 {
     void* const p = *(void**)pp;
     free(p);
+}
+
+/// @brief Allocates using the allocation mode.
+/// @param [out] pAllocation A pointer to the allocation.
+/// @param [out] ppData A pointer to the mapped memory. Ignored if null.
+/// @param mode The allocation mode.
+/// @param pRequirements A pointer to the memory requirements.
+/// @param mRequired A bitmask of the required memory types.
+/// @param mPreferred A bitmask of the preferred (but not required) memory types.
+/// @return The result of the allocation.
+static inline CuResult mode_allocate(
+    CuAllocation* pAllocation,
+    void** ppData,
+    CuAllocationMode mode,
+    const VkMemoryRequirements* pRequirements,
+    uint32_t mRequired,
+    uint32_t mPreferred)
+{
+    return mode._pFns->_fAllocate(
+        pAllocation,
+        ppData,
+        mode._pAllocator,
+        pRequirements,
+        mRequired,
+        mPreferred);
+}
+
+/// @brief Frees an allocation using the allocation mode.
+/// @param [in, out] pAllocation A pointer to the allocation.
+/// @param mode The allocation mode.
+static inline void mode_free(CuAllocation* pAllocation, CuAllocationMode mode)
+{
+    mode._pFns->_fFree(pAllocation, mode._pAllocator);
 }

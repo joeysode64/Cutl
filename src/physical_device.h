@@ -3,7 +3,6 @@
 #include "result.h"
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 /// @brief A physical device/s memory type info.
 typedef struct PhysicalDeviceMemoryInfo_T {

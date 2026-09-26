@@ -8,7 +8,6 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 CuResult dedicated_allocator_allocate(
     CuAllocation* const pAllocation,
@@ -47,3 +46,8 @@ void dedicated_allocator_free(
 
     vkFreeMemory(gContext.device, pAllocation->_memory, nullptr);
 }
+
+const CuAllocatorFns CU_DEDICATED_ALLOCATOR_FNS = {
+    ._fAllocate = &dedicated_allocator_allocate,
+    ._fFree = &dedicated_allocator_free,
+};
