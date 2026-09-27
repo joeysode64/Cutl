@@ -17,7 +17,7 @@ CuResult cu_dynamic_buffer_create(
     const CuBufferUsage usage,
     const CuAllocationMode mode)
 {
-    CuResult result = CU_ERROR_UNKNOWN;
+    CuResult result = CU_SUCCESS;
 
     cu_try_catch(create_buffer(
         &pDynamicBuffer->_buffer,

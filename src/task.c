@@ -2,6 +2,7 @@
 
 #include "g_context.h"
 #include "result.h"
+#include "util.h"
 #include "vk.h"
 
 #include <limits.h>
@@ -11,16 +12,16 @@
 /// @brief Creates a fence.
 /// @param [out] pFence The fence to create.
 /// @return The result of creating the fence.
-static VkResult create_fence(
+static CuResult create_fence(
     VkFence* pFence);
 
 CuResult cu_task_create(
     CuTask* const pTask)
 {
-    CuResult result = CU_ERROR_UNKNOWN;
+    CuResult result = CU_SUCCESS;
 
-    cu_try_catch_vk(allocate_command_buffers(&pTask->_commandBuffer, 1));
-    cu_try_catch_vk(create_fence(&pTask->_taskFinished));
+    cu_try_catch(allocate_command_buffers(&pTask->_commandBuffer, 1));
+    cu_try_catch(create_fence(&pTask->_taskFinished));
 
     return CU_SUCCESS;
 
@@ -87,7 +88,7 @@ void cu_task_await(
     vkWaitForFences(gContext._device, 1, &pTask->_taskFinished, VK_TRUE, timeout);
 }
 
-VkResult create_fence(
+CuResult create_fence(
     VkFence* const pFence)
 {
     const VkFenceCreateInfo createInfo = {
@@ -95,5 +96,5 @@ VkResult create_fence(
         .pNext = nullptr,
         .flags = VK_FENCE_CREATE_SIGNALED_BIT,
     };
-    return vkCreateFence(gContext._device, &createInfo, nullptr, pFence);
+    return cu_vk_result(vkCreateFence(gContext._device, &createInfo, nullptr, pFence));
 }

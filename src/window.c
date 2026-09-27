@@ -13,11 +13,11 @@ CuResult cu_window_create(
     const uint32_t h,
     const char* const title)
 {
-    CuResult result = CU_ERROR_UNKNOWN;
+    CuResult result = CU_SUCCESS;
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     pWindow->_handle = glfwCreateWindow((int)w, (int)h, title, nullptr, nullptr);
-    cu_assert_catch(pWindow != nullptr, CU_ERROR_UNKNOWN);
+    cu_assert_catch(pWindow != nullptr, cu_glfw_error());
 
     cu_window_update(pWindow);
 

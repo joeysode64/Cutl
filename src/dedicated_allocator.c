@@ -26,7 +26,7 @@ CuResult dedicated_allocator_allocate(
     const uint32_t iMemoryType = __builtin_ctz(mMemoryTypes);
 
     VkDeviceMemory memory = VK_NULL_HANDLE;
-    cu_try_vk(allocate_memory(&memory, gContext._device, pRequirements->size, iMemoryType));
+    cu_try(allocate_memory(&memory, gContext._device, pRequirements->size, iMemoryType));
 
     if (ppData != nullptr) {
         cu_try_vk(vkMapMemory(gContext._device, memory, 0, pRequirements->size, 0, ppData));

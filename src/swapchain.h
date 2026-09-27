@@ -1,13 +1,14 @@
 #pragma once
 
 #include "def.h"
+#include "result.h"
 #include "window.h"
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
 /// @brief Create a swapchain.
-VkResult create_swapchain(
+CuResult create_swapchain(
     CuSwapchainInfo* pSwapchainInfo,
     uint32_t* pnSwapchainImages,
     uint32_t minSwapchainImages,
@@ -15,7 +16,7 @@ VkResult create_swapchain(
     VkSwapchainKHR oldSwapchain);
 
 /// @brief Creates N swapchain images.
-VkResult create_swapchain_images(
+CuResult create_swapchain_images(
     CuSwapchainImage* pSwapchainImages,
     uint32_t nSwapchainImages,
     const CuSwapchainInfo* pSwapchainInfo);

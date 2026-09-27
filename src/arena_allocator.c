@@ -77,7 +77,7 @@ CuResult arena_allocate(
     CuArena* const pArena = (CuArena*)pAllocator;
 
     if (pRequirements->size > pArena->_size) {
-        return CU_ERROR_ALLOCATION_TOO_LARGE;
+        return cu_error(CU_ERROR_ARENA_TOO_SMALL);
     }
 
     uint32_t mMemoryTypes = find_memory_types(
@@ -102,7 +102,7 @@ CuResult arena_allocate(
         }
     }
 
-    return CU_ERROR_ARENA_FULL;
+    return cu_error(CU_ERROR_ARENA_FULL);
 }
 
 void arena_free(
@@ -156,7 +156,7 @@ CuResult allocate_slot(
 {
     CuArenaSlot* const pSlot = &pArena->_slots[i];
 
-    cu_try_vk(allocate_memory(&pSlot->_memory, gContext._device, pArena->_size, i));
+    cu_try(allocate_memory(&pSlot->_memory, gContext._device, pArena->_size, i));
     if (ones_overlap(gContext._memoryInfo._mHostVisible, 1u << i)) {
         cu_try_vk(vkMapMemory(gContext._device, pSlot->_memory, 0, pArena->_size, 0, &pSlot->_pData));
     }

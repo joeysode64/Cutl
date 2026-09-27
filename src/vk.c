@@ -2,38 +2,14 @@
 
 #include "allocation.h"
 #include "g_context.h"
-#include "info.h"
 #include "result.h"
 #include "util.h"
 
 #include <stddef.h>
 #include <stdint.h>
-#include <vulkan/vk_platform.h>
 #include <vulkan/vulkan.h>
 
-CuResult vk_result_to_cu_result(
-    VkResult result)
-{
-    switch (result) {
-        case VK_SUCCESS:
-            return CU_SUCCESS;
-        case VK_TIMEOUT:
-            return CU_ERROR_TIMEOUT;
-        case VK_ERROR_OUT_OF_HOST_MEMORY:
-            return CU_ERROR_OUT_OF_RAM;
-        case VK_ERROR_OUT_OF_DEVICE_MEMORY:
-            return CU_ERROR_OUT_OF_VRAM;
-        case VK_ERROR_LAYER_NOT_PRESENT:
-        case VK_ERROR_EXTENSION_NOT_PRESENT:
-        case VK_ERROR_FEATURE_NOT_PRESENT:
-        case VK_ERROR_INCOMPATIBLE_DRIVER:
-            return CU_ERROR_UNSUPPORTED;
-        default:
-            return CU_ERROR_UNKNOWN;
-    }
-}
-
-VkResult create_image_view(
+CuResult create_image_view(
     VkImageView* const pImageView,
     const VkDevice device,
     const VkImage image,
@@ -62,10 +38,10 @@ VkResult create_image_view(
         .components = componentMapping,
         .subresourceRange = subresourceRange,
     };
-    return vkCreateImageView(device, &createInfo, nullptr, pImageView);
+    return cu_vk_result(vkCreateImageView(device, &createInfo, nullptr, pImageView));
 }
 
-VkResult allocate_command_buffers(
+CuResult allocate_command_buffers(
     VkCommandBuffer* const pCommandBuffers,
     const size_t nCommandBuffers)
 {
@@ -76,10 +52,10 @@ VkResult allocate_command_buffers(
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = nCommandBuffers,
     };
-    return vkAllocateCommandBuffers(gContext._device, &allocateInfo, pCommandBuffers);
+    return cu_vk_result(vkAllocateCommandBuffers(gContext._device, &allocateInfo, pCommandBuffers));
 }
 
-VkResult create_semaphore(
+CuResult create_semaphore(
     VkSemaphore* const pSemaphore,
     const VkDevice device,
     const VkSemaphoreType type,
@@ -96,10 +72,10 @@ VkResult create_semaphore(
         .pNext = &typeCreateInfo,
         .flags = 0,
     };
-    return vkCreateSemaphore(device, &createInfo, nullptr, pSemaphore);
+    return cu_vk_result(vkCreateSemaphore(device, &createInfo, nullptr, pSemaphore));
 }
 
-VkResult allocate_memory(
+CuResult allocate_memory(
     VkDeviceMemory* const pMemory,
     const VkDevice device,
     const uint64_t size,
@@ -117,7 +93,7 @@ VkResult allocate_memory(
         .allocationSize = size,
         .memoryTypeIndex = i,
     };
-    return vkAllocateMemory(device, &allocateInfo, nullptr, pMemory);
+    return cu_vk_result(vkAllocateMemory(device, &allocateInfo, nullptr, pMemory));
 }
 
 CuResult create_buffer(
@@ -130,7 +106,7 @@ CuResult create_buffer(
     const VkMemoryPropertyFlags mRequired,
     const VkMemoryPropertyFlags mPreferred)
 {
-    CuResult result = CU_ERROR_UNKNOWN;
+    CuResult result = CU_SUCCESS;
 
     const VkBufferCreateInfo bufferCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -183,37 +159,26 @@ VkDeviceAddress get_buffer_device_address(
     return vkGetBufferDeviceAddress(gContext._device, &info);
 }
 
-VkResult create_frames(
+CuResult create_frames(
     CuFrame* const pFrames,
     const size_t nFrames,
     const VkDevice device,
     const VkCommandPool commandPool)
 {
-    VkResult result = VK_ERROR_UNKNOWN;
+    CuResult result = CU_SUCCESS;
 
     VkCommandBuffer commandBuffers[nFrames];
-    vk_try_catch(allocate_command_buffers(commandBuffers, nFrames));
+    cu_try_catch(allocate_command_buffers(commandBuffers, nFrames));
 
     for (size_t i = 0; i < nFrames; i++) {
         CuFrame* const pFrame = &pFrames[i];
 
-        const VkSemaphoreCreateInfo semaphoreCreateInfo = {
-            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = 0,
-        };
-        vk_try_catch(vkCreateSemaphore(
-            device,
-            &semaphoreCreateInfo,
-            nullptr,
-            &pFrame->_imageAvailable
-        ));
-        vk_try_catch(create_semaphore(
+        cu_try_catch(create_semaphore(
             &pFrame->_imageAvailable, device, VK_SEMAPHORE_TYPE_BINARY, 0));
         pFrame->_commandBuffer = commandBuffers[i];
     }
 
-    return VK_SUCCESS;
+    return CU_SUCCESS;
 
 FAIL:
     destroy_frames(pFrames, nFrames, device, commandPool);

@@ -2,7 +2,7 @@
 
 #include "g_context.h"
 #include "result.h"
-#include "vk.h"
+#include "util.h"
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
@@ -25,9 +25,8 @@ CuResult cu_pipeline_layout_create(
         .pushConstantRangeCount = pCreateInfo->pushConstantSize > 0 ? 1 : 0,
         .pPushConstantRanges = & pushConstantRange,
     };
-    return vk_result_to_cu_result(vkCreatePipelineLayout(
-        gContext._device, &createInfo, nullptr, (VkPipelineLayout*)pPipelineLayout
-    ));
+    return cu_vk_result(vkCreatePipelineLayout(
+        gContext._device, &createInfo, nullptr, (VkPipelineLayout*)pPipelineLayout));
 }
 
 void cu_pipeline_layout_destroy(
@@ -53,23 +52,21 @@ CuResult cu_compute_pipeline_create(
         .sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .stage =
-            {
-                .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-                .pNext = &shaderModuleCreateInfo,
-                .flags = 0,
-                .stage = VK_SHADER_STAGE_COMPUTE_BIT,
-                .module = VK_NULL_HANDLE,
-                .pName = "main",
-                .pSpecializationInfo = nullptr,
-            },
+        .stage = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .pNext = &shaderModuleCreateInfo,
+            .flags = 0,
+            .stage = VK_SHADER_STAGE_COMPUTE_BIT,
+            .module = VK_NULL_HANDLE,
+            .pName = "main",
+            .pSpecializationInfo = nullptr,
+        },
         .layout = (VkPipelineLayout)pipelineLayout,
         .basePipelineHandle = VK_NULL_HANDLE,
         .basePipelineIndex = 0,
     };
-    return vk_result_to_cu_result(vkCreateComputePipelines(
-        gContext._device, VK_NULL_HANDLE, 1, &createInfo, nullptr, (VkPipeline*)pComputePipeline
-    ));
+    return cu_vk_result(vkCreateComputePipelines(
+        gContext._device, VK_NULL_HANDLE, 1, &createInfo, nullptr, (VkPipeline*)pComputePipeline));
 }
 
 void cu_compute_pipeline_destroy(
@@ -143,16 +140,14 @@ CuResult cu_graphics_pipeline_create(
         .maxDepth = 0.0F,
     };
     const VkRect2D scissor = {
-        .offset =
-            {
-                .x = 0,
-                .y = 0,
-            },
-        .extent =
-            {
-                .width = 0,
-                .height = 0,
-            },
+        .offset = {
+            .x = 0,
+            .y = 0,
+        },
+        .extent = {
+            .width = 0,
+            .height = 0,
+        },
     };
     const VkPipelineViewportStateCreateInfo viewportStateCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
@@ -266,9 +261,8 @@ CuResult cu_graphics_pipeline_create(
         .basePipelineHandle = VK_NULL_HANDLE,
         .basePipelineIndex = -1,
     };
-    return vk_result_to_cu_result(vkCreateGraphicsPipelines(
-        gContext._device, VK_NULL_HANDLE, 1, &createInfo, NULL, (VkPipeline*)pGrahicsPipeline
-    ));
+    return cu_vk_result(vkCreateGraphicsPipelines(
+        gContext._device, VK_NULL_HANDLE, 1, &createInfo, NULL, (VkPipeline*)pGrahicsPipeline));
 }
 
 void cu_graphics_pipeline_destroy(

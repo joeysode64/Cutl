@@ -8,14 +8,15 @@
 /** @brief Fails the test if the expression does not return a success. */
 #define query(e)                                                                                   \
     do {                                                                                           \
-        const CuResult r = (e);                                                                    \
-        if (!cu_is_success(r)) {                                                                   \
+        const CuResult _r = (e);                                                                   \
+        if (!cu_is_success(_r)) {                                                                  \
             fprintf(                                                                               \
                 stderr,                                                                            \
-                " Error running `%s` on line #%i: %i\n",                                           \
+                " Error running `%s` on line #%i: %u:%i\n",                                        \
                 #e,                                                                                \
                 __LINE__,                                                                          \
-                r                                                                                  \
+                _r.t,                                                                              \
+                _r.v                                                                               \
             );                                                                                     \
             exit(EXIT_FAILURE);                                                                    \
         }                                                                                          \

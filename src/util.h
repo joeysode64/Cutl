@@ -3,31 +3,57 @@
 #include "allocation.h"
 #include "result.h"
 
+#include <errno.h>
 #include <stdlib.h>
 
 #if defined(__APPLE__)
-
-#define ON_APPLE true
-#define ON_LINUX false
-#define ON_WINDOWS false
-
+    #define ON_APPLE true
+    #define ON_LINUX false
+    #define ON_WINDOWS false
 #elif defined(__linux__)
-
-#define ON_APPLE false
-#define ON_LINUX true
-#define ON_WINDOWS false
-
+    #define ON_APPLE false
+    #define ON_LINUX true
+    #define ON_WINDOWS false
 #elif defined(_WIN32)
-
-#define ON_APPLE false
-#define ON_LINUX false
-#define ON_WINDOWS true
-
+    #define ON_APPLE false
+    #define ON_LINUX false
+    #define ON_WINDOWS true
 #else
-
-#error "Unsupported OS"
-
+    #error "Unsupported OS"
 #endif
+
+/**
+ * @brief Returns a `CuResult` Cutl error with the given `CuError`.
+ * @param e The `CuError`.
+ * @return A `CuResult` Cutl error with the given `CuError`.
+ */
+#define cu_error(e) ((CuResult){ .t = CU_RESULT_TYPE_ERROR, .v = (e) })
+
+/**
+ * @brief Returns a `CuResult` C standard error from `errno`.
+ * @return A `CuResult` C standard error from `errno`.
+ */
+#define cu_std_error() ((CuResult){ .t = CU_RESULT_TYPE_STD, .v = errno })
+
+/**
+ * @brief Returns a `CuResult` Vulkan error with the given `VkResult`.
+ * @param r The `VkResult`.
+ * @return A `CuResult` Vulkan error with the given `VkResult`.
+ */
+#define cu_vk_error(r) ((CuResult){ .t = CU_RESULT_TYPE_VULKAN, .v = (r) })
+
+/**
+ * @brief Returns a `CuResult` with the given `VkResult`, properly matching success values.
+ * @param r The `VkResult`.
+ * @return The `VkResult`'s `CuResult` equivalent.
+ */
+#define cu_vk_result(r) ((r) == VK_SUCCESS ? CU_SUCCESS : cu_vk_error(r))
+
+/**
+ * @brief Returns a `CuResult` GLFW error with `glfwGetError`.
+ * @return The `CuResult` from `glfwGetError`.
+ */
+#define cu_glfw_error() ((CuResult){ .t = CU_REUSLT_TYPE_GLFW, .v = glfwGetError(nullptr) })
 
 /// @return The smaller of the two values.
 #define min(a, b) ((a) <= (b) ? (a) : (b))
@@ -52,16 +78,16 @@
 
 /// @brief Tries to allocate the size and returns `CU_ERROR_BAD_ALLOC` if it fails.
 #define allocate_z(p, z)                                                                           \
-    p = (typeof(*p)*)calloc(z, 1);                                                        \
+    p = (typeof(*p)*)calloc(z, 1);                                                                 \
     if (p == nullptr) {                                                                            \
-        return CU_ERROR_OUT_OF_RAM;                                                                \
+        return cu_error(CU_ERROR_BAD_ALLOC);                                                       \
     }
 
 /// @brief Tries to allocate to the elements and returns `CU_ERROR_BAD_ALLOC` if it fails.
 #define allocate_n(p, n)                                                                           \
     p = (typeof(*p)*)calloc(n, sizeof(*p));                                                        \
     if (p == nullptr) {                                                                            \
-        return CU_ERROR_OUT_OF_RAM;                                                                \
+        return cu_error(CU_ERROR_BAD_ALLOC);                                                       \
     }
 
 /// @brief Tries to allocate to the pointer and returns `CU_ERROR_BAD_ALLOC` if it fails.

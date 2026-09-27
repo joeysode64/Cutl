@@ -18,9 +18,9 @@ CuResult cu_renderer_create(
     const CuRendererCreateInfo* pCreateInfo,
     const CuWindow* const pWindow)
 {
-    CuResult result = CU_ERROR_UNKNOWN;
+    CuResult result = CU_SUCCESS;
 
-    cu_try_catch_vk(create_swapchain(
+    cu_try_catch(create_swapchain(
         &pRenderer->_swapchainInfo,
         &pRenderer->_nSwapchainImages,
         pCreateInfo->minSwapchainImages,
@@ -32,21 +32,21 @@ CuResult cu_renderer_create(
     allocate_z(pRenderer->_pData, zSwapchainImages + zFramesInFlight);
 
     pRenderer->_pSwapchainImages = (CuSwapchainImage*)pRenderer->_pData;
-    cu_try_catch_vk(create_swapchain_images(
+    cu_try_catch(create_swapchain_images(
         pRenderer->_pSwapchainImages,
         pRenderer->_nSwapchainImages,
         &pRenderer->_swapchainInfo));
 
     pRenderer->_pFramesInFlight =
         (CuFrame*)((uint8_t*)pRenderer->_pSwapchainImages + zSwapchainImages);
-    cu_try_catch_vk(create_frames(
+    cu_try_catch(create_frames(
         pRenderer->_pFramesInFlight,
         pCreateInfo->maxFramesInFlight,
         gContext._device,
         gContext._commandPool));
     pRenderer->_nFramesInFlight = pCreateInfo->maxFramesInFlight;
 
-    cu_try_catch_vk(create_semaphore(
+    cu_try_catch(create_semaphore(
         &pRenderer->_timelineSemaphore,
         gContext._device,
         VK_SEMAPHORE_TYPE_TIMELINE,

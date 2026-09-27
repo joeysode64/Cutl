@@ -3,9 +3,11 @@
 #include "enumerator.h"
 #include "def.h"
 #include "g_context.h"
+#include "result.h"
 #include "util.h"
 #include "vk.h"
 #include "window.h"
+#include <vulkan/vulkan_core.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -19,16 +21,16 @@ static VkExtent2D get_extent(
     const CuWindow* pWindow);
 
 /// @brief Chooses the surface format best suited for the swapchain.
-static VkResult choose_surface_format(
+static CuResult choose_surface_format(
     VkSurfaceFormatKHR* pSurfaceFormat,
     VkSurfaceKHR surface);
 
 /// @brief Chooses the present mode best suited for the swapchain.
-static VkResult choose_present_mode(
+static CuResult choose_present_mode(
     VkPresentModeKHR* pPresentMode,
     VkSurfaceKHR surface);
 
-VkResult create_swapchain(
+CuResult create_swapchain(
     CuSwapchainInfo* const pSwapchainInfo,
     uint32_t* const pnSwapchainImages,
     const uint32_t minSwapchainImages,
@@ -36,13 +38,14 @@ VkResult create_swapchain(
     const VkSwapchainKHR oldSwapchain)
 {
     VkSurfaceKHR surface = VK_NULL_HANDLE;
-    vk_try(glfwCreateWindowSurface(gContext._instance, pWindow->_handle, nullptr, &surface));
+    cu_try_vk(glfwCreateWindowSurface(gContext._instance, pWindow->_handle, nullptr, &surface));
     VkSurfaceCapabilitiesKHR capabilities = {};
-    vk_try(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gContext._physicalDevice, surface, &capabilities));
+    cu_try_vk(
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gContext._physicalDevice, surface, &capabilities));
     VkSurfaceFormatKHR surfaceFormat = {};
-    vk_try(choose_surface_format(&surfaceFormat, surface));
+    cu_try(choose_surface_format(&surfaceFormat, surface));
     VkPresentModeKHR presentMode = 0;
-    vk_try(choose_present_mode(&presentMode, surface));
+    cu_try(choose_present_mode(&presentMode, surface));
     const VkExtent2D extent = get_extent(&capabilities, pWindow);
 
     const VkSwapchainCreateInfoKHR createInfo = {
@@ -65,9 +68,10 @@ VkResult create_swapchain(
         .clipped = VK_TRUE,
         .oldSwapchain = oldSwapchain,
     };
-    vk_try(vkCreateSwapchainKHR(gContext._device, &createInfo, nullptr, &pSwapchainInfo->_handle));
+    cu_try_vk(vkCreateSwapchainKHR(
+        gContext._device, &createInfo, nullptr, &pSwapchainInfo->_handle));
 
-    vk_try(vkGetSwapchainImagesKHR(
+    cu_try_vk(vkGetSwapchainImagesKHR(
         gContext._device, pSwapchainInfo->_handle, pnSwapchainImages, nullptr));
 
     pSwapchainInfo->_surface = surface;
@@ -75,28 +79,29 @@ VkResult create_swapchain(
     pSwapchainInfo->_w = extent.width;
     pSwapchainInfo->_h = extent.height;
 
-    return VK_SUCCESS;
+    return CU_SUCCESS;
 }
 
-VkResult create_swapchain_images(
+CuResult create_swapchain_images(
     CuSwapchainImage* const pSwapchainImages,
     uint32_t nSwapchainImages,
     const CuSwapchainInfo* const pSwapchainInfo)
 {
     VkImage images[nSwapchainImages];
-    vk_try(vkGetSwapchainImagesKHR(gContext._device, pSwapchainInfo->_handle, &nSwapchainImages, images));
+    cu_try_vk(vkGetSwapchainImagesKHR(
+        gContext._device, pSwapchainInfo->_handle, &nSwapchainImages, images));
 
     for (uint32_t i = 0; i < nSwapchainImages; i++) {
         CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
 
-        vk_try(create_image_view(
+        cu_try(create_image_view(
             &pSwapchainImage->_imageView, gContext._device, images[i], pSwapchainInfo->_format));
-        vk_try(create_semaphore(
+        cu_try(create_semaphore(
             &pSwapchainImage->_renderFinished, gContext._device, VK_SEMAPHORE_TYPE_BINARY, 0));
         pSwapchainImage->_image = images[i];
     }
 
-    return VK_SUCCESS;
+    return CU_SUCCESS;
 }
 
 void destroy_swapchain_images(
@@ -133,7 +138,7 @@ VkExtent2D get_extent(
     }
 }
 
-VkResult choose_surface_format(
+CuResult choose_surface_format(
     VkSurfaceFormatKHR* const pSurfaceFormat,
     const VkSurfaceKHR surface)
 {
@@ -153,10 +158,10 @@ VkResult choose_surface_format(
         }
     }
 
-    return VK_SUCCESS;
+    return CU_SUCCESS;
 }
 
-VkResult choose_present_mode(
+CuResult choose_present_mode(
     VkPresentModeKHR* const pPresentMode,
     const VkSurfaceKHR surface)
 {
@@ -171,5 +176,5 @@ VkResult choose_present_mode(
         }
     }
 
-    return VK_SUCCESS;
+    return CU_SUCCESS;
 }

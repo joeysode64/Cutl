@@ -1,5 +1,7 @@
 #include "spirv.h"
+
 #include "result.h"
+#include "util.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,14 +18,14 @@ CuResult cu_spirv_read_from_file(
 
     FILE* f = fopen(path, "rb");
     if (f == nullptr) {
-        result = CU_ERROR_FILE_IO;
+        result = cu_std_error();
         goto FAIL;
     }
 
     fseek(f, 0, SEEK_END);
     const size_t size = ftell(f);
     if (size % sizeof(uint32_t) != 0) {
-        result = CU_ERROR_FILE_IO;
+        result = cu_std_error();
         goto FAIL;
     }
     fseek(f, 0, SEEK_SET);
@@ -31,12 +33,12 @@ CuResult cu_spirv_read_from_file(
     const size_t n = size / sizeof(uint32_t);
     data = calloc(n, sizeof(uint32_t));
     if (data == nullptr) {
-        result = CU_ERROR_FILE_IO;
+        result = cu_std_error();
         goto FAIL;
     }
 
     if (fread(data, sizeof(uint32_t), n, f) != n) {
-        result = CU_ERROR_FILE_IO;
+        result = cu_std_error();
         goto FAIL;
     }
 

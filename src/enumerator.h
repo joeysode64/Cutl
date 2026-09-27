@@ -30,12 +30,12 @@
 /// @param _ The arguments.
 /// @note Returns the first `VkResult` that's an error, if any.
 #define enumerate_vk(e, f, ...)                                                                    \
-    vk_try(f(__VA_ARGS__, &e.n, nullptr));                                                         \
+    cu_try_vk(f(__VA_ARGS__, &e.n, nullptr));                                                      \
     e.p = calloc(e.n, sizeof(e.p[0]));                                                             \
     if (e.p == nullptr) {                                                                          \
-        return VK_ERROR_OUT_OF_HOST_MEMORY;                                                        \
+        return cu_error(CU_ERROR_BAD_ALLOC);                                                       \
     }                                                                                              \
-    vk_try(f(__VA_ARGS__, &e.n, e.p));
+    cu_try_vk(f(__VA_ARGS__, &e.n, e.p));
 
 /// @brief Enumerate a Vulkan enumeration function.
 /// @param e The enumerator.
@@ -46,7 +46,7 @@
     cu_try_vk(f(__VA_ARGS__, &e.n, nullptr));                                                      \
     e.p = calloc(e.n, sizeof(e.p[0]));                                                             \
     if (e.p == nullptr) {                                                                          \
-        return CU_ERROR_OUT_OF_RAM;                                                                \
+        return cu_error(CU_ERROR_BAD_ALLOC);                                                       \
     }                                                                                              \
     cu_try_vk(f(__VA_ARGS__, &e.n, e.p));
 

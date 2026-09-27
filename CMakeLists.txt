@@ -3,7 +3,7 @@ set(CMAKE_C_STANDARD 23)
 
 project(
     Cutl
-    VERSION 0.7.1
+    VERSION 0.8.0
     LANGUAGES C
 )
 

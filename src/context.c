@@ -64,9 +64,9 @@ CuContext* cu_context_get()
 CuResult cu_context_init(
     const CuContextCreateInfo* pCreateInfo)
 {
-    CuResult result = CU_ERROR_UNKNOWN;
+    CuResult result = CU_SUCCESS;
 
-    cu_assert_catch(glfwInit() == GLFW_TRUE, CU_ERROR_GLFW_INIT);
+    cu_assert_catch(glfwInit() == GLFW_TRUE, cu_glfw_error());
 
     const uint32_t appVersion = VK_MAKE_VERSION(
         pCreateInfo->appVersion.major,

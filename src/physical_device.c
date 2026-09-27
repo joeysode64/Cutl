@@ -81,7 +81,7 @@ CuResult choose_physical_device(
         }
     }
 
-    return found ? CU_SUCCESS : CU_ERROR_NO_DEVICE;
+    return found ? CU_SUCCESS : cu_error(CU_ERROR_NO_VALID_DEVICE);
 }
 
 uint32_t get_memory_types(

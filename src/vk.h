@@ -9,9 +9,6 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-/// @brief Map a `VkResult` to a `CuResult`.
-CuResult vk_result_to_cu_result(VkResult result);
-
 /// @brief Queries the Vulkan result and returns it as a `CuResult` if it's not `VK_SUCCESS`.
 #define vk_try(e)                                                                                  \
     do {                                                                                           \
@@ -26,7 +23,7 @@ CuResult vk_result_to_cu_result(VkResult result);
     do {                                                                                           \
         const VkResult _result = (e);                                                              \
         if (_result != VK_SUCCESS) {                                                               \
-            return vk_result_to_cu_result(_result);                                                \
+            return cu_vk_error(_result);                                                           \
         }                                                                                          \
     } while(false)
 
@@ -40,8 +37,7 @@ CuResult vk_result_to_cu_result(VkResult result);
 
 /// @brief Queries the Vulkan result and stores it in the local `CuResult result` variable. If it is
 /// not a success value, jumps to `FAIL`.
-#define cu_try_catch_vk(e)                                                                         \
-    cu_try_catch(vk_result_to_cu_result(e))
+#define cu_try_catch_vk(e) cu_try_catch(cu_vk_result(e))
 
 /// @brief Tries to allocate to the elements and returns `VK_ERROR_OUT_OF_HOST_MEMORY` if it fails.
 #define vk_allocate_n(p, n)                                                                        \
@@ -57,7 +53,7 @@ CuResult vk_result_to_cu_result(VkResult result);
 constexpr uint64_t TIMEOUT_NANOS = 2'000'000'000;
 
 /// @brief Creates an image view.
-VkResult create_image_view(
+CuResult create_image_view(
     VkImageView* pImageView,
     VkDevice device,
     VkImage image,
@@ -67,12 +63,12 @@ VkResult create_image_view(
 /// @param [out] pCommandBuffers A pointer to the command buffers.
 /// @param nCommandBuffers The number of command buffers.
 /// @return The result of allocating the command buffers.
-VkResult allocate_command_buffers(
+CuResult allocate_command_buffers(
     VkCommandBuffer* pCommandBuffers,
     size_t nCommandBuffers);
 
 /// @brief Creates a semaphore.
-VkResult create_semaphore(
+CuResult create_semaphore(
     VkSemaphore* pSemaphore,
     VkDevice device,
     VkSemaphoreType type,
@@ -84,7 +80,7 @@ VkResult create_semaphore(
 /// @param size The size of the allocation.
 /// @param i The index of the memory type.
 /// @return The result of allocationg the memory.
-VkResult allocate_memory(
+CuResult allocate_memory(
     VkDeviceMemory* pMemory,
     VkDevice device,
     uint64_t size,
@@ -117,7 +113,7 @@ VkDeviceAddress get_buffer_device_address(
     VkBuffer buffer);
 
 /// @brief Creates N frames.
-VkResult create_frames(
+CuResult create_frames(
     CuFrame* pFrames,
     size_t nFrames,
     VkDevice device,
