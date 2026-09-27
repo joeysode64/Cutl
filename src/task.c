@@ -7,7 +7,6 @@
 #include <limits.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 /// @brief Creates a fence.
 /// @param [out] pFence The fence to create.
@@ -34,8 +33,8 @@ void cu_task_destroy(
     CuTask* const pTask)
 {
     cu_task_await(pTask, UINT_MAX);
-    vkDestroyFence(gContext.device, pTask->_taskFinished, nullptr);
-    vkFreeCommandBuffers(gContext.device, gContext.commandPool, 1, &pTask->_commandBuffer);
+    vkDestroyFence(gContext._device, pTask->_taskFinished, nullptr);
+    vkFreeCommandBuffers(gContext._device, gContext._commandPool, 1, &pTask->_commandBuffer);
 }
 
 CuResult cu_task_begin(
@@ -57,7 +56,7 @@ CuResult cu_task_submit(
 {
     cu_try_vk(vkEndCommandBuffer(pTask->_commandBuffer));
 
-    cu_try_vk(vkResetFences(gContext.device, 1, &pTask->_taskFinished));
+    cu_try_vk(vkResetFences(gContext._device, 1, &pTask->_taskFinished));
 
     const VkSubmitInfo submitInfo = {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -70,7 +69,7 @@ CuResult cu_task_submit(
         .signalSemaphoreCount = 0,
         .pSignalSemaphores = nullptr,
     };
-    cu_try_vk(vkQueueSubmit(gContext.queue, 1, &submitInfo, pTask->_taskFinished));
+    cu_try_vk(vkQueueSubmit(gContext._queue, 1, &submitInfo, pTask->_taskFinished));
 
     return CU_SUCCESS;
 }
@@ -78,14 +77,14 @@ CuResult cu_task_submit(
 bool cu_task_is_running(
     CuTask* const pTask)
 {
-    return vkGetFenceStatus(gContext.device, pTask->_taskFinished) == VK_NOT_READY;
+    return vkGetFenceStatus(gContext._device, pTask->_taskFinished) == VK_NOT_READY;
 }
 
 void cu_task_await(
     CuTask* pTask,
     uint64_t timeout)
 {
-    vkWaitForFences(gContext.device, 1, &pTask->_taskFinished, VK_TRUE, timeout);
+    vkWaitForFences(gContext._device, 1, &pTask->_taskFinished, VK_TRUE, timeout);
 }
 
 VkResult create_fence(
@@ -96,5 +95,5 @@ VkResult create_fence(
         .pNext = nullptr,
         .flags = VK_FENCE_CREATE_SIGNALED_BIT,
     };
-    return vkCreateFence(gContext.device, &createInfo, nullptr, pFence);
+    return vkCreateFence(gContext._device, &createInfo, nullptr, pFence);
 }

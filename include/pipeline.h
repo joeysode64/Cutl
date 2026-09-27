@@ -1,6 +1,6 @@
 #pragma once
 
-#include "inner.h"
+#include "def.h"
 #include "result.h"
 
 #include <stddef.h>
@@ -22,7 +22,7 @@ static const CuPipelineLayoutCreateInfo CU_DEFAULT_PIPELINE_LAYOUT_CREATE_INFO =
 
 /// @brief Creates the pipeline layout.
 /// @param [out] pPipelineLayout A pointer to the pipeline layout.
-/// @param pCreateInfo A pointer to the create info, or a null pointer for defaults.
+/// @param pCreateInfo A pointer to the create info.
 /// @return The result of the pipeline layout's creation.
 CuResult cu_pipeline_layout_create(
     CuPipelineLayout* pPipelineLayout,

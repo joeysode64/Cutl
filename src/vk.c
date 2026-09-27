@@ -72,11 +72,11 @@ VkResult allocate_command_buffers(
     const VkCommandBufferAllocateInfo allocateInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .pNext = nullptr,
-        .commandPool = gContext.commandPool,
+        .commandPool = gContext._commandPool,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = nCommandBuffers,
     };
-    return vkAllocateCommandBuffers(gContext.device, &allocateInfo, pCommandBuffers);
+    return vkAllocateCommandBuffers(gContext._device, &allocateInfo, pCommandBuffers);
 }
 
 VkResult create_semaphore(
@@ -143,10 +143,10 @@ CuResult create_buffer(
         .pQueueFamilyIndices = nullptr,
     };
     VkBuffer buffer = VK_NULL_HANDLE;
-    cu_try_catch_vk(vkCreateBuffer(gContext.device, &bufferCreateInfo, nullptr, &buffer));
+    cu_try_catch_vk(vkCreateBuffer(gContext._device, &bufferCreateInfo, nullptr, &buffer));
 
     VkMemoryRequirements memoryRequirements = {};
-    vkGetBufferMemoryRequirements(gContext.device, buffer, &memoryRequirements);
+    vkGetBufferMemoryRequirements(gContext._device, buffer, &memoryRequirements);
 
     cu_try_catch(mode_allocate(
         pAllocation,
@@ -157,7 +157,7 @@ CuResult create_buffer(
         mPreferred));
     
     cu_try_catch_vk(vkBindBufferMemory(
-        gContext.device,
+        gContext._device,
         buffer,
         pAllocation->_memory,
         pAllocation->_offset));
@@ -167,7 +167,7 @@ CuResult create_buffer(
     return CU_SUCCESS;
 
 FAIL:
-    vkDestroyBuffer(gContext.device, buffer, nullptr);
+    vkDestroyBuffer(gContext._device, buffer, nullptr);
     mode_free(pAllocation, mode);
     return result;
 }
@@ -180,7 +180,7 @@ VkDeviceAddress get_buffer_device_address(
         .pNext = nullptr,
         .buffer = buffer,
     };
-    return vkGetBufferDeviceAddress(gContext.device, &info);
+    return vkGetBufferDeviceAddress(gContext._device, &info);
 }
 
 VkResult create_frames(

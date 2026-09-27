@@ -6,11 +6,10 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 /// @brief Returns a bitmask of the memory types that contain all the memory properties.
 static uint32_t get_memory_types(
-    const PhysicalDeviceMemoryInfo* pMemoryInfo,
+    const CuPhysicalDeviceMemoryInfo* pMemoryInfo,
     VkMemoryPropertyFlags flags);
 
 /// @brief Returns whether the physical device is suitable.
@@ -34,11 +33,11 @@ static uint32_t grade_physical_device(
     VkPhysicalDevice physicalDevice);
 
 /// @brief Returns the physical device's memory type info.
-static PhysicalDeviceMemoryInfo get_physical_device_memory_info(
+static CuPhysicalDeviceMemoryInfo get_physical_device_memory_info(
     VkPhysicalDevice physicalDevice);
 
 uint32_t find_memory_types(
-    const PhysicalDeviceMemoryInfo* const pMemoryInfo,
+    const CuPhysicalDeviceMemoryInfo* const pMemoryInfo,
     const VkMemoryPropertyFlags mRequired,
     const VkMemoryPropertyFlags mPreferred,
     const uint32_t mAllowed)
@@ -86,21 +85,21 @@ CuResult choose_physical_device(
 }
 
 uint32_t get_memory_types(
-    const PhysicalDeviceMemoryInfo* const pMemoryInfo,
+    const CuPhysicalDeviceMemoryInfo* const pMemoryInfo,
     const VkMemoryPropertyFlags flags)
 {
     uint32_t m = 0;
     if (ones_overlap(flags, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
-        m |= pMemoryInfo->mDeviceLocal;
+        m |= pMemoryInfo->_mDeviceLocal;
     }
     if (ones_overlap(flags, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
-        m |= pMemoryInfo->mHostVisible;
+        m |= pMemoryInfo->_mHostVisible;
     }
     if (ones_overlap(flags, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
-        m |= pMemoryInfo->mHostCoherent;
+        m |= pMemoryInfo->_mHostCoherent;
     }
     if (ones_overlap(flags, VK_MEMORY_PROPERTY_HOST_CACHED_BIT)) {
-        m |= pMemoryInfo->mHostCached;
+        m |= pMemoryInfo->_mHostCached;
     }
     return m;
 }
@@ -171,27 +170,27 @@ uint32_t grade_physical_device(
     return score;
 }
 
-PhysicalDeviceMemoryInfo get_physical_device_memory_info(
+CuPhysicalDeviceMemoryInfo get_physical_device_memory_info(
     VkPhysicalDevice physicalDevice)
 {
     VkPhysicalDeviceMemoryProperties memoryProperties = {};
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 
-    PhysicalDeviceMemoryInfo memoryInfo = {};
+    CuPhysicalDeviceMemoryInfo memoryInfo = {};
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
         const VkMemoryPropertyFlags flags = memoryProperties.memoryTypes[i].propertyFlags;
         const uint32_t b = 1u << i;
         if (ones_overlap(flags, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
-            memoryInfo.mDeviceLocal |= b;
+            memoryInfo._mDeviceLocal |= b;
         }
         if (ones_overlap(flags, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
-            memoryInfo.mHostVisible |= b;
+            memoryInfo._mHostVisible |= b;
         }
         if (ones_overlap(flags, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) {
-            memoryInfo.mHostCoherent |= b;
+            memoryInfo._mHostCoherent |= b;
         }
         if (ones_overlap(flags, VK_MEMORY_PROPERTY_HOST_CACHED_BIT)) {
-            memoryInfo.mHostCached |= b;
+            memoryInfo._mHostCached |= b;
         }
     }
 

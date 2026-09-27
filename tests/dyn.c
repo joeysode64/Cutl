@@ -10,13 +10,13 @@ typedef struct {
 } Vertex;
 
 int main() {
-    query(cu_context_init(nullptr));
+    query(cu_context_init(&CU_DEFAULT_CONTEXT_CREATE_INFO));
 
     CuWindow window = {};
     query(cu_window_create(&window, 800, 450, "Dynamic Buffer Test"));
 
     CuRenderer renderer = {};
-    query(cu_renderer_create(&renderer, nullptr, &window));
+    query(cu_renderer_create(&renderer, &CU_DEFAULT_RENDERER_CREATE_INFO, &window));
 
     const CuPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {
         .pushConstantSize = sizeof(CuDeviceAddress),

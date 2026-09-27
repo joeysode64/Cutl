@@ -1,7 +1,7 @@
 #pragma once
 
 #include "format.h"
-#include "inner.h"
+#include "def.h"
 #include "result.h"
 #include "window.h"
 
@@ -55,7 +55,7 @@ constexpr CuRendererCreateInfo CU_DEFAULT_RENDERER_CREATE_INFO = {
 
 /// @brief Creates the renderer.
 /// @param [in] pRenderer A pointer to the renderer.
-/// @param pCreateInfo A pointer to the create info, or a nullpointer for default.
+/// @param pCreateInfo A pointer to the create info.
 /// @param pWindow A pointer to the window target.
 /// @return The result of creating the renderer.
 CuResult cu_renderer_create(

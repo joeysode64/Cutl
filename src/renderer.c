@@ -2,7 +2,7 @@
 
 #include "frame.h"
 #include "g_context.h"
-#include "inner.h"
+#include "def.h"
 #include "result.h"
 #include "swapchain.h"
 #include "util.h"
@@ -20,17 +20,10 @@ CuResult cu_renderer_create(
 {
     CuResult result = CU_ERROR_UNKNOWN;
 
-    if (pCreateInfo == nullptr) {
-        pCreateInfo = &CU_DEFAULT_RENDERER_CREATE_INFO;
-    }
-
     cu_try_catch_vk(create_swapchain(
         &pRenderer->_swapchainInfo,
         &pRenderer->_nSwapchainImages,
         pCreateInfo->minSwapchainImages,
-        gContext.instance,
-        gContext.device,
-        gContext.physicalDeviceInfo.handle,
         pWindow,
         VK_NULL_HANDLE));
     
@@ -42,7 +35,6 @@ CuResult cu_renderer_create(
     cu_try_catch_vk(create_swapchain_images(
         pRenderer->_pSwapchainImages,
         pRenderer->_nSwapchainImages,
-        gContext.device,
         &pRenderer->_swapchainInfo));
 
     pRenderer->_pFramesInFlight =
@@ -50,13 +42,13 @@ CuResult cu_renderer_create(
     cu_try_catch_vk(create_frames(
         pRenderer->_pFramesInFlight,
         pCreateInfo->maxFramesInFlight,
-        gContext.device,
-        gContext.commandPool));
+        gContext._device,
+        gContext._commandPool));
     pRenderer->_nFramesInFlight = pCreateInfo->maxFramesInFlight;
 
     cu_try_catch_vk(create_semaphore(
         &pRenderer->_timelineSemaphore,
-        gContext.device,
+        gContext._device,
         VK_SEMAPHORE_TYPE_TIMELINE,
         0));
     
@@ -77,17 +69,17 @@ void cu_renderer_destroy(
         return;
     }
 
-    vkDeviceWaitIdle(gContext.device);
+    vkDeviceWaitIdle(gContext._device);
 
     destroy_frames(
         pRenderer->_pFramesInFlight,
         pRenderer->_nFramesInFlight,
-        gContext.device,
-        gContext.commandPool);
+        gContext._device,
+        gContext._commandPool);
     destroy_swapchain_images(
-        pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages, gContext.device);
-    vkDestroySwapchainKHR(gContext.device, pRenderer->_swapchainInfo._handle, nullptr);
-    vkDestroySurfaceKHR(gContext.instance, pRenderer->_swapchainInfo._surface, nullptr);
+        pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
+    vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchainInfo._handle, nullptr);
+    vkDestroySurfaceKHR(gContext._instance, pRenderer->_swapchainInfo._surface, nullptr);
     free(pRenderer->_pData);
 }
 
@@ -111,11 +103,11 @@ CuResult cu_renderer_begin_frame(
         .pSemaphores = &pRenderer->_timelineSemaphore,
         .pValues = &waitValue,
     };
-    cu_try_catch_vk(vkWaitSemaphores(gContext.device, &waitInfo, TIMEOUT_NANOS));
+    cu_try_catch_vk(vkWaitSemaphores(gContext._device, &waitInfo, TIMEOUT_NANOS));
 
     // Get the next target swapchain image's index.
     cu_try_catch_vk(vkAcquireNextImageKHR(
-        gContext.device,
+        gContext._device,
         pRenderer->_swapchainInfo._handle,
         TIMEOUT_NANOS,
         pFrame->_imageAvailable,
@@ -194,7 +186,7 @@ CuResult cu_renderer_submit_frame(
         .signalSemaphoreInfoCount = 2,
         .pSignalSemaphoreInfos = signalSemaphoreInfos,
     };
-    cu_try_catch_vk(vkQueueSubmit2(gContext.queue, 1, &submitInfo, VK_NULL_HANDLE));
+    cu_try_catch_vk(vkQueueSubmit2(gContext._queue, 1, &submitInfo, VK_NULL_HANDLE));
     pRenderer->_frameCounter += 1;
 
     // Submit presentation.
@@ -208,7 +200,7 @@ CuResult cu_renderer_submit_frame(
         .pImageIndices = &pRenderer->_iSwapchainImage,
         .pResults = nullptr,
     };
-    cu_try_catch_vk(vkQueuePresentKHR(gContext.queue, &presentInfo));
+    cu_try_catch_vk(vkQueuePresentKHR(gContext._queue, &presentInfo));
 
     return CU_SUCCESS;
 

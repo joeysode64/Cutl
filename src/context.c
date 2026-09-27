@@ -54,16 +54,17 @@ static const char* DEVICE_EXTENSIONS[] = {
 #endif
 };
 
-Context gContext = CU_NULL_CONTEXT;
+CuContext gContext = { ._isInitialized = false };
+
+CuContext* cu_context_get()
+{
+    return &gContext;
+}
 
 CuResult cu_context_init(
     const CuContextCreateInfo* pCreateInfo)
 {
     CuResult result = CU_ERROR_UNKNOWN;
-
-    if (pCreateInfo == nullptr) {
-        pCreateInfo = &CU_DEFAULT_CONTEXT_CREATE_INFO;
-    }
 
     cu_assert_catch(glfwInit() == GLFW_TRUE, CU_ERROR_GLFW_INIT);
 
@@ -72,17 +73,21 @@ CuResult cu_context_init(
         pCreateInfo->appVersion.minor,
         pCreateInfo->appVersion.patch);
     cu_try_catch_vk(create_vk_instance(pCreateInfo->appName, appVersion));
-    cu_try_catch(choose_physical_device(&gContext.physicalDeviceInfo, gContext.instance));
+    PhysicalDeviceInfo physicalDeviceInfo = {};
+    cu_try_catch(choose_physical_device(&physicalDeviceInfo, gContext._instance));
+    gContext._physicalDevice = physicalDeviceInfo.handle;
+    gContext._memoryInfo = physicalDeviceInfo.memoryInfo;
+    gContext._iQueueFamily = physicalDeviceInfo.iQueueFamily;
     cu_try_catch_vk(create_device());
     cu_try_catch_vk(create_command_pool());
     vkGetDeviceQueue(
-        gContext.device,
-        gContext.physicalDeviceInfo.iQueueFamily,
+        gContext._device,
+        gContext._iQueueFamily,
         0,
-        &gContext.queue
+        &gContext._queue
     );
 
-    gContext.isInitialized = true;
+    gContext._isInitialized = true;
     return CU_SUCCESS;
 
 FAIL:
@@ -94,22 +99,24 @@ void cu_context_terminate()
 {
     glfwTerminate();
 
-    if (gContext.device != VK_NULL_HANDLE) {
-        vkDeviceWaitIdle(gContext.device);
-        vkDestroyCommandPool(gContext.device, gContext.commandPool, nullptr);
-        vkDestroyDevice(gContext.device, nullptr);
+    if (gContext._device != VK_NULL_HANDLE) {
+        vkDeviceWaitIdle(gContext._device);
+        vkDestroyCommandPool(gContext._device, gContext._commandPool, nullptr);
+        vkDestroyDevice(gContext._device, nullptr);
     }
 
-    if (gContext.instance != VK_NULL_HANDLE) {
-        vkDestroyInstance(gContext.instance, nullptr);
+    if (gContext._instance != VK_NULL_HANDLE) {
+        vkDestroyInstance(gContext._instance, nullptr);
     }
 
-    gContext = CU_NULL_CONTEXT;
+    gContext = (CuContext){
+        ._isInitialized = false,
+    };
 }
 
 void cu_context_wait_for_idle()
 {
-    vkDeviceWaitIdle(gContext.device);
+    vkDeviceWaitIdle(gContext._device);
 }
 
 
@@ -138,7 +145,7 @@ VkResult create_vk_instance(
         .enabledExtensionCount = arr_len(INSTANCE_EXTENSIONS),
         .ppEnabledExtensionNames = INSTANCE_EXTENSIONS,
     };
-    return vkCreateInstance(&createInfo, nullptr, &gContext.instance);
+    return vkCreateInstance(&createInfo, nullptr, &gContext._instance);
 }
 
 VkResult create_device() {
@@ -148,7 +155,7 @@ VkResult create_device() {
             .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
-            .queueFamilyIndex = gContext.physicalDeviceInfo.iQueueFamily,
+            .queueFamilyIndex = gContext._iQueueFamily,
             .queueCount = 1,
             .pQueuePriorities = queuePriorities,
         },
@@ -186,10 +193,10 @@ VkResult create_device() {
         .ppEnabledExtensionNames = DEVICE_EXTENSIONS,
     };
     return vkCreateDevice(
-        gContext.physicalDeviceInfo.handle,
+        gContext._physicalDevice,
         &createInfo,
         nullptr,
-        &gContext.device);
+        &gContext._device);
 }
 
 VkResult create_command_pool()
@@ -198,7 +205,7 @@ VkResult create_command_pool()
         .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .queueFamilyIndex = gContext.physicalDeviceInfo.iQueueFamily,
+        .queueFamilyIndex = gContext._iQueueFamily,
     };
-    return vkCreateCommandPool(gContext.device, &createInfo, nullptr, &gContext.commandPool);
+    return vkCreateCommandPool(gContext._device, &createInfo, nullptr, &gContext._commandPool);
 }

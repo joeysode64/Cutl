@@ -11,10 +11,11 @@ CuResult cu_pipeline_layout_create(
     CuPipelineLayout* const pPipelineLayout,
     const CuPipelineLayoutCreateInfo* pCreateInfo)
 {
-    if (pCreateInfo == nullptr) {
-        pCreateInfo = &CU_DEFAULT_PIPELINE_LAYOUT_CREATE_INFO;
-    }
-
+    const VkPushConstantRange pushConstantRange = {
+        .stageFlags = VK_SHADER_STAGE_ALL,
+        .offset = 0,
+        .size = pCreateInfo->pushConstantSize,
+    };
     const VkPipelineLayoutCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .pNext = nullptr,
@@ -22,24 +23,17 @@ CuResult cu_pipeline_layout_create(
         .setLayoutCount = 0,
         .pSetLayouts = nullptr,
         .pushConstantRangeCount = pCreateInfo->pushConstantSize > 0 ? 1 : 0,
-        .pPushConstantRanges =
-            (VkPushConstantRange[]){
-                {
-                    .offset = 0,
-                    .size = pCreateInfo->pushConstantSize,
-                    .stageFlags = VK_SHADER_STAGE_ALL,
-                },
-            },
+        .pPushConstantRanges = & pushConstantRange,
     };
     return vk_result_to_cu_result(vkCreatePipelineLayout(
-        gContext.device, &createInfo, nullptr, (VkPipelineLayout*)pPipelineLayout
+        gContext._device, &createInfo, nullptr, (VkPipelineLayout*)pPipelineLayout
     ));
 }
 
 void cu_pipeline_layout_destroy(
     const CuPipelineLayout pipelineLayout)
 {
-    vkDestroyPipelineLayout(gContext.device, (VkPipelineLayout)pipelineLayout, nullptr);
+    vkDestroyPipelineLayout(gContext._device, (VkPipelineLayout)pipelineLayout, nullptr);
 }
 
 CuResult cu_compute_pipeline_create(
@@ -74,14 +68,14 @@ CuResult cu_compute_pipeline_create(
         .basePipelineIndex = 0,
     };
     return vk_result_to_cu_result(vkCreateComputePipelines(
-        gContext.device, VK_NULL_HANDLE, 1, &createInfo, nullptr, (VkPipeline*)pComputePipeline
+        gContext._device, VK_NULL_HANDLE, 1, &createInfo, nullptr, (VkPipeline*)pComputePipeline
     ));
 }
 
 void cu_compute_pipeline_destroy(
     CuComputePipeline computePipeline)
 {
-    vkDestroyPipeline(gContext.device, (VkPipeline)computePipeline, nullptr);
+    vkDestroyPipeline(gContext._device, (VkPipeline)computePipeline, nullptr);
 }
 
 CuResult cu_graphics_pipeline_create(
@@ -273,12 +267,12 @@ CuResult cu_graphics_pipeline_create(
         .basePipelineIndex = -1,
     };
     return vk_result_to_cu_result(vkCreateGraphicsPipelines(
-        gContext.device, VK_NULL_HANDLE, 1, &createInfo, NULL, (VkPipeline*)pGrahicsPipeline
+        gContext._device, VK_NULL_HANDLE, 1, &createInfo, NULL, (VkPipeline*)pGrahicsPipeline
     ));
 }
 
 void cu_graphics_pipeline_destroy(
     const CuGraphicsPipeline graphicsPipeline)
 {
-    vkDestroyPipeline(gContext.device, (VkPipeline)graphicsPipeline, nullptr);
+    vkDestroyPipeline(gContext._device, (VkPipeline)graphicsPipeline, nullptr);
 }

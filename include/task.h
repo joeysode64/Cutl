@@ -1,6 +1,6 @@
 #pragma once
 
-#include "inner.h"
+#include "def.h"
 #include "result.h"
 
 #include <stdint.h>

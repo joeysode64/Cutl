@@ -62,7 +62,7 @@ void cu_arena_destroy(
     CuArena* const pArena)
 {
     for (size_t i = 0; i < CU_N_ARENA_ALLOCATOR_SLOTS; i++) {
-        vkFreeMemory(gContext.device, pArena->_slots[i]._memory, nullptr);
+        vkFreeMemory(gContext._device, pArena->_slots[i]._memory, nullptr);
     }
 }
 
@@ -81,7 +81,7 @@ CuResult arena_allocate(
     }
 
     uint32_t mMemoryTypes = find_memory_types(
-        &gContext.physicalDeviceInfo.memoryInfo,
+        &gContext._memoryInfo,
         mRequired,
         mPreferred,
         pRequirements->memoryTypeBits);
@@ -156,9 +156,9 @@ CuResult allocate_slot(
 {
     CuArenaSlot* const pSlot = &pArena->_slots[i];
 
-    cu_try_vk(allocate_memory(&pSlot->_memory, gContext.device, pArena->_size, i));
-    if (ones_overlap(gContext.physicalDeviceInfo.memoryInfo.mHostVisible, 1u << i)) {
-        cu_try_vk(vkMapMemory(gContext.device, pSlot->_memory, 0, pArena->_size, 0, &pSlot->_pData));
+    cu_try_vk(allocate_memory(&pSlot->_memory, gContext._device, pArena->_size, i));
+    if (ones_overlap(gContext._memoryInfo._mHostVisible, 1u << i)) {
+        cu_try_vk(vkMapMemory(gContext._device, pSlot->_memory, 0, pArena->_size, 0, &pSlot->_pData));
     }
     pSlot->_used = 0;
 

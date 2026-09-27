@@ -2,7 +2,7 @@
 
 #include "allocation.h"
 #include "buffer.h"
-#include "inner.h"
+#include "def.h"
 #include "result.h"
 
 #include <stddef.h>

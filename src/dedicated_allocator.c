@@ -20,16 +20,16 @@ CuResult dedicated_allocator_allocate(
     (void)_pAllocator;
 
     const uint32_t mMemoryTypes = find_memory_types(
-        &gContext.physicalDeviceInfo.memoryInfo,
+        &gContext._memoryInfo,
         mRequired, mPreferred,
         pRequirements->memoryTypeBits);
     const uint32_t iMemoryType = __builtin_ctz(mMemoryTypes);
 
     VkDeviceMemory memory = VK_NULL_HANDLE;
-    cu_try_vk(allocate_memory(&memory, gContext.device, pRequirements->size, iMemoryType));
+    cu_try_vk(allocate_memory(&memory, gContext._device, pRequirements->size, iMemoryType));
 
     if (ppData != nullptr) {
-        cu_try_vk(vkMapMemory(gContext.device, memory, 0, pRequirements->size, 0, ppData));
+        cu_try_vk(vkMapMemory(gContext._device, memory, 0, pRequirements->size, 0, ppData));
     }
 
     pAllocation->_memory = memory;
@@ -44,7 +44,7 @@ void dedicated_allocator_free(
 {
     (void)_pAllocator;
 
-    vkFreeMemory(gContext.device, pAllocation->_memory, nullptr);
+    vkFreeMemory(gContext._device, pAllocation->_memory, nullptr);
 }
 
 const CuAllocatorFns CU_DEDICATED_ALLOCATOR_FNS = {

@@ -20,6 +20,21 @@ typedef struct CuFrame_T CuFrame;
 
 typedef struct CuRenderer_T CuRenderer;
 
+/// @brief A physical device's memory type info.
+typedef struct CuPhysicalDeviceMemoryInfo_T {
+    /// @brief A bitmask of the device local memory types.
+    uint32_t _mDeviceLocal;
+
+    /// @brief A bitmask of the host visible memory types.
+    uint32_t _mHostVisible;
+
+    /// @brief A bitmask of the host coherent memory types.
+    uint32_t _mHostCoherent;
+
+    /// @brief A bitmask of the host cached memory types.
+    uint32_t _mHostCached;
+} CuPhysicalDeviceMemoryInfo;
+
 /// @brief A swapchain's information.
 typedef struct CuSwapchainInfo_T {
     /// @brief The swapchain handle.

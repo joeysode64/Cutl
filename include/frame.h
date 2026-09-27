@@ -1,6 +1,6 @@
 #pragma once
 
-#include "inner.h"
+#include "def.h"
 
 /// @brief A renderer frame.
 struct CuFrame_T {

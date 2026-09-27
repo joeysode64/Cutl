@@ -1,23 +1,10 @@
 #pragma once
 
+#include "def.h"
 #include "result.h"
+
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-
-/// @brief A physical device/s memory type info.
-typedef struct PhysicalDeviceMemoryInfo_T {
-    /// @brief A bitmask of the device local memory types.
-    uint32_t mDeviceLocal;
-
-    /// @brief A bitmask of the host visible memory types.
-    uint32_t mHostVisible;
-
-    /// @brief A bitmask of the host coherent memory types.
-    uint32_t mHostCoherent;
-
-    /// @brief A bitmask of the host cached memory types.
-    uint32_t mHostCached;
-} PhysicalDeviceMemoryInfo;
 
 /// @brief A physical device's info.
 typedef struct PhysicalDeviceInfo_T {
@@ -25,7 +12,7 @@ typedef struct PhysicalDeviceInfo_T {
     VkPhysicalDevice handle;
 
     /// @brief The memory info.
-    PhysicalDeviceMemoryInfo memoryInfo;
+    CuPhysicalDeviceMemoryInfo memoryInfo;
 
     /// @brief The first queue family index that supports compute, graphics, transfer, and
     /// presentation.
@@ -34,7 +21,7 @@ typedef struct PhysicalDeviceInfo_T {
 
 /// @brief Returns a bitmask of the best-fit memory types.
 uint32_t find_memory_types(
-    const PhysicalDeviceMemoryInfo* pMemoryInfo,
+    const CuPhysicalDeviceMemoryInfo* pMemoryInfo,
     VkMemoryPropertyFlags mRequired,
     VkMemoryPropertyFlags mPreferred,
     uint32_t mAllowed);

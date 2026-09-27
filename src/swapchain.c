@@ -1,12 +1,11 @@
 #include "swapchain.h"
 
 #include "enumerator.h"
-#include "inner.h"
-#include "result.h"
+#include "def.h"
+#include "g_context.h"
 #include "util.h"
 #include "vk.h"
 #include "window.h"
-#include <vulkan/vulkan_core.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -22,33 +21,28 @@ static VkExtent2D get_extent(
 /// @brief Chooses the surface format best suited for the swapchain.
 static VkResult choose_surface_format(
     VkSurfaceFormatKHR* pSurfaceFormat,
-    VkSurfaceKHR surface,
-    VkPhysicalDevice physicalDevice);
+    VkSurfaceKHR surface);
 
 /// @brief Chooses the present mode best suited for the swapchain.
 static VkResult choose_present_mode(
     VkPresentModeKHR* pPresentMode,
-    VkSurfaceKHR surface,
-    VkPhysicalDevice physicalDevice);
+    VkSurfaceKHR surface);
 
 VkResult create_swapchain(
     CuSwapchainInfo* const pSwapchainInfo,
     uint32_t* const pnSwapchainImages,
     const uint32_t minSwapchainImages,
-    const VkInstance instance,
-    const VkDevice device,
-    const VkPhysicalDevice physicalDevice,
     const CuWindow* const pWindow,
     const VkSwapchainKHR oldSwapchain)
 {
     VkSurfaceKHR surface = VK_NULL_HANDLE;
-    vk_try(glfwCreateWindowSurface(instance, pWindow->_handle, nullptr, &surface));
+    vk_try(glfwCreateWindowSurface(gContext._instance, pWindow->_handle, nullptr, &surface));
     VkSurfaceCapabilitiesKHR capabilities = {};
-    vk_try(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &capabilities));
+    vk_try(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gContext._physicalDevice, surface, &capabilities));
     VkSurfaceFormatKHR surfaceFormat = {};
-    vk_try(choose_surface_format(&surfaceFormat, surface, physicalDevice));
+    vk_try(choose_surface_format(&surfaceFormat, surface));
     VkPresentModeKHR presentMode = 0;
-    vk_try(choose_present_mode(&presentMode, surface, physicalDevice));
+    vk_try(choose_present_mode(&presentMode, surface));
     const VkExtent2D extent = get_extent(&capabilities, pWindow);
 
     const VkSwapchainCreateInfoKHR createInfo = {
@@ -71,10 +65,10 @@ VkResult create_swapchain(
         .clipped = VK_TRUE,
         .oldSwapchain = oldSwapchain,
     };
-    vk_try(vkCreateSwapchainKHR(device, &createInfo, nullptr, &pSwapchainInfo->_handle));
+    vk_try(vkCreateSwapchainKHR(gContext._device, &createInfo, nullptr, &pSwapchainInfo->_handle));
 
     vk_try(vkGetSwapchainImagesKHR(
-        device, pSwapchainInfo->_handle, pnSwapchainImages, nullptr));
+        gContext._device, pSwapchainInfo->_handle, pnSwapchainImages, nullptr));
 
     pSwapchainInfo->_surface = surface;
     pSwapchainInfo->_format = surfaceFormat.format;
@@ -87,19 +81,18 @@ VkResult create_swapchain(
 VkResult create_swapchain_images(
     CuSwapchainImage* const pSwapchainImages,
     uint32_t nSwapchainImages,
-    const VkDevice device,
     const CuSwapchainInfo* const pSwapchainInfo)
 {
     VkImage images[nSwapchainImages];
-    vk_try(vkGetSwapchainImagesKHR(device, pSwapchainInfo->_handle, &nSwapchainImages, images));
+    vk_try(vkGetSwapchainImagesKHR(gContext._device, pSwapchainInfo->_handle, &nSwapchainImages, images));
 
     for (uint32_t i = 0; i < nSwapchainImages; i++) {
         CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
 
         vk_try(create_image_view(
-            &pSwapchainImage->_imageView, device, images[i], pSwapchainInfo->_format));
+            &pSwapchainImage->_imageView, gContext._device, images[i], pSwapchainInfo->_format));
         vk_try(create_semaphore(
-            &pSwapchainImage->_renderFinished, device, VK_SEMAPHORE_TYPE_BINARY, 0));
+            &pSwapchainImage->_renderFinished, gContext._device, VK_SEMAPHORE_TYPE_BINARY, 0));
         pSwapchainImage->_image = images[i];
     }
 
@@ -108,14 +101,13 @@ VkResult create_swapchain_images(
 
 void destroy_swapchain_images(
     CuSwapchainImage* const pSwapchainImages,
-    const uint32_t nSwapchainImages,
-    const VkDevice device)
+    const uint32_t nSwapchainImages)
 {
     for (uint32_t i = 0; i < nSwapchainImages; i++) {
         const CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
 
-        vkDestroyImageView(device, pSwapchainImage->_imageView, nullptr);
-        vkDestroySemaphore(device, pSwapchainImage->_renderFinished, nullptr);
+        vkDestroyImageView(gContext._device, pSwapchainImage->_imageView, nullptr);
+        vkDestroySemaphore(gContext._device, pSwapchainImage->_renderFinished, nullptr);
     }
 }
 
@@ -143,11 +135,10 @@ VkExtent2D get_extent(
 
 VkResult choose_surface_format(
     VkSurfaceFormatKHR* const pSurfaceFormat,
-    const VkSurfaceKHR surface,
-    const VkPhysicalDevice physicalDevice)
+    const VkSurfaceKHR surface)
 {
     Enumerator(VkSurfaceFormatKHR) surfaceFormats ENUMERATOR_AUTO_FREE = {};
-    enumerate_vk(surfaceFormats, vkGetPhysicalDeviceSurfaceFormatsKHR, physicalDevice, surface);
+    enumerate_vk(surfaceFormats, vkGetPhysicalDeviceSurfaceFormatsKHR, gContext._physicalDevice, surface);
 
     *pSurfaceFormat = surfaceFormats.p[0];
     for (uint32_t i = 0; i < surfaceFormats.n; i++) {
@@ -167,11 +158,10 @@ VkResult choose_surface_format(
 
 VkResult choose_present_mode(
     VkPresentModeKHR* const pPresentMode,
-    const VkSurfaceKHR surface,
-    const VkPhysicalDevice physicalDevice)
+    const VkSurfaceKHR surface)
 {
     Enumerator(VkPresentModeKHR) presentModes ENUMERATOR_AUTO_FREE = {};
-    enumerate_vk(presentModes, vkGetPhysicalDeviceSurfacePresentModesKHR, physicalDevice, surface);
+    enumerate_vk(presentModes, vkGetPhysicalDeviceSurfacePresentModesKHR, gContext._physicalDevice, surface);
 
     *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
     for (uint32_t i = 0; i < presentModes.n; i++) {

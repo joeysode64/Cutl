@@ -1,7 +1,7 @@
 #pragma once
 
 #include "allocation.h"
-#include "inner.h"
+#include "def.h"
 #include "result.h"
 
 #include <stddef.h>

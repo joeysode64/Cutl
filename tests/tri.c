@@ -2,16 +2,16 @@
 #include "test.h"
 
 int main() {
-    query(cu_context_init(nullptr));
+    query(cu_context_init(&CU_DEFAULT_CONTEXT_CREATE_INFO));
 
     CuWindow window = {};
     query(cu_window_create(&window, 800, 450, "Initialization Test"));
 
     CuRenderer renderer = {};
-    query(cu_renderer_create(&renderer, nullptr, &window));
+    query(cu_renderer_create(&renderer, &CU_DEFAULT_RENDERER_CREATE_INFO, &window));
 
     CuPipelineLayout pipelineLayout = {};
-    query(cu_pipeline_layout_create(&pipelineLayout, nullptr));
+    query(cu_pipeline_layout_create(&pipelineLayout, &CU_DEFAULT_PIPELINE_LAYOUT_CREATE_INFO));
 
     CuSpirV vert = {};
     query(cu_spirv_read_from_file(&vert, "tests/shaders/tri.vert.spv"));

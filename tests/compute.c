@@ -6,7 +6,7 @@
 #define N 64
 
 int main() {
-    query(cu_context_init(nullptr));
+    query(cu_context_init(&CU_DEFAULT_CONTEXT_CREATE_INFO));
 
     const CuPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {
         .pushConstantSize = sizeof(CuDeviceAddress),

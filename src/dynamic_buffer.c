@@ -43,7 +43,7 @@ void cu_dynamic_buffer_destroy(
     CuDynamicBuffer* const pDynamicBuffer,
     const CuAllocationMode mode)
 {
-    vkDestroyBuffer(gContext.device, pDynamicBuffer->_buffer, nullptr);
+    vkDestroyBuffer(gContext._device, pDynamicBuffer->_buffer, nullptr);
     mode_free(&pDynamicBuffer->_allocation, mode);
 }
 
