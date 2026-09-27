@@ -3,7 +3,6 @@
 #include "format.h"
 
 #include <stdint.h>
-#include <vulkan/vulkan_core.h>
 
 #if (VK_USE_64_BIT_PTR_DEFINES == 1) || (SIZE_MAX == UINT64_MAX)
 /// @brief Maps a non-dispatchable Vulkan type name to its defined Vulkan type.

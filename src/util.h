@@ -115,7 +115,7 @@ static inline CuResult mode_allocate(
     CuAllocation* pAllocation,
     void** ppData,
     CuAllocationMode mode,
-    const VkMemoryRequirements* pRequirements,
+    const CuMemoryRequirements* pRequirements,
     uint32_t mRequired,
     uint32_t mPreferred)
 {

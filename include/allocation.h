@@ -17,6 +17,10 @@ typedef struct CuAllocation_T {
 /// @brief A GPU memory allocator.
 typedef void CuAllocator;
 
+/// @brief Memory allocation requirements.
+/// @note Alias for `VkMemoryRequirements`.
+typedef struct VkMemoryRequirements CuMemoryRequirements;
+
 /// @brief An allocator's allocate callback.
 /// @param [out] pAllocation A pointer to the allocation.
 /// @param [out] ppData A pointer to the mapped memory. Ignored if null.
@@ -29,7 +33,7 @@ typedef CuResult(*CuAllocateFn)(
     CuAllocation* pAllocation,
     void** ppData,
     CuAllocator* pAllocator,
-    const VkMemoryRequirements* pRequirements,
+    const CuMemoryRequirements* pRequirements,
     uint32_t mRequired,
     uint32_t mPreferred);
 
