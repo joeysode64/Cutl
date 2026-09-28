@@ -8,6 +8,12 @@
 #include <vulkan/vulkan.h>
 
 /// @brief Create a swapchain.
+/// @param pSwapchainInfo A pointer to the swapchain info.
+/// @param pnSwapchain Images A pointer to the number of swapchain images.
+/// @param minSwapchainImages The minimum number of swapchain images.
+/// @param pWindow A pointer to the target window, or null for headless.
+/// @param oldSwapchain The old swapchain handle, or null for none.
+/// @return The result of creating the swapchain.
 CuResult create_swapchain(
     CuSwapchainInfo* pSwapchainInfo,
     uint32_t* pnSwapchainImages,

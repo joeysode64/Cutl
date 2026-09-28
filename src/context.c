@@ -36,6 +36,7 @@ constexpr uint32_t CUTL_VK_VERSION =
 /// @brief The instance extensions.
 static const char* INSTANCE_EXTENSIONS[] = {
     "VK_KHR_surface",
+    "VK_EXT_headless_surface",
 #if ON_APPLE
     "VK_EXT_metal_surface",
     "VK_KHR_portability_enumeration",
@@ -122,8 +123,8 @@ void cu_context_wait_for_idle()
 
 VkResult create_vk_instance(
     const char* const appName,
-    const uint32_t appVersion
-) {
+    const uint32_t appVersion)
+{
     const VkApplicationInfo appInfo = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pNext = nullptr,
@@ -148,7 +149,8 @@ VkResult create_vk_instance(
     return vkCreateInstance(&createInfo, nullptr, &gContext._instance);
 }
 
-VkResult create_device() {
+VkResult create_device()
+{
     const float queuePriorities[] = { 1.0F };
     const VkDeviceQueueCreateInfo queueCreateInfos[] = {
         {

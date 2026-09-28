@@ -15,10 +15,16 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-/// @return The extent best fit for the window.
+/// @brief Creates a headless surface.
+/// @param pSurface A pointer to the surface.
+/// @return The result of the surface's creation.
+static VkResult create_headless_surface(
+    VkSurfaceKHR* pSurface);
+
+/// @return The extent clamped into the capabilities' range.
 static VkExtent2D get_extent(
     const VkSurfaceCapabilitiesKHR* pCapabilities,
-    const CuWindow* pWindow);
+    VkExtent2D preferred);
 
 /// @brief Chooses the surface format best suited for the swapchain.
 static CuResult choose_surface_format(
@@ -30,6 +36,12 @@ static CuResult choose_present_mode(
     VkPresentModeKHR* pPresentMode,
     VkSurfaceKHR surface);
 
+/// @brief The preffered extent for a headless surface's swapchain.
+constexpr VkExtent2D PREFERRED_HEADLESS_EXTENT = {
+    .width = 1280,
+    .height = 720,
+};
+
 CuResult create_swapchain(
     CuSwapchainInfo* const pSwapchainInfo,
     uint32_t* const pnSwapchainImages,
@@ -37,8 +49,13 @@ CuResult create_swapchain(
     const CuWindow* const pWindow,
     const VkSwapchainKHR oldSwapchain)
 {
+    const bool headless = pWindow == nullptr;
     VkSurfaceKHR surface = VK_NULL_HANDLE;
-    cu_try_vk(glfwCreateWindowSurface(gContext._instance, pWindow->_handle, nullptr, &surface));
+    if (headless) {
+        cu_try_vk(create_headless_surface(&surface));
+    } else {
+        cu_try_vk(glfwCreateWindowSurface(gContext._instance, pWindow->_handle, nullptr, &surface));
+    }
     VkSurfaceCapabilitiesKHR capabilities = {};
     cu_try_vk(
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gContext._physicalDevice, surface, &capabilities));
@@ -46,7 +63,10 @@ CuResult create_swapchain(
     cu_try(choose_surface_format(&surfaceFormat, surface));
     VkPresentModeKHR presentMode = 0;
     cu_try(choose_present_mode(&presentMode, surface));
-    const VkExtent2D extent = get_extent(&capabilities, pWindow);
+    const VkExtent2D preferred = headless
+        ? PREFERRED_HEADLESS_EXTENT
+        : (VkExtent2D){ .width = pWindow->_w, .height = pWindow->_h };
+    const VkExtent2D extent = get_extent(&capabilities, preferred);
 
     const VkSwapchainCreateInfoKHR createInfo = {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
@@ -116,9 +136,22 @@ void destroy_swapchain_images(
     }
 }
 
+VkResult create_headless_surface(
+    VkSurfaceKHR* pSurface)
+{
+    const VkHeadlessSurfaceCreateInfoEXT createInfo = {
+        .sType = VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT,
+        .pNext = nullptr,
+        .flags = 0,
+    };
+    const auto fCreateHeadlessSurface = (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(
+            gContext._instance, "vkCreateHeadlessSurfaceEXT");
+    return fCreateHeadlessSurface(gContext._instance, &createInfo, nullptr, pSurface);
+}
+
 VkExtent2D get_extent(
     const VkSurfaceCapabilitiesKHR* const pCapabilities,
-    const CuWindow* const pWindow)
+    const VkExtent2D preferred)
 {
     const bool isExtentDefined = (pCapabilities->currentExtent.width != UINT32_MAX) ||
         (pCapabilities->currentExtent.height != UINT32_MAX);
@@ -127,11 +160,11 @@ VkExtent2D get_extent(
     } else {
         return (VkExtent2D){
             .width = clamp(
-                pWindow->_w,
+                preferred.width,
                 pCapabilities->minImageExtent.width,
                 pCapabilities->maxImageExtent.width),
             .height = clamp(
-                pWindow->_h,
+                preferred.height,
                 pCapabilities->minImageExtent.height,
                 pCapabilities->maxImageExtent.height),
         };

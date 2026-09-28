@@ -1,10 +1,8 @@
 #pragma once
 
 #include "allocation.h"
-#include "result.h"
 
 #include <stdint.h>
-#include <vulkan/vulkan.h>
 
 /// @brief The dedicated allocator allocation callback functions.
 extern const CuAllocatorFns CU_DEDICATED_ALLOCATOR_FNS;
