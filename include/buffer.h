@@ -1,22 +1,34 @@
 #pragma once
 
+#include "def.h"
+
 #include <stdint.h>
 
-/// @brief A command buffer.
-/// @note This is any type that can be dereferenced as a `CuDeviceAddress` (`VkDeviceAddress`).
-typedef void CuBuffer;
+/**
+ * @brief A buffer handle.
+ * @note An alias to `VkBuffer`.
+ */
+typedef CuVkHandle CuBuffer;
 
-/// @brief A buffer's device address.
-typedef uint64_t CuDeviceAddress;
+/**
+ * @brief A buffer device address.
+ * @note An alias to `VkDeviceAddress`.
+ */
+typedef uint64_t CuBufferAddress;
 
-/// @brief Gets a buffer's device address.
-/// @param [in] pBuffer A pointer to the buffer.
-/// @return The buffer's device address.
-inline static CuDeviceAddress cu_buffer_get_address(
-    CuBuffer* pBuffer)
-{
-    return *(CuDeviceAddress*)pBuffer;
-}
+/**
+ * @brief Returns the buffer's buffer handle.
+ * @param [in] pBuffer A pointer to the buffer.
+ * @return The buffer's handle.
+ */
+#define cu_buffer_get(pBuffer) ((pBuffer)->_buffer)
+
+/**
+ * @brief Returns the buffer's address.
+ * @param [in] pBuffer A pointer to the buffer.
+ * @return The buffer's address.
+ */
+#define cu_buffer_get_address(pBuffer) ((pBuffer)->_address)
 
 /// @brief Buffer usage bitmap flags.
 typedef enum : int32_t {

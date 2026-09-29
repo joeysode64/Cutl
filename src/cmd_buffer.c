@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 /// @return The dereferenced command buffer.
 #define deref(p) (*(VkCommandBuffer*)p)
@@ -55,4 +56,30 @@ void cu_cmd_write_push_constants(
     vkCmdPushConstants(
         deref(commandBuffer), (VkPipelineLayout)pipelineLayout, VK_SHADER_STAGE_ALL, o, z, p
     );
+}
+
+void cu_cmd_buffer_copy(
+    CuCmdBuffer commandBuffer,
+    CuBuffer dst,
+    size_t oDst,
+    CuBuffer src,
+    size_t oSrc,
+    size_t z)
+{
+    const VkBufferCopy2 region = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_COPY_2,
+        .pNext = nullptr,
+        .srcOffset = oSrc,
+        .dstOffset = oDst,
+        .size = z,
+    };
+    const VkCopyBufferInfo2 copyInfo = {
+        .sType = VK_STRUCTURE_TYPE_COPY_BUFFER_INFO_2,
+        .pNext = nullptr,
+        .srcBuffer = src,
+        .dstBuffer = dst,
+        .regionCount = 1,
+        .pRegions = &region,
+    };
+    vkCmdCopyBuffer2(deref(commandBuffer), &copyInfo);
 }

@@ -13,6 +13,8 @@
 #include "renderer.h"
 #include "result.h"
 #include "spirv.h"
+#include "staging_buffer.h"
+#include "static_buffer.h"
 #include "task.h"
 #include "version.h"
 #include "window.h"

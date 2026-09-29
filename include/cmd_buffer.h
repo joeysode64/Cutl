@@ -1,7 +1,9 @@
 #pragma once
 
+#include "buffer.h"
 #include "pipeline.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 /// @brief A command buffer.
@@ -58,3 +60,20 @@ void cu_cmd_write_push_constants(
     const void* p,
     size_t z,
     size_t o);
+
+/**
+ * @brief Copies data from one buffer to another.
+ * @param [in, out] commandBuffer The command buffer.
+ * @param dst The destination buffer.
+ * @param oDst The write offset.
+ * @param src The source buffer.
+ * @param oSrc The read offset.
+ * @param z The size of the data to copy.
+ */
+void cu_cmd_buffer_copy(
+    CuCmdBuffer commandBuffer,
+    CuBuffer dst,
+    size_t oDst,
+    CuBuffer src,
+    size_t oSrc,
+    size_t z);

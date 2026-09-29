@@ -50,7 +50,7 @@ void cu_dynamic_buffer_destroy(
 void cu_dynamic_buffer_get_data_frame(
     CuDynamicBuffer* const pDynamicBuffer,
     void** const ppData,
-    CuDeviceAddress* const pDeviceAddress,
+    CuBufferAddress* const pDeviceAddress,
     const size_t i)
 {
     const size_t offset = pDynamicBuffer->_z * i;

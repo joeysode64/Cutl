@@ -10,7 +10,7 @@
 /// @brief A dynamic buffer.
 typedef struct CuDynamicbuffer_T {
     /// @brief The buffer's device address.
-    CuDeviceAddress _address;
+    CuBufferAddress _address;
 
     /// @brief The buffer memory allocation.
     CuAllocation _allocation;
@@ -57,5 +57,5 @@ void cu_dynamic_buffer_destroy(
 void cu_dynamic_buffer_get_data_frame(
     CuDynamicBuffer* pDynamicBuffer,
     void** ppData,
-    CuDeviceAddress* pDeviceAddress,
+    CuBufferAddress* pDeviceAddress,
     size_t i);

@@ -5,11 +5,17 @@
 #include <stdint.h>
 
 #if (VK_USE_64_BIT_PTR_DEFINES == 1) || (SIZE_MAX == UINT64_MAX)
-/// @brief Maps a non-dispatchable Vulkan type name to its defined Vulkan type.
-#define cu_vk_t(t) struct Vk##t##_T*
+    /// @brief Maps a non-dispatchable Vulkan type name to its defined Vulkan type.
+    #define cu_vk_t(t) struct Vk##t##_T*
+
+    /** @brief A Vulkan handle. */
+    typedef void* CuVkHandle;
 #else
-/// @brief Maps a non-dispatchable Vulkan type name to its defined Vulkan type.
-#define cu_vk_t(t) uint64_t
+    /// @brief Maps a non-dispatchable Vulkan type name to its defined Vulkan type.
+    #define cu_vk_t(t) uint64_t
+
+    /** @brief A Vulkan handle. */
+    typedef uint64_t CuVkHandle;
 #endif
 
 /// @brief Maps a dispatchable Vulkan type name to its defined Vulkan type.
