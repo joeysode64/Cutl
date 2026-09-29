@@ -3,7 +3,8 @@
 #include "renderer.h"
 #include "test.h"
 
-int main() {
+int main()
+{
     query(cu_context_init(&CU_DEFAULT_CONTEXT_CREATE_INFO));
 
     CuRenderer renderer = {};

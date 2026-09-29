@@ -11,6 +11,7 @@ layout(push_constant) uniform PushConstants {
 
 layout(location = 0) out vec3 vPos;
 
-void main() {
+void main()
+{
 	gl_Position = vec4(pc.vertices.positions[gl_VertexIndex].xy, 0.0, 1.0);
 }

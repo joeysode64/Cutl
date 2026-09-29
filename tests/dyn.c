@@ -9,7 +9,8 @@ typedef struct {
     float y;
 } Vertex;
 
-int main() {
+int main()
+{
     query(cu_context_init(&CU_DEFAULT_CONTEXT_CREATE_INFO));
 
     CuWindow window = {};
@@ -19,7 +20,7 @@ int main() {
     query(cu_renderer_create(&renderer, &CU_DEFAULT_RENDERER_CREATE_INFO, &window));
 
     const CuPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {
-        .pushConstantSize = sizeof(CuDeviceAddress),
+        .pushConstantSize = sizeof(CuBufferAddress),
     };
     CuPipelineLayout pipelineLayout = {};
     query(cu_pipeline_layout_create(&pipelineLayout, &pipelineLayoutCreateInfo));
@@ -54,7 +55,7 @@ int main() {
         cu_window_update(&window);
 
         void* pData = nullptr;
-        CuDeviceAddress address = 0;
+        CuBufferAddress address = 0;
         cu_dynamic_buffer_get_data_frame(
             &vertexBuffer, &pData, &address, cu_renderer_get_frame_index(&renderer));
 

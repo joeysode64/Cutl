@@ -5,11 +5,12 @@
 
 #define N 64
 
-int main() {
+int main()
+{
     query(cu_context_init(&CU_DEFAULT_CONTEXT_CREATE_INFO));
 
     const CuPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {
-        .pushConstantSize = sizeof(CuDeviceAddress),
+        .pushConstantSize = sizeof(CuBufferAddress),
     };
     CuPipelineLayout pipelineLayout = {};
     query(cu_pipeline_layout_create(&pipelineLayout, &pipelineLayoutCreateInfo));
@@ -30,7 +31,7 @@ int main() {
         CU_DEDICATED_ALLOCATOR_MODE));
 
     void* pData = nullptr;
-    CuDeviceAddress address = 0;
+    CuBufferAddress address = 0;
     cu_dynamic_buffer_get_data_frame(&buffer, &pData, &address, 0);
 
     float* values = (float*)pData;
