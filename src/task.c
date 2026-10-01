@@ -33,7 +33,7 @@ FAIL:
 void cu_task_destroy(
     CuTask* const pTask)
 {
-    cu_task_await(pTask, UINT_MAX);
+    cu_task_await(pTask, UINT64_MAX);
     vkDestroyFence(gContext._device, pTask->_taskFinished, nullptr);
     vkFreeCommandBuffers(gContext._device, gContext._commandPool, 1, &pTask->_commandBuffer);
 }

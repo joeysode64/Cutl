@@ -1,3 +1,4 @@
+#include "context.h"
 #include "cutl.h"
 #include "test.h"
 
@@ -60,6 +61,7 @@ int main()
             values[i]);
     }
 
+    cu_context_wait_for_idle();
     cu_task_destroy(&task);
     cu_dynamic_buffer_destroy(&buffer, CU_DEDICATED_ALLOCATOR_MODE);
     cu_compute_pipeline_destroy(computePipeline);

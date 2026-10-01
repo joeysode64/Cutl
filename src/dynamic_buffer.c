@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 CuResult cu_dynamic_buffer_create(
     CuDynamicBuffer* const pDynamicBuffer,
@@ -26,7 +27,7 @@ CuResult cu_dynamic_buffer_create(
         n * z,
         usage | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
         mode,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
         0));
     pDynamicBuffer->_address = get_buffer_device_address(pDynamicBuffer->_buffer);
     pDynamicBuffer->_n = n;

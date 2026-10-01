@@ -1,4 +1,5 @@
 #include "cutl.h"
+#include "pipeline.h"
 #include "test.h"
 
 #include <math.h>
@@ -81,7 +82,8 @@ int main()
 
     cu_context_wait_for_idle();
     cu_dynamic_buffer_destroy(&vertexBuffer, CU_DEDICATED_ALLOCATOR_MODE);
-
+    cu_graphics_pipeline_destroy(graphicsPipeline);
+    cu_pipeline_layout_destroy(pipelineLayout);
     cu_renderer_destroy(&renderer);
     cu_window_destroy(&window);
     cu_context_terminate();

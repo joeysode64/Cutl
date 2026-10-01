@@ -1,3 +1,4 @@
+#include "context.h"
 #include "cutl.h"
 #include "test.h"
 
@@ -45,6 +46,9 @@ int main()
         cu_renderer_submit_frame(&renderer, pFrame);
     }
 
+    cu_context_wait_for_idle();
+    cu_graphics_pipeline_destroy(graphicsPipeline);
+    cu_pipeline_layout_destroy(pipelineLayout);
     cu_renderer_destroy(&renderer);
     cu_window_destroy(&window);
     cu_context_terminate();

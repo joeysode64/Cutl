@@ -67,13 +67,16 @@ CuResult create_swapchain(
         ? PREFERRED_HEADLESS_EXTENT
         : (VkExtent2D){ .width = pWindow->_w, .height = pWindow->_h };
     const VkExtent2D extent = get_extent(&capabilities, preferred);
-
+    const uint32_t nSwapchainImages = clamp(
+        minSwapchainImages,
+        capabilities.minImageCount,
+        capabilities.maxImageCount);
     const VkSwapchainCreateInfoKHR createInfo = {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         .pNext = nullptr,
         .flags = 0,
         .surface = surface,
-        .minImageCount = minSwapchainImages,
+        .minImageCount = nSwapchainImages,
         .imageFormat = surfaceFormat.format,
         .imageColorSpace = surfaceFormat.colorSpace,
         .imageExtent = extent,

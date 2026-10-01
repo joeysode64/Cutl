@@ -286,10 +286,12 @@ VkResult create_device()
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
         .pNext = (void*)&features14,
         .synchronization2 = VK_TRUE,
+        .dynamicRendering = VK_TRUE,
     };
     const VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
         .pNext = (void*)&features13,
+        .timelineSemaphore = VK_TRUE,
         .bufferDeviceAddress = VK_TRUE,
     };
     const VkPhysicalDeviceVulkan11Features features11 = {
@@ -320,7 +322,7 @@ VkResult create_command_pool()
     const VkCommandPoolCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         .pNext = nullptr,
-        .flags = 0,
+        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
         .queueFamilyIndex = gContext._iQueueFamily,
     };
     return vkCreateCommandPool(gContext._device, &createInfo, nullptr, &gContext._commandPool);

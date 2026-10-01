@@ -3,6 +3,7 @@
 #include "renderer.h"
 
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 void cu_frame_begin_render(
     CuFrame* const pFrame,
@@ -43,14 +44,14 @@ void cu_frame_begin_render(
     const VkImageMemoryBarrier2 imageBarrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
         .pNext = nullptr,
-        .srcStageMask = VK_PIPELINE_STAGE_2_NONE,
+        .srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
         .srcAccessMask = VK_ACCESS_2_NONE,
         .dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
         .dstAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
         .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
         .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        .srcQueueFamilyIndex = 0,
-        .dstQueueFamilyIndex = 0,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .image = pSwapchainImage->_image,
         .subresourceRange = subresourceRange,
     };
@@ -122,8 +123,8 @@ void cu_frame_end_render(
         .dstAccessMask = VK_ACCESS_2_NONE,
         .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-        .srcQueueFamilyIndex = 0,
-        .dstQueueFamilyIndex = 0,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .image = pRenderer->_pSwapchainImages[pRenderer->_iSwapchainImage]._image,
         .subresourceRange = subresourceRange,
     };

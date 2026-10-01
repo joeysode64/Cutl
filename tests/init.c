@@ -10,6 +10,7 @@ int main()
     CuRenderer renderer = {};
     query(cu_renderer_create(&renderer, &CU_DEFAULT_RENDERER_CREATE_INFO, nullptr));
 
+    cu_context_wait_for_idle();
     cu_renderer_destroy(&renderer);
     cu_context_terminate();
 
