@@ -47,96 +47,112 @@ namespace cu
             return Vec2{y, x};
         }
 
-        constexpr Vec2<T> operator+(const Vec2<T> rhs) const
+        constexpr Vec2<T> operator+(
+            const Vec2<T> rhs) const
         {
             return Vec2{x + rhs.x, y + rhs.y};
         }
 
-        constexpr Vec2<T> operator-(const Vec2<T> rhs) const
+        constexpr Vec2<T> operator-(
+            const Vec2<T> rhs) const
         {
             return Vec2{x - rhs.x, y - rhs.y};
         }
 
-        constexpr Vec2<T> operator*(const Vec2<T> rhs) const
+        constexpr Vec2<T> operator*(
+            const Vec2<T> rhs) const
         {
             return Vec2{x * rhs.x, y * rhs.y};
         }
 
-        constexpr Vec2<T> operator/(const Vec2<T> rhs) const
+        constexpr Vec2<T> operator/(
+            const Vec2<T> rhs) const
         {
             return Vec2{x / rhs.x, y / rhs.y};
         }
 
-        constexpr Vec2<T> operator+(const T rhs) const
+        constexpr Vec2<T> operator+(
+            const T rhs) const
         {
             return Vec2{x + rhs, y + rhs};
         }
 
-        constexpr Vec2<T> operator-(const T rhs) const
+        constexpr Vec2<T> operator-(
+            const T rhs) const
         {
             return Vec2{x - rhs, y - rhs};
         }
 
-        constexpr Vec2<T> operator*(const T rhs) const
+        constexpr Vec2<T> operator*(
+            const T rhs) const
         {
             return Vec2{x * rhs, y * rhs};
         }
 
-        constexpr Vec2<T> operator/(const T rhs) const
+        constexpr Vec2<T> operator/(
+            const T rhs) const
         {
             return Vec2{x / rhs, y / rhs};
         }
 
-        constexpr Vec2<T>& operator+=(const Vec2<T> rhs)
+        constexpr Vec2<T>& operator+=(
+            const Vec2<T> rhs)
         {
             x += rhs.x;
             y += rhs.y;
             return *this;
         }
 
-        constexpr Vec2<T>& operator-=(const Vec2<T> rhs)
+        constexpr Vec2<T>& operator-=(
+            const Vec2<T> rhs)
         {
             x -= rhs.x;
             y -= rhs.y;
             return *this;
         }
 
-        constexpr Vec2<T>& operator*=(const Vec2<T> rhs)
+        constexpr Vec2<T>& operator*=(
+            const Vec2<T> rhs)
         {
             x *= rhs.x;
             y *= rhs.y;
             return *this;
         }
 
-        constexpr Vec2<T>& operator/=(const Vec2<T> rhs)
+        constexpr Vec2<T>& operator/=(
+            const Vec2<T> rhs)
         {
             x /= rhs.x;
             y /= rhs.y;
             return *this;
         }
 
-        constexpr Vec2<T>& operator+=(const T rhs)
+        constexpr Vec2<T>& operator+=(
+            const T rhs)
         {
             x += rhs;
             y += rhs;
             return *this;
         }
 
-        constexpr Vec2<T>& operator-=(const T rhs)
+        constexpr Vec2<T>& operator-=(
+            const T rhs)
         {
             x -= rhs;
             y -= rhs;
             return *this;
         }
 
-        constexpr Vec2<T>& operator*=(const T rhs)
+        constexpr Vec2<T>& operator*=(
+            const T rhs)
         {
             x *= rhs;
             y *= rhs;
             return *this;
         }
 
-        constexpr Vec2<T>& operator/=(const T rhs)
+        constexpr Vec2<T>& operator/=(
+            const T rhs)
         {
             x /= rhs;
             y /= rhs;
