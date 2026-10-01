@@ -110,6 +110,12 @@
         goto FAIL;                                                                                 \
     }
 
+/// @brief Asserts the given expression is true, and if it's not, returns the given value.
+#define cu_assert(e, r)                                                                            \
+    if (!(e)) {                                                                                    \
+        return (r);                                                                                \
+    }
+
 /// @brief Asserts the given expression is true, and if it's not, sets the local `CuResult result`
 /// to the error and jumps to `FAIL`.
 #define cu_assert_catch(e, r)                                                                      \

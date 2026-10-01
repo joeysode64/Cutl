@@ -1,7 +1,6 @@
 #pragma once
 
 #include "def.h"
-#include "def.h"
 #include "result.h"
 #include "version.h"
 
@@ -13,8 +12,8 @@ typedef struct CuContext_T {
     /// @brief The Vulkan instance handle.
     cu_vk_dispatch_t(Instance) _instance;
 
-    /// @brief The physical device info.
-    cu_vk_dispatch_t(PhysicalDevice) _physicalDeviceInfo;
+    /// @brief The (optional) debug messenger handle.
+    cu_vk_t(DebugUtilsMessengerEXT) _debugMessenger;
 
     /// @brief The physical device handle.
     cu_vk_dispatch_t(PhysicalDevice) _physicalDevice;
@@ -45,6 +44,9 @@ typedef struct CuContextCreateInfo_T {
 
     /// @brief The application version. Default is v0.0.0.
     CuVersion appVersion;
+
+    /// @brief Whether to enable validation layers.
+    bool enableValidation;
 } CuContextCreateInfo;
 
 /// @brief The default context create info.
@@ -54,7 +56,14 @@ constexpr CuContextCreateInfo CU_DEFAULT_CONTEXT_CREATE_INFO = {
         .major = 0,
         .minor = 0,
         .patch = 0,
+        .tweak = 0,
     },
+    .enableValidation =
+#if defined(NDEBUG)
+        false,
+#else
+        true,
+#endif
 };
 
 /// @brief Returns a pointer to the global GPU context.

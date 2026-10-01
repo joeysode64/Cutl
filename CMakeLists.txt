@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(
     Cutl
-    VERSION 0.9.1.1
+    VERSION 0.10.0.0
     LANGUAGES C)
 
 set(CMAKE_C_STANDARD 23)
@@ -20,7 +20,7 @@ add_library(
 
 target_compile_options(
     cutl
-    PRIVATE -Wall -Wextra -Wpedantic -Werror -g)
+    PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
 target_link_libraries(
     cutl
