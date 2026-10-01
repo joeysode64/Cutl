@@ -11,9 +11,13 @@
 /** @brief The Cutl version patch. */
 #define CU_VERSION_PATCH @PROJECT_VERSION_PATCH@
 
+/** @brief The Cutl version tweak. */
+#define CU_VERSION_TWEAK @PROJECT_VERSION_TWEAK@
+
 /** @brief The Cutl version. */
 constexpr CuVersion CU_VERSION = {
     .major = CU_VERSION_MAJOR,
     .minor = CU_VERSION_MINOR,
     .patch = CU_VERSION_PATCH,
+    .tweak = CU_VERSION_TWEAK,
 };

@@ -2,14 +2,13 @@
 
 #include <stdint.h>
 
-/// @brief A version.
+/** @brief A version. */
 typedef struct CuVersion_T {
-    /// @brief The version major.
-    uint16_t major;
+    uint16_t major; /**< The version major. */
 
-    /// @brief The version minor.
-    uint16_t minor;
+    uint16_t minor; /**< The version minor */
 
-    /// @brief The version patch.
-    uint16_t patch;
+    uint16_t patch; /**< The version patch. */
+
+    uint16_t tweak; /**< The version tweak. */
 } CuVersion;
