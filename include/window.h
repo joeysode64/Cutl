@@ -19,6 +19,10 @@ typedef struct CuWindow_T {
     bool _shouldClose;
 } CuWindow;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// @brief Creates the window.
 /// @param [out] pWindow A pointer to the window.
 /// @param w The window's width.
@@ -59,3 +63,7 @@ uint32_t cu_window_get_height(
 /// @return Whether the window should close.
 bool cu_window_should_close(
     const CuWindow* pWindow);
+
+#ifdef __cplusplus
+}
+#endif

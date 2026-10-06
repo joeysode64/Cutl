@@ -33,6 +33,10 @@ typedef struct CuArena_T {
     size_t _size;
 } CuArena;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// @brief The arena allocator allocation callback functions.
 extern const CuAllocatorFns CU_ARENA_ALLOCATOR_FNS;
 
@@ -60,3 +64,7 @@ static inline CuAllocationMode cu_arena_mode(
         ._pFns = &CU_ARENA_ALLOCATOR_FNS,
     };
 }
+
+#ifdef __cplusplus
+}
+#endif

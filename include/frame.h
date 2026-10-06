@@ -11,6 +11,10 @@ struct CuFrame_T {
     cu_vk_t(Semaphore) _imageAvailable;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// @brief Starts rendering to the renderer's target.
 /// @param [in, out] pFrame A pointer to the frame.
 /// @param [in, out] pRenderer A pointer to the renderer.
@@ -24,3 +28,7 @@ void cu_frame_begin_render(
 void cu_frame_end_render(
     CuFrame* pFrame,
     CuRenderer* pRenderer);
+
+#ifdef __cplusplus
+}
+#endif

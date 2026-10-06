@@ -66,6 +66,10 @@ constexpr CuContextCreateInfo CU_DEFAULT_CONTEXT_CREATE_INFO = {
 #endif
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// @brief Returns a pointer to the global GPU context.
 /// @return A pointer to the global GPU Context.
 CuContext* cu_context_get();
@@ -82,3 +86,7 @@ void cu_context_terminate();
 
 /// @brief Waits for the context to idle.
 void cu_context_wait_for_idle();
+
+#ifdef __cplusplus
+}
+#endif

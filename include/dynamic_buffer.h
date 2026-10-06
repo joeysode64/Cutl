@@ -28,6 +28,10 @@ typedef struct CuDynamicbuffer_T {
     size_t _z;
 } CuDynamicBuffer;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// @brief Creates the dynamic buffer.
 /// @param [out] pDynamicBuffer A pointer to the dynamic buffer.
 /// @param n The number of data frames to have.
@@ -59,3 +63,7 @@ void cu_dynamic_buffer_get_data_frame(
     void** ppData,
     CuBufferAddress* pDeviceAddress,
     size_t i);
+
+#ifdef __cplusplus
+}
+#endif

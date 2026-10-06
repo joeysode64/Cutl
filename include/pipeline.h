@@ -20,39 +20,8 @@ static const CuPipelineLayoutCreateInfo CU_DEFAULT_PIPELINE_LAYOUT_CREATE_INFO =
     .pushConstantSize = 0,
 };
 
-/// @brief Creates the pipeline layout.
-/// @param [out] pPipelineLayout A pointer to the pipeline layout.
-/// @param pCreateInfo A pointer to the create info.
-/// @return The result of the pipeline layout's creation.
-CuResult cu_pipeline_layout_create(
-    CuPipelineLayout* pPipelineLayout,
-    const CuPipelineLayoutCreateInfo* pCreateInfo);
-
-/// @brief Destroys the pipeline layout.
-/// @param pipelineLayout The pipeline layout.
-void cu_pipeline_layout_destroy(
-    CuPipelineLayout pipelineLayout);
-
-
 /// @brief A compute pipeline.
 typedef cu_vk_t(Pipeline) CuComputePipeline;
-
-/// @brief Creates the compute pipeline.
-/// @param [out] pComputePipeline A pointer to the graphics pipeline.
-/// @param pipelineLayout The pipeline layout to use.
-/// @param pCode A pointer to the compute SPIR-V code.
-/// @param n The number of SPIR-V words in the compute shader code.
-/// @return The result of the compute pipeline's creation.
-CuResult cu_compute_pipeline_create(
-    CuComputePipeline* pComputePipeline,
-    CuPipelineLayout pipelineLayout,
-    const uint32_t* pCode,
-    size_t n);
-
-/// @brief Destroys the compute pipeline.
-/// @param computePipeline The compute pipeline to destroy.
-void cu_compute_pipeline_destroy(
-    CuComputePipeline computePipeline);
 
 
 /// @brief A graphics pipeline.
@@ -79,6 +48,40 @@ typedef struct {
     size_t nFormats;
 } CuGraphicsPipelineCreateInfo;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/// @brief Creates the pipeline layout.
+/// @param [out] pPipelineLayout A pointer to the pipeline layout.
+/// @param pCreateInfo A pointer to the create info.
+/// @return The result of the pipeline layout's creation.
+CuResult cu_pipeline_layout_create(
+    CuPipelineLayout* pPipelineLayout,
+    const CuPipelineLayoutCreateInfo* pCreateInfo);
+
+/// @brief Destroys the pipeline layout.
+/// @param pipelineLayout The pipeline layout.
+void cu_pipeline_layout_destroy(
+    CuPipelineLayout pipelineLayout);
+
+/// @brief Creates the compute pipeline.
+/// @param [out] pComputePipeline A pointer to the graphics pipeline.
+/// @param pipelineLayout The pipeline layout to use.
+/// @param pCode A pointer to the compute SPIR-V code.
+/// @param n The number of SPIR-V words in the compute shader code.
+/// @return The result of the compute pipeline's creation.
+CuResult cu_compute_pipeline_create(
+    CuComputePipeline* pComputePipeline,
+    CuPipelineLayout pipelineLayout,
+    const uint32_t* pCode,
+    size_t n);
+
+/// @brief Destroys the compute pipeline.
+/// @param computePipeline The compute pipeline to destroy.
+void cu_compute_pipeline_destroy(
+    CuComputePipeline computePipeline);
+
 /// @brief Creates the graphics pipeline.
 /// @param [out] pGraphicsPipeline A pointer to the graphics pipeline to create.
 /// @param pCreateInfo A pointer to the create info.
@@ -93,3 +96,7 @@ CuResult cu_graphics_pipeline_create(
 /// @param graphicsPipeline The graphics pipeline to destroy.
 void cu_graphics_pipeline_destroy(
     CuGraphicsPipeline graphicsPipeline);
+
+#ifdef __cplusplus
+}
+#endif

@@ -14,6 +14,10 @@ typedef struct CuSpirv_T {
     uint32_t* data;
 } CuSpirV;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// @brief Reads the SPIR-V from a file into an object.
 /// @param [out] pSpirV A pointer to the SPIR-V object..
 /// @param path The source file path.
@@ -26,3 +30,7 @@ CuResult cu_spirv_read_from_file(
 /// @param pSpirV A pointer to the SPIR-V object to destroy.
 void cu_spirv_destroy(
     CuSpirV* pSpirV);
+
+#ifdef __cplusplus
+}
+#endif

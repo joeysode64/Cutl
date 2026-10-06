@@ -15,6 +15,10 @@ typedef struct CuStagingBuffer_T {
     CuAllocation _allocation; /**< The buffer memory allocation. */
 } CuStagingBuffer;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Creates a staging buffer.
  * @param [out] pStagingBuffer A pointer to the staging buffer.
@@ -48,3 +52,7 @@ void cu_staging_buffer_copy(
     const void* p,
     size_t z,
     size_t o);
+
+#ifdef __cplusplus
+}
+#endif

@@ -10,6 +10,10 @@
 /// @note This is any type that can be dereferenced as a `VkCommandBuffer`.
 typedef void* CuCmdBuffer;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// @brief Binds the graphics pipeline.
 /// @param [in, out] commandBuffer The command buffer.
 /// @param graphicsPipeline The graphics pipeline.
@@ -77,3 +81,7 @@ void cu_cmd_buffer_copy(
     CuBuffer src,
     size_t oSrc,
     size_t z);
+
+#ifdef __cplusplus
+}
+#endif

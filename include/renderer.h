@@ -53,6 +53,10 @@ constexpr CuRendererCreateInfo CU_DEFAULT_RENDERER_CREATE_INFO = {
     .minSwapchainImages = 3,
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// @brief Creates the renderer.
 /// @param [in] pRenderer A pointer to the renderer.
 /// @param pCreateInfo A pointer to the create info.
@@ -103,3 +107,7 @@ inline static uint32_t cu_renderer_get_frame_index(
 {
     return (uint32_t)pRenderer->_frameCounter % pRenderer->_nFramesInFlight;
 }
+
+#ifdef __cplusplus
+}
+#endif

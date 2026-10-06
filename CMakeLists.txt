@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(
     Cutl
-    VERSION 0.10.2.0
-    LANGUAGES C)
+    VERSION 0.10.4.0
+    LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_CXX_STANDARD 20)
@@ -44,7 +44,8 @@ target_include_directories(
 
 file(
     GLOB TEST_SOURCES
-    ${CMAKE_SOURCE_DIR}/tests/*.c)
+    ${CMAKE_SOURCE_DIR}/tests/*.c
+    ${CMAKE_SOURCE_DIR}/tests/*.cc)
 
 foreach(test_file ${TEST_SOURCES})
     get_filename_component(
@@ -82,7 +83,7 @@ foreach(shader_file ${TEST_SHADERS})
         OUTPUT ${shader_output}
         COMMAND glslc ${shader_file} -o ${shader_output}
         DEPENDS ${shader_file}
-        COMMENT "Compiling shader ${shader_name}")
+        COMMENT "Compiling shader `${shader_name}`")
     
     list(APPEND COMPILED_SHADERS ${shader_output})
 endforeach()
@@ -91,8 +92,7 @@ if(COMPILED_SHADERS)
     add_custom_target(
         test_shaders
         ALL DEPENDS ${COMPILED_SHADERS})
-    
-    file(GLOB TEST_SOURCES "${CMAKE_SOURCE_DIR}/tests/*.c")
+
     foreach(test_file ${TEST_SOURCES})
         get_filename_component(
             test_name

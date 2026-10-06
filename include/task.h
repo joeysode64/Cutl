@@ -15,6 +15,10 @@ typedef struct CuTask_T {
     cu_vk_t(Fence) _taskFinished;
 } CuTask;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// @brief Creates a task.
 /// @param [out] pTask A pointer to the task.
 /// @return The result of creating the task.
@@ -50,3 +54,7 @@ bool cu_task_is_running(
 void cu_task_await(
     CuTask* pTask,
     uint64_t timeout);
+
+#ifdef __cplusplus
+}
+#endif

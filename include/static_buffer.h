@@ -16,6 +16,10 @@ typedef struct CuStaticBuffer_T {
     CuAllocation _allocation; /**< The buffe's allocation. */
 } CuStaticBuffer;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Creates a static buffer.
  * @param [out] pStaticBuffer A pointer to the static buffer.
@@ -37,3 +41,7 @@ CuResult cu_static_buffer_create(
 void cu_static_buffer_destroy(
     CuStaticBuffer* pStaticBuffer,
     CuAllocationMode mode);
+
+#ifdef __cplusplus
+}
+#endif
