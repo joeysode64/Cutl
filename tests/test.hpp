@@ -15,7 +15,7 @@
                 " Error running `%s` on line #%i: %u:%i\n",                                        \
                 #e,                                                                                \
                 __LINE__,                                                                          \
-                _r.type(),                                                                         \
+                static_cast<uint32_t>(_r.type()),                                                  \
                 _r.value()                                                                         \
             );                                                                                     \
             exit(EXIT_FAILURE);                                                                    \

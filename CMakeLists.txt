@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(
     Cutl
-    VERSION 0.10.4.0
+    VERSION 0.10.5.0
     LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 23)
@@ -26,7 +26,6 @@ target_compile_options(
 target_link_libraries(
     cutl
     PRIVATE glfw Vulkan::Vulkan)
-
 
 configure_file(
     ${CMAKE_SOURCE_DIR}/include/info.h.in
@@ -55,6 +54,10 @@ foreach(test_file ${TEST_SOURCES})
     add_executable(
         ${test_name}
         ${test_file})
+
+    target_compile_options(
+        ${test_name}
+        PRIVATE -Wall -Wextra -Wpedantic -Werror -g)
 
     target_link_libraries(
         ${test_name}
