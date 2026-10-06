@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 project(
     Cutl
-    VERSION 0.10.1.0
+    VERSION 0.10.2.0
     LANGUAGES C)
 
 set(CMAKE_C_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 
 find_package(glfw3 REQUIRED)
 find_package(Vulkan REQUIRED)
