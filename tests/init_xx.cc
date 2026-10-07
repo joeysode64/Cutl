@@ -8,7 +8,7 @@ int main()
     query(Context::init());
 
     Renderer renderer{};
-    query(Renderer::create(renderer, nullptr));
+    query(Renderer::create(renderer));
 
     success();
 }

@@ -1,6 +1,4 @@
-#include "context.h"
 #include "cutl.h"
-#include "renderer.h"
 #include "test.h"
 
 int main()
