@@ -1,8 +1,9 @@
 #pragma once
 
+#include "def.h"
 #include "renderer.h"
 #include "result.hpp"
-#include "window.h"
+#include "window.hpp"
 
 namespace cu
 {
@@ -33,16 +34,45 @@ namespace cu
         /**
          * @brief Creates the renderer.
          * @param [out] renderer The renderer to create.
-         * @param pWindow A pointer to the window.
          * @param createInfo The create info. Ignore for default.
          * @return The result of creating the renderer.
          */
         static inline Result create(
             Renderer& renderer,
-            const CuWindow* pWindow,
             const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
-            return cu_renderer_create(&renderer.me, &createInfo, pWindow);
+            return cu_renderer_create(&renderer.me, &createInfo, nullptr);
+        }
+
+        /**
+         * @brief Creates the renderer.
+         * @param [out] renderer The renderer to create.
+         * @param window The target window.
+         * @param createInfo The create info. Ignore for default.
+         * @return The result of creating the renderer.
+         */
+        static inline Result create(
+            Renderer& renderer,
+            const Window& window,
+            const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
+        {
+            return cu_renderer_create(&renderer.me, &createInfo, &window.get());
+        }
+
+        /**
+         * @brief Returns the renderer.
+         * @return The renderer.
+         */
+        constexpr CuRenderer& get() {
+            return me;
+        }
+
+        /**
+         * @brief Returns the renderer.
+         * @return The renderer.
+         */
+        constexpr const CuRenderer& get() const {
+            return me;
         }
 
         /**
