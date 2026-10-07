@@ -49,20 +49,29 @@ void cu_window_update(
 /// @brief Returns the window's framebuffer width.
 /// @param [in] pWindow A pointer to the window.
 /// @return The window's width.
-uint32_t cu_window_get_width(
-    const CuWindow* pWindow);
+static inline uint32_t cu_window_get_width(
+    const CuWindow* pWindow)
+{
+    return pWindow->_w;
+}
 
 /// @brief Returns the window's framebuffer height.
 /// @param [in] pWindow A pointer to the window.
 /// @return The window's height.
-uint32_t cu_window_get_height(
-    const CuWindow* pWindow);
+static inline uint32_t cu_window_get_height(
+    const CuWindow* pWindow)
+{
+    return pWindow->_h;
+}
 
 /// @brief Returns whether the window should close.
 /// @param [in] pWindow A pointer to the window.
 /// @return Whether the window should close.
-bool cu_window_should_close(
-    const CuWindow* pWindow);
+static inline bool cu_window_should_close(
+    const CuWindow* pWindow)
+{
+    return pWindow->_shouldClose;
+}
 
 #ifdef __cplusplus
 }

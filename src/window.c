@@ -51,21 +51,3 @@ void cu_window_update(
 
     pWindow->_shouldClose = glfwWindowShouldClose(pWindow->_handle);
 }
-
-uint32_t cu_window_get_width(
-    const CuWindow* const pWindow)
-{
-    return pWindow->_w;
-}
-
-uint32_t cu_window_get_height(
-    const CuWindow* const pWindow)
-{
-    return pWindow->_h;
-}
-
-bool cu_window_should_close(
-    const CuWindow* const pWindow)
-{
-    return pWindow->_shouldClose;
-}
