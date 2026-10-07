@@ -33,6 +33,15 @@ typedef struct CuContext_T {
     /// @brief The index of the queue family.
     uint32_t _iQueueFamily;
 
+    /// @brief The descriptor pool handle.
+    cu_vk_t(DescriptorPool) _descriptorPool;
+
+    /// @brief The descriptor set layout handle.
+    cu_vk_t(DescriptorSetLayout) _descriptorSetLayout;
+
+    /// @brief The descriptor set handle.
+    cu_vk_t(DescriptorSet) _descriptorSet;
+
     /// @brief Whether the context is fully initialized.
     bool _isInitialized;
 } CuContext;
@@ -44,6 +53,15 @@ typedef struct CuContextCreateInfo_T {
 
     /// @brief The application version. Default is v0.0.0.
     CuVersion appVersion;
+
+    /// @brief The number of sampled image descriptors. Default is 16 (spec minimum).
+    uint32_t nSampledImageDescriptors;
+
+    /// @brief The number of descriptor samplers to. Default is 16 (spec minimum).
+    uint32_t nSamplerDescriptors;
+
+    /// @brief the number of storage image descriptors. Default is 4 (spec minimum).
+    uint32_t nStorageImageDescriptors;
 
     /// @brief Whether to enable validation layers.
     bool enableValidation;
@@ -58,6 +76,9 @@ constexpr CuContextCreateInfo CU_DEFAULT_CONTEXT_CREATE_INFO = {
         .patch = 0,
         .tweak = 0,
     },
+    .nSampledImageDescriptors = 16,
+    .nSamplerDescriptors = 16,
+    .nStorageImageDescriptors = 4,
     .enableValidation =
 #if defined(NDEBUG)
         false,

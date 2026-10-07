@@ -48,13 +48,35 @@ static VkResult create_debug_messenger();
 
 /// @brief Creates the global context's logical device.
 /// @return The result of creating the device.
-/// @warning This requires the context's device and physical device info to be initialized.
 static VkResult create_device();
 
 /// @brief Creates the global context's command pool.
 /// @return The result of creating the command pool.
-/// @warning This requires the context's device and physical device info to be initialized.
 static VkResult create_command_pool();
+
+/// @brief Creates the global context's descriptor pool.
+/// @param nSamplerDescriptors The number of sampler descriptors.
+/// @param nSampledImageDescriptors The number of sampled image descriptors.
+/// @param nStorageImageDescriptors The number of storage image descriptors.
+/// @return The result of creating the descriptor pool.
+static VkResult create_descriptor_pool(
+    uint32_t nSamplerDescriptors,
+    uint32_t nSampledImageDescriptors,
+    uint32_t nStorageImageDescriptors);
+
+/// @brief Creates the global context's descriptor set layout.
+/// @param nSamplerDescriptors The number of sampler descriptors.
+/// @param nSampledImageDescriptors The number of sampled image descriptors.
+/// @param nStorageImageDescriptors The number of storage image descriptors.
+/// @return the result of creating the descriptor set layout.
+static VkResult create_descriptor_set_layout(
+    uint32_t nSamplerDescriptors,
+    uint32_t nSampledImageDescriptors,
+    uint32_t nStorageImageDescriptors);
+
+/// @brief Creates the global context's descriptor set.
+/// @return The result of creating the descriptor set.
+static VkResult allocate_descriptor_set();
 
 /// @brief The Cutl version in Vulkan format.
 constexpr uint32_t CUTL_VK_VERSION =
@@ -149,6 +171,15 @@ CuResult cu_context_init(
         0,
         &gContext._queue
     );
+    cu_try_catch_vk(create_descriptor_pool(
+        pCreateInfo->nSampledImageDescriptors,
+        pCreateInfo->nSamplerDescriptors,
+        pCreateInfo->nStorageImageDescriptors));
+    cu_try_catch_vk(create_descriptor_set_layout(
+        pCreateInfo->nSampledImageDescriptors,
+        pCreateInfo->nSamplerDescriptors,
+        pCreateInfo->nStorageImageDescriptors));
+    cu_try_catch_vk(allocate_descriptor_set());
 
     gContext._isInitialized = true;
     return CU_SUCCESS;
@@ -164,6 +195,8 @@ void cu_context_terminate()
 
     if (gContext._device != VK_NULL_HANDLE) {
         vkDeviceWaitIdle(gContext._device);
+        vkDestroyDescriptorSetLayout(gContext._device, gContext._descriptorSetLayout, nullptr);
+        vkDestroyDescriptorPool(gContext._device, gContext._descriptorPool, nullptr);
         vkDestroyCommandPool(gContext._device, gContext._commandPool, nullptr);
         vkDestroyDevice(gContext._device, nullptr);
     }
@@ -291,6 +324,12 @@ VkResult create_device()
     const VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
         .pNext = (void*)&features13,
+        .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
+        .descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
+        .descriptorBindingStorageImageUpdateAfterBind = VK_TRUE,
+        .descriptorBindingUpdateUnusedWhilePending = VK_TRUE,
+        .descriptorBindingPartiallyBound = VK_TRUE,
+        .runtimeDescriptorArray = VK_TRUE,
         .timelineSemaphore = VK_TRUE,
         .bufferDeviceAddress = VK_TRUE,
     };
@@ -326,4 +365,100 @@ VkResult create_command_pool()
         .queueFamilyIndex = gContext._iQueueFamily,
     };
     return vkCreateCommandPool(gContext._device, &createInfo, nullptr, &gContext._commandPool);
+}
+
+VkResult create_descriptor_pool(
+    const uint32_t nSampledImageDescriptors,
+    const uint32_t nSamplerDescriptors,
+    const uint32_t nStorageImageDescriptors)
+{
+    const VkDescriptorPoolSize poolSizes[] = {
+        {
+            .type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+            .descriptorCount = nSampledImageDescriptors,
+        },
+        {
+            .type = VK_DESCRIPTOR_TYPE_SAMPLER,
+            .descriptorCount = nSamplerDescriptors,
+        },
+        {
+            .type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+            .descriptorCount = nStorageImageDescriptors,
+        },
+    };
+    constexpr uint32_t nPoolSizes = arr_len(poolSizes);
+    const VkDescriptorPoolCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
+        .maxSets = 1,
+        .poolSizeCount = nPoolSizes,
+        .pPoolSizes = poolSizes,
+    };
+    return vkCreateDescriptorPool(gContext._device, &createInfo, nullptr, &gContext._descriptorPool);
+}
+
+VkResult create_descriptor_set_layout(
+    const uint32_t nSampledImageDescriptors,
+    const uint32_t nSamplerDescriptors,
+    const uint32_t nStorageImageDescriptors)
+{
+    const VkDescriptorSetLayoutBinding bindings[] = {
+        {
+            .binding = 0,
+            .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+            .descriptorCount = nSampledImageDescriptors,
+            .stageFlags = VK_SHADER_STAGE_ALL,
+            .pImmutableSamplers = nullptr,
+        },
+        {
+            .binding = 1,
+            .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
+            .descriptorCount = nSamplerDescriptors,
+            .stageFlags = VK_SHADER_STAGE_ALL,
+            .pImmutableSamplers = nullptr,
+        },
+        {
+            .binding = 2,
+            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+            .descriptorCount = nStorageImageDescriptors,
+            .stageFlags = VK_SHADER_STAGE_ALL,
+            .pImmutableSamplers = nullptr,
+        },
+    };
+    constexpr uint32_t nBindings = arr_len(bindings);
+    constexpr VkDescriptorBindingFlags flags = 
+        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
+        VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT |
+        VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+    const VkDescriptorBindingFlags bindingFlags[nBindings] = {
+        flags, flags, flags,
+    };
+    const VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo = {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+        .pNext = nullptr,
+        .bindingCount = nBindings,
+        .pBindingFlags = bindingFlags,
+    };
+    const VkDescriptorSetLayoutCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        .pNext = &bindingFlagsCreateInfo,
+        .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
+        .bindingCount = nBindings,
+        .pBindings = bindings,
+    };
+    return vkCreateDescriptorSetLayout(
+        gContext._device, &createInfo, nullptr, &gContext._descriptorSetLayout);
+}
+
+VkResult allocate_descriptor_set()
+{
+    const VkDescriptorSetAllocateInfo allocateInfo = {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        .pNext = nullptr,
+        .descriptorPool = gContext._descriptorPool,
+        .descriptorSetCount = 1,
+        .pSetLayouts = &gContext._descriptorSetLayout,
+    };
+    return vkAllocateDescriptorSets(gContext._device, &allocateInfo, &gContext._descriptorSet);
 }
