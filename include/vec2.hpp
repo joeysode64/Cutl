@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 namespace cu
 {
     /** @brief A 2-dimensional vector. */
@@ -18,7 +20,6 @@ namespace cu
 
         /**
          * @brief Creates a vector with the given x and y value.
-         *
          * @param xy The x and y value.
          */
         constexpr Vec2(
@@ -30,7 +31,6 @@ namespace cu
 
         /**
          * @brief Creates a vector with the given x and y value.
-         *
          * @param x The x value.
          * @param y The y value.
          */
@@ -40,6 +40,32 @@ namespace cu
             : x{x}, y{y}
         {
 
+        }
+
+        /**
+         * @brief Returns the cross product of the two vectors.
+         * @param rhs The other vector.
+         * @return The cross product of the two vectors.
+         */
+        constexpr T dot(
+            const Vec2<T> rhs) const
+        {
+            return (x * rhs.x) + (y * rhs.y);
+        }
+
+        /**
+         * @brief Returns the vector's magnitude squared.
+         * @return The vector's magnitude squared.
+         */
+        constexpr T mag_sqr() const
+        {
+            return (x * x) + (y * y);
+        }
+
+        template<typename U>
+        explicit constexpr operator Vec2<U>() const
+        {
+            return Vec2<U>{static_cast<U>(x), static_cast<U>(y)};
         }
 
         constexpr Vec2<T> operator~() const
@@ -159,4 +185,10 @@ namespace cu
             return *this;
         }
     };
+
+    using Vec2F = Vec2<float>;
+
+    using Vec2I = Vec2<int32_t>;
+
+    using Vec2U = Vec2<uint32_t>;
 }

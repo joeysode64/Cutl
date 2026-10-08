@@ -2,6 +2,8 @@
 
 #include "vec2.hpp"
 
+#include <stdint.h>
+
 namespace cu
 {
     /** @brief A 2-dimensional vector. */
@@ -49,11 +51,11 @@ namespace cu
         /**
          * @brief Creates a vector with the given x y and z value.
          * @param xy The x and y values.
-         * @param z The z value.
+         * @param z The z value. Ignore for 0.
          */
         constexpr Vec3(
             const Vec2<T> xy,
-            const T z)
+            const T z = {})
             : x{xy.x}, y{xy.y}, z{z}
         {
 
@@ -70,6 +72,37 @@ namespace cu
             : x{x}, y{yz.y}, z{yz.z}
         {
 
+        }
+
+        /**
+         * @brief Returns the cross product of the two vectors.
+         * @param rhs The other vector.
+         * @return The cross product of the two vectors.
+         */
+        constexpr T dot(
+            const Vec3<T> rhs) const 
+        {
+            return (x * rhs.x) + (y * rhs.y) + (z * rhs.z);
+        }
+
+        /**
+         * @brief Returns the vector's magnitude squared.
+         * @return The vector's magnitude squared.
+         */
+        constexpr T mag_sqr() const
+        {
+            return (x * x) + (y * y) + (z * z);
+        }
+
+        constexpr operator Vec2<T>() const
+        {
+            return Vec2{x, y};
+        }
+
+        template<typename U>
+        explicit constexpr operator Vec3<U>() const
+        {
+            return Vec3<U>{static_cast<U>(x), static_cast<U>(y), static_cast<U>(z)};
         }
 
         constexpr Vec3<T> operator+(
@@ -248,4 +281,10 @@ namespace cu
             return *this;
         }
     };
+
+    using Vec3F = Vec3<float>;
+
+    using Vec3I = Vec3<int32_t>;
+
+    using Vec3U = Vec3<uint32_t>;
 }
