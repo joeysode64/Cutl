@@ -1,13 +1,9 @@
+#define CU_INCLUDE_MATH
 #include "cutl.h"
 #include "test.h"
 
 #include <math.h>
 #include <string.h>
-
-typedef struct {
-    float x;
-    float y;
-} Vertex;
 
 int main()
 {
@@ -46,7 +42,7 @@ int main()
     query(cu_dynamic_buffer_create(
         &vertexBuffer,
         CU_DEFAULT_RENDERER_CREATE_INFO.maxFramesInFlight,
-        3 * sizeof(Vertex),
+        3 * sizeof(vec2),
         CU_BUFFER_VERTEX_BUFFER,
         CU_DEDICATED_ALLOCATOR_MODE));
     float angle = 0.0F;
@@ -59,7 +55,7 @@ int main()
         cu_dynamic_buffer_get_data_frame(
             &vertexBuffer, &pData, &address, cu_renderer_get_frame_index(&renderer));
 
-        const Vertex vertices[3] = {
+        const vec2 vertices[3] = {
             { -1.0F, -1.0F },
             { 1.0F, -1.0F },
             { cosf(angle), sinf(angle) },

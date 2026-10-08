@@ -1,3 +1,4 @@
+#define CU_INCLUDE_MATH
 #include "cutl.h"
 #include "test.h"
 
@@ -8,13 +9,9 @@
 #define N_VERTICES (3 * N_TRIANGLES)
 
 typedef struct {
-    float x;
-    float y;
-    float _pad[2];
-    float r;
-    float g;
-    float b;
-    float a;
+    vec2 pos;
+    vec2 _pad;
+    vec4 color;
 } Vertex;
 
 static float rand_f(
@@ -27,12 +24,12 @@ static float rand_f(
 static Vertex rand_v()
 {
     return (Vertex){
-        .x = rand_f(-1.0F, 1.0F),
-        .y = rand_f(-1.0F, 1.0F),
-        .r = rand_f(0.1F, 1.0F),
-        .g = rand_f(0.1F, 1.0F),
-        .b = rand_f(0.1F, 1.0F),
-        .a = 1.0F,
+        .pos.x = rand_f(-1.0F, 1.0F),
+        .pos.y = rand_f(-1.0F, 1.0F),
+        .color.x = rand_f(0.1F, 1.0F),
+        .color.y = rand_f(0.1F, 1.0F),
+        .color.z = rand_f(0.1F, 1.0F),
+        .color.w = 1.0F,
     };
 }
 

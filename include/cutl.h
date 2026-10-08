@@ -18,3 +18,7 @@
 #include "task.h"
 #include "version.h"
 #include "window.h"
+
+#ifdef CU_INCLUDE_MATH
+    #include "mdef.h"
+#endif
