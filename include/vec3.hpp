@@ -1,0 +1,251 @@
+#pragma once
+
+#include "vec2.hpp"
+
+namespace cu
+{
+    /** @brief A 2-dimensional vector. */
+    template<typename T>
+    struct Vec3 {
+        T x; /**< The x factor. */
+
+        T y; /**< The y factor. */
+
+        T z; /**< The z factor. */
+
+        /** @brief Creates a vector with an x and y of 0. */
+        constexpr Vec3()
+            : x{}, y{}, z{}
+        {
+
+        }
+
+        /**
+         * @brief Creates a vector with the given x y and z value.
+         * @param xyz The x y and z value.
+         */
+        constexpr Vec3(
+            const T xyz)
+            : x{xyz}, y{xyz}, z{xyz}
+        {
+
+        }
+
+        /**
+         * @brief Creates a vector with the given x y and z value.
+         * @param x The x value.
+         * @param y The y value.
+         * @param z The z value.
+         */
+        constexpr Vec3(
+            const T x,
+            const T y,
+            const T z)
+            : x{x}, y{y}, z{z}
+        {
+
+        }
+
+        /**
+         * @brief Creates a vector with the given x y and z value.
+         * @param xy The x and y values.
+         * @param z The z value.
+         */
+        constexpr Vec3(
+            const Vec2<T> xy,
+            const T z)
+            : x{xy.x}, y{xy.y}, z{z}
+        {
+
+        }
+
+        /**
+         * @brief Creates a vector with the given x y and z value.
+         * @param x The x value.
+         * @param yz The y and z value.
+         */
+        constexpr Vec3(
+            const T x,
+            const Vec2<T> yz)
+            : x{x}, y{yz.y}, z{yz.z}
+        {
+
+        }
+
+        constexpr Vec3<T> operator+(
+            const Vec3<T> rhs) const
+        {
+            return Vec3{x + rhs.x, y + rhs.y, z + rhs.z};
+        }
+
+        constexpr Vec3<T> operator-(
+            const Vec3<T> rhs) const
+        {
+            return Vec3{x - rhs.x, y - rhs.y, z - rhs.z};
+        }
+
+        constexpr Vec3<T> operator*(
+            const Vec3<T> rhs) const
+        {
+            return Vec3{x * rhs.x, y * rhs.y, z * rhs.z};
+        }
+
+        constexpr Vec3<T> operator/(
+            const Vec3<T> rhs) const
+        {
+            return Vec3{x / rhs.x, y / rhs.y, z / rhs.z};
+        }
+
+        constexpr Vec3<T> operator+(
+            const Vec2<T> rhs) const
+        {
+            return Vec3{x + rhs.x, y + rhs.y, z};
+        }
+
+        constexpr Vec3<T> operator-(
+            const Vec2<T> rhs) const
+        {
+            return Vec3{x - rhs.x, y - rhs.y, z};
+        }
+
+        constexpr Vec3<T> operator*(
+            const Vec2<T> rhs) const
+        {
+            return Vec3{x * rhs.x, y * rhs.y, z};
+        }
+
+        constexpr Vec3<T> operator/(
+            const Vec2<T> rhs) const
+        {
+            return Vec3{x / rhs.x, y / rhs.y, z};
+        }
+
+        constexpr Vec3<T> operator+(
+            const T rhs) const
+        {
+            return Vec3{x + rhs, y + rhs, z + rhs};
+        }
+
+        constexpr Vec3<T> operator-(
+            const T rhs) const
+        {
+            return Vec3{x - rhs, y - rhs, z - rhs};
+        }
+
+        constexpr Vec3<T> operator*(
+            const T rhs) const
+        {
+            return Vec3{x * rhs, y * rhs, z * rhs};
+        }
+
+        constexpr Vec3<T> operator/(
+            const T rhs) const
+        {
+            return Vec3{x / rhs, y / rhs, z / rhs};
+        }
+
+        constexpr Vec3<T>& operator+=(
+            const Vec3<T> rhs)
+        {
+            x += rhs.x;
+            y += rhs.y;
+            z += rhs.z;
+            return *this;
+        }
+
+        constexpr Vec3<T>& operator-=(
+            const Vec3<T> rhs)
+        {
+            x -= rhs.x;
+            y -= rhs.y;
+            z -= rhs.z;
+            return *this;
+        }
+
+        constexpr Vec3<T>& operator*=(
+            const Vec3<T> rhs)
+        {
+            x *= rhs.x;
+            y *= rhs.y;
+            z *= rhs.z;
+            return *this;
+        }
+
+        constexpr Vec3<T>& operator/=(
+            const Vec3<T> rhs)
+        {
+            x /= rhs.x;
+            y /= rhs.y;
+            z /= rhs.z;
+            return *this;
+        }
+
+        constexpr Vec3<T>& operator+=(
+            const Vec2<T> rhs)
+        {
+            x += rhs.x;
+            y += rhs.y;
+            return *this;
+        }
+
+        constexpr Vec3<T>& operator-=(
+            const Vec2<T> rhs)
+        {
+            x -= rhs.x;
+            y -= rhs.y;
+            return *this;
+        }
+
+        constexpr Vec3<T>& operator*=(
+            const Vec2<T> rhs)
+        {
+            x *= rhs.x;
+            y *= rhs.y;
+            return *this;
+        }
+
+        constexpr Vec3<T>& operator/=(
+            const Vec2<T> rhs)
+        {
+            x /= rhs.x;
+            y /= rhs.y;
+            return *this;
+        }
+
+        constexpr Vec3<T>& operator+=(
+            const T rhs)
+        {
+            x += rhs;
+            y += rhs;
+            z += rhs;
+            return *this;
+        }
+
+        constexpr Vec3<T>& operator-=(
+            const T rhs)
+        {
+            x -= rhs;
+            y -= rhs;
+            z -= rhs;
+            return *this;
+        }
+
+        constexpr Vec3<T>& operator*=(
+            const T rhs)
+        {
+            x *= rhs;
+            y *= rhs;
+            z *= rhs;
+            return *this;
+        }
+
+        constexpr Vec3<T>& operator/=(
+            const T rhs)
+        {
+            x /= rhs;
+            y /= rhs;
+            z /= rhs;
+            return *this;
+        }
+    };
+}
