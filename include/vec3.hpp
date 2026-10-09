@@ -87,6 +87,32 @@ namespace cu
         }
 
         /**
+         * @brief Returns the distance between the vectors squared.
+         * @param v The other vector.
+         * @return The distance between the vectors squared.
+         */
+        constexpr T dst_sqr(
+            const Vec3<T> v) const
+        {
+            const T dx = safe_diff(v.x, x);
+            const T dy = safe_diff(v.y, y);
+            const T dz = safe_diff(v.z, z);
+            return (dx * dx) + (dy * dy) + (dz * dz);
+        }
+
+        /**
+         * @brief Returns the distance between the vectors.
+         * @param v The other vector.
+         * @return The distance between the vectors.
+         */
+        constexpr T dst(
+            const Vec3<T> v) const
+            requires Float<T>
+        {
+            return sqrt(dst_sqr(v));
+        }
+
+        /**
          * @brief Returns the vector's magnitude squared.
          * @return The vector's magnitude squared.
          */
@@ -94,6 +120,33 @@ namespace cu
         {
             return (x * x) + (y * y) + (z * z);
         }
+
+        /**
+         * @brief Returns the vector's magnitude.
+         * @return The vector's magnitude.
+         */
+        constexpr T mag() const
+            requires Float<T>
+        {
+            return sqrt(mag_sqr());
+        }
+
+        /**
+         * @brief Returns the vector normalized.
+         * @return The vector normalized.
+         */
+        constexpr Vec3<T> normalized() const
+            requires Float<T>
+        {
+            return *this / mag();
+        }
+
+        /** @brief Normalizes the vector. */
+        constexpr void normalize()
+            requires Float<T>
+        {
+            *this /= mag();
+        } 
 
         /**
          * @brief Returns the vector converted to the given type.
