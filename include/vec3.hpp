@@ -1,5 +1,6 @@
 #pragma once
 
+#include "num.hpp"
 #include "vec2.hpp"
 
 #include <stdint.h>
@@ -7,7 +8,7 @@
 namespace cu
 {
     /** @brief A 2-dimensional vector. */
-    template<typename T>
+    template<Num T>
     struct Vec3 {
         T x; /**< The x factor. */
 
@@ -94,9 +95,14 @@ namespace cu
             return (x * x) + (y * y) + (z * z);
         }
 
-        constexpr operator Vec2<T>() const
+        /**
+         * @brief Returns the vector converted to the given type.
+         * @return The vector converted to the given type.
+         */
+        template<Num U>
+        constexpr Vec3<U> as() const
         {
-            return Vec2{x, y};
+            Vec3<U>{static_cast<U>(x), static_cast<U>(y), static_cast<U>(z)};
         }
 
         template<typename U>

@@ -1,11 +1,13 @@
 #pragma once
 
+#include "num.hpp"
+
 #include <stdint.h>
 
 namespace cu
 {
     /** @brief A 2-dimensional vector. */
-    template<typename T>
+    template<Num T>
     struct Vec2 {
         T x; /**< The x factor. */
 
@@ -62,11 +64,16 @@ namespace cu
             return (x * x) + (y * y);
         }
 
-        template<typename U>
-        explicit constexpr operator Vec2<U>() const
+        /**
+         * @brief Returns the vector converted to the given type.
+         * @return The vector converted to the given type.
+         */
+        template<Num U>
+        constexpr Vec2<U> as() const
         {
-            return Vec2<U>{static_cast<U>(x), static_cast<U>(y)};
+            Vec2<U>{static_cast<U>(x), static_cast<U>(y)};
         }
+
 
         constexpr Vec2<T> operator~() const
         {
