@@ -6,6 +6,19 @@
 
 #include <stdint.h>
 
+/// @brief Bits for Vulkan extensions usable by Cutl.
+typedef enum : uint64_t {
+    CU_EXTENSION_SWAPCHAIN = 1 << 0, /**< "VK_KHR_swapchain". */
+
+    CU_EXTENSION_HEADLESS_SURFACE = 1 << 1, /**< "VK_KHR_headless_surface". */
+} CuExtensionFlagBits;
+
+/// @brief A bitmask of `CuExtensionFlagBits`.
+typedef uint64_t CuExtensionFlags;
+
+/// @brief A bitmask of all Vulkan extensions usable by Cutl.
+constexpr CuExtensionFlags CU_EXTENSIONS_ALL = UINT64_MAX;
+
 /// @brief A Vulkan context.
 /// @note Only one global instance is meant to exist.
 typedef struct CuContext_T {
@@ -42,12 +55,21 @@ typedef struct CuContext_T {
     /// @brief The descriptor set handle.
     cu_vk_t(DescriptorSet) _descriptorSet;
 
+    /// @brief A bitmap of the enabled extensions.
+    CuExtensionFlags mEnabledExtensions;
+
     /// @brief Whether the context is fully initialized.
     bool _isInitialized;
 } CuContext;
 
 /// @brief Create info for the context.
 typedef struct CuContextCreateInfo_T {
+    /// @brief A bitmask of the required extensions. Default is all.
+    CuExtensionFlags mRequiredExtensions;
+
+    /// @brief A bitmask of the preferred but non-required extensions. Default is none.
+    CuExtensionFlags mPreferredExtensions;
+
     /// @brief The application name. Can be null. Default is null.
     const char* appName;
 
@@ -69,6 +91,8 @@ typedef struct CuContextCreateInfo_T {
 
 /// @brief The default context create info.
 constexpr CuContextCreateInfo CU_DEFAULT_CONTEXT_CREATE_INFO = {
+    .mRequiredExtensions = CU_EXTENSIONS_ALL,
+    .mPreferredExtensions = 0,
     .appName = nullptr,
     .appVersion = {
         .major = 0,
@@ -107,6 +131,10 @@ void cu_context_terminate();
 
 /// @brief Waits for the context to idle.
 void cu_context_wait_for_idle();
+
+/// @brief Returns a bitmask of the enabled extensions.
+/// @return A bitmask of the enabled extensions.
+CuExtensionFlags cu_context_get_enabled_extensions();
 
 #ifdef __cplusplus
 }

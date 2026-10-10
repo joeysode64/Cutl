@@ -19,11 +19,23 @@
 /// @brief Creates the global context's Vulkan instance.
 /// @param appName The application name.
 /// @param appVersion The application version.
+/// @param mExtensions A bitmap of the enabled extensions.
 /// @param enableValidation Whether to enable validation layers.
 /// @return The result of creating the instance.
 static VkResult create_vk_instance(
     const char* appName,
     uint32_t appVersion,
+    CuExtensionFlags mExtensions,
+    bool enableValidation);
+
+/// @brief Fills the array with the necessary instance extensions.
+/// @param [out] pExtensions A pointer to the extensions.
+/// @param mExtensions A bitmap of the enabled extensions.
+/// @param enableValidation Whether validation layers will be used.
+/// @return The number of extensions.
+static uint32_t get_instance_extensions(
+    const char** pExtensions,
+    CuExtensionFlags mExtensions,
     bool enableValidation);
 
 /// @brief Sets the functions for creating and destroying a debug messenger.
@@ -47,8 +59,18 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_messenger_callback(
 static VkResult create_debug_messenger();
 
 /// @brief Creates the global context's logical device.
+/// @param mExtensions A bitmap of the extensions to enable.
 /// @return The result of creating the device.
-static VkResult create_device();
+static VkResult create_device(
+    CuExtensionFlags mExtensions);
+
+/// @brief Fills the array with the necessary device extensions.
+/// @param [out] pExtensions A pointer to the extensions.
+/// @param mExtensions A bitmap of the enabled extensions.
+/// @return The number of extensions.
+static uint32_t get_device_extensions(
+    const char** pExtensions,
+    CuExtensionFlags mExtensions);
 
 /// @brief Creates the global context's command pool.
 /// @return The result of creating the command pool.
@@ -82,53 +104,25 @@ static VkResult allocate_descriptor_set();
 constexpr uint32_t CUTL_VK_VERSION =
     VK_MAKE_VERSION(CU_VERSION_MAJOR, CU_VERSION_MINOR, CU_VERSION_PATCH);
 
-/// @brief The instance layers.
-static const char* INSTANCE_LAYERS[] = {
-    // Debugging layers:
-    "VK_LAYER_KHRONOS_validation",
-};
+/// @brief The maximum number of instance extensions.
+/// @note Surface (general and platform), headless surface, debug, on Apple.
+constexpr size_t MAX_N_INSTANCE_EXTENSIONS = 5;
 
-/// @brief The number of debugging instance layers.
-constexpr uint32_t N_DBG_INSTANCE_LAYERS = 1;
+/// @brief The maximum number of instance extensions.
+/// @note Swapchain on Apple.
+constexpr size_t MAX_N_DEVICE_EXTENSIONS = 2;
 
-/// @brief The number of instance layers with debugging.
-constexpr uint32_t N_INSTANCE_LAYERS_WITH_DBG = arr_len(INSTANCE_LAYERS);
-
-/// @brief The number of instance layers with no debugging.
-constexpr uint32_t N_INSTANCE_LAYERS_NO_DBG = N_INSTANCE_LAYERS_WITH_DBG - N_DBG_INSTANCE_LAYERS;
-
-/// @brief The instance extensions.
-static const char* INSTANCE_EXTENSIONS[] = {
-    "VK_KHR_surface",
-    "VK_EXT_headless_surface",
+/// @brief The surface extension for the platform.
+static const char* SURFACE_EXTENSION =
 #if ON_APPLE
-    "VK_EXT_metal_surface",
-    "VK_KHR_portability_enumeration",
+    "VK_EXT_metal_surface";
 #elif ON_LINUX
-    "VK_KHR_xcb_surface",
+    "VK_KHR_xcb_surface";
 #elif ON_WINDOWS
-    "VK_KHR_win32_surface",
+    "VK_KHR_win32_surface";
+#else
+    #error "Unsupported platform"
 #endif
-    // Debugging extensions:
-    "VK_EXT_debug_utils",
-};
-
-/// @brief The number of debugging instance extensions.
-constexpr uint32_t N_DBG_INSTANCE_EXTENSIONS = 1;
-
-/// @brief The number of instance extensions with debugging.
-constexpr uint32_t N_INSTANCE_EXTENSIONS_WITH_DBG = arr_len(INSTANCE_EXTENSIONS);
-
-/// @brief The number of instance extensions with no debugging.
-constexpr uint32_t N_INSTANCE_EXTENSIONS_NO_DBG = N_INSTANCE_EXTENSIONS_WITH_DBG - N_DBG_INSTANCE_EXTENSIONS;
-
-/// @brief The device extensions.
-static const char* DEVICE_EXTENSIONS[] = {
-    "VK_KHR_swapchain",
-#if ON_APPLE
-    "VK_KHR_portability_subset",
-#endif
-};
 
 /// @brief The callback for creating a debug messenger.
 static PFN_vkCreateDebugUtilsMessengerEXT fCreateDebugMessenger = nullptr;
@@ -154,7 +148,10 @@ CuResult cu_context_init(
         pCreateInfo->appVersion.major,
         pCreateInfo->appVersion.minor,
         pCreateInfo->appVersion.patch);
-    cu_try_catch_vk(create_vk_instance(pCreateInfo->appName, appVersion, pCreateInfo->enableValidation));
+    const CuExtensionFlags mExtensions =
+        pCreateInfo->mRequiredExtensions | pCreateInfo->mPreferredExtensions;
+    cu_try_catch_vk(create_vk_instance(
+        pCreateInfo->appName, appVersion, mExtensions, pCreateInfo->enableValidation));
     if (pCreateInfo->enableValidation) {
         cu_try_catch_vk(create_debug_messenger());
     }
@@ -163,7 +160,7 @@ CuResult cu_context_init(
     gContext._physicalDevice = physicalDeviceInfo.handle;
     gContext._memoryInfo = physicalDeviceInfo.memoryInfo;
     gContext._iQueueFamily = physicalDeviceInfo.iQueueFamily;
-    cu_try_catch_vk(create_device());
+    cu_try_catch_vk(create_device(mExtensions));
     cu_try_catch_vk(create_command_pool());
     vkGetDeviceQueue(
         gContext._device,
@@ -218,10 +215,16 @@ void cu_context_wait_for_idle()
     vkDeviceWaitIdle(gContext._device);
 }
 
+CuExtensionFlags cu_context_get_enabled_extensions()
+{
+    return gContext.mEnabledExtensions;
+}
+
 
 VkResult create_vk_instance(
     const char* const appName,
     const uint32_t appVersion,
+    const CuExtensionFlags mExtensions,
     const bool enableValidation)
 {
     const VkApplicationInfo appInfo = {
@@ -235,17 +238,49 @@ VkResult create_vk_instance(
     };
     constexpr VkInstanceCreateFlags flags =
         ON_APPLE ? VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR : 0;
+    const char* extensions[MAX_N_INSTANCE_EXTENSIONS] = {};
+    const uint32_t nExtensions = get_instance_extensions(
+        extensions, mExtensions, enableValidation);
     const VkInstanceCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pNext = nullptr,
         .flags = flags,
         .pApplicationInfo = &appInfo,
-        .enabledLayerCount = enableValidation ? N_INSTANCE_LAYERS_WITH_DBG : N_INSTANCE_LAYERS_NO_DBG,
-        .ppEnabledLayerNames = INSTANCE_LAYERS,
-        .enabledExtensionCount = enableValidation ? N_INSTANCE_EXTENSIONS_WITH_DBG : N_INSTANCE_EXTENSIONS_NO_DBG,
-        .ppEnabledExtensionNames = INSTANCE_EXTENSIONS,
+        .enabledLayerCount = enableValidation ? 1 : 0,
+        .ppEnabledLayerNames = (const char*[]){ "VK_LAYER_KHRONOS_validation" },
+        .enabledExtensionCount = nExtensions,
+        .ppEnabledExtensionNames = extensions,
     };
     return vkCreateInstance(&createInfo, nullptr, &gContext._instance);
+}
+
+uint32_t get_instance_extensions(
+    const char** const pExtensions,
+    const CuExtensionFlags mExtensions,
+    const bool enableValidation)
+{
+    uint32_t n = 0;
+
+#if ON_APPLE
+    pExtensions[n++] = "VK_KHR_portability_enumeration";
+#endif
+
+    constexpr CuExtensionFlags SURFACE_FLAGS =
+        CU_EXTENSION_SWAPCHAIN | CU_EXTENSION_HEADLESS_SURFACE;
+    if (ones_overlap(mExtensions, SURFACE_FLAGS)) {
+        pExtensions[n++] = "VK_KHR_surface";
+        pExtensions[n++] = SURFACE_EXTENSION;
+    }
+
+    if (ones_overlap(mExtensions, CU_EXTENSION_HEADLESS_SURFACE)) {
+        pExtensions[n++] = "VK_EXT_headless_surface";
+    }
+
+    if (enableValidation) {
+        pExtensions[n++] = "VK_EXT_debug_utils";
+    }
+
+    return n;
 }
 
 bool get_debug_messenger_fns()
@@ -296,7 +331,8 @@ VkResult create_debug_messenger()
     return fCreateDebugMessenger(gContext._instance, &createInfo, nullptr, &gContext._debugMessenger);
 }
 
-VkResult create_device()
+VkResult create_device(
+    const CuExtensionFlags mExtensions)
 {
     const float queuePriorities[] = { 1.0F };
     const VkDeviceQueueCreateInfo queueCreateInfos[] = {
@@ -337,7 +373,8 @@ VkResult create_device()
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
         .pNext = (void*)&features12,
     };
-
+    const char* extensions[MAX_N_DEVICE_EXTENSIONS] = {};
+    const uint32_t nExtensions = get_device_extensions(extensions, mExtensions);
     const VkDeviceCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .pNext = &features11,
@@ -346,14 +383,31 @@ VkResult create_device()
         .pQueueCreateInfos = queueCreateInfos,
         .enabledLayerCount = 0,
         .ppEnabledLayerNames = nullptr,
-        .enabledExtensionCount = arr_len(DEVICE_EXTENSIONS),
-        .ppEnabledExtensionNames = DEVICE_EXTENSIONS,
+        .enabledExtensionCount = nExtensions,
+        .ppEnabledExtensionNames = extensions,
     };
     return vkCreateDevice(
         gContext._physicalDevice,
         &createInfo,
         nullptr,
         &gContext._device);
+}
+
+uint32_t get_device_extensions(
+    const char** pExtensions,
+    CuExtensionFlags mExtensions)
+{
+    uint32_t n = 0;
+
+#if ON_APPLE
+    pExtensions[n++] = "VK_KHR_portability_subset";
+#endif
+
+    if (ones_overlap(mExtensions, CU_EXTENSION_SWAPCHAIN)) {
+        pExtensions[n++] = "VK_KHR_swapchain";
+    }
+
+    return n;
 }
 
 VkResult create_command_pool()
