@@ -22,9 +22,9 @@ void cu_frame_begin_render(
     };
     const VkViewport viewport = {
         .x = 0.0F,
-        .y = 0.0F,
+        .y = (float)area.extent.height,
         .width = (float)area.extent.width,
-        .height = (float)area.extent.height,
+        .height = -(float)area.extent.height,
         .minDepth = 0.0F,
         .maxDepth = 1.0F,
     };
