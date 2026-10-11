@@ -5,7 +5,9 @@
 #include "util.h"
 
 #include <stdint.h>
+#include <string.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 /// @brief Returns a bitmask of the memory types that contain all the memory properties.
 static uint32_t get_memory_types(
@@ -14,6 +16,18 @@ static uint32_t get_memory_types(
 
 /// @brief Returns whether the physical device is suitable.
 static bool is_physical_device_suitable(
+    VkPhysicalDevice physicalDevice,
+    const char* pExtensions[],
+    uint32_t nExtensions);
+
+/// @brief Returns whether the physical device supports all the extensions.
+static bool does_physical_device_support_extensions(
+    VkPhysicalDevice physicalDevice,
+    const char* pExtensions[],
+    uint32_t nExtensions);
+
+/// @brief Returns whether the physical device supports all the required features.
+static bool does_physical_device_support_features(
     VkPhysicalDevice physicalDevice);
 
 /// @brief Choose the queue family. Returns whether one was found.
@@ -51,7 +65,9 @@ uint32_t find_memory_types(
 /// @brief Chooses the best-fit physical device.
 CuResult choose_physical_device(
     PhysicalDeviceInfo* const pPhysicalDeviceInfo,
-    const VkInstance instance)
+    const VkInstance instance,
+    const char* pExtensions[],
+    const uint32_t nExtensions)
 {
     Enumerator(VkPhysicalDevice) physicalDevices ENUMERATOR_AUTO_FREE = {};
     enumerate_cu(physicalDevices, vkEnumeratePhysicalDevices, instance);
@@ -60,7 +76,7 @@ CuResult choose_physical_device(
     bool found = false;
     for (uint32_t i = 0; i < physicalDevices.n; i++) {
         const VkPhysicalDevice contestant = physicalDevices.p[i];
-        if (!is_physical_device_suitable(contestant)) {
+        if (!is_physical_device_suitable(contestant, pExtensions, nExtensions)) {
             continue;
         }
 
@@ -105,11 +121,72 @@ uint32_t get_memory_types(
 }
 
 bool is_physical_device_suitable(
-    const VkPhysicalDevice physicalDevice)
+    const VkPhysicalDevice physicalDevice,
+    const char* pExtensions[],
+    const uint32_t nExtensions)
 {
-    (void)physicalDevice;
-    // TODO
+    return does_physical_device_support_extensions(physicalDevice, pExtensions, nExtensions) &&
+        does_physical_device_support_features(physicalDevice);
+}
+
+bool does_physical_device_support_extensions(
+    VkPhysicalDevice physicalDevice,
+    const char* pExtensions[],
+    uint32_t nExtensions)
+{
+    Enumerator(VkExtensionProperties) extensions ENUMERATOR_AUTO_FREE = {};
+    enumerate(extensions, false, vkEnumerateDeviceExtensionProperties, physicalDevice, nullptr);
+    for (uint32_t i = 0; i < nExtensions; i++) {
+        bool found = false;
+        for (uint32_t j = 0; j < extensions.n; j++) {
+            if (strcmp(pExtensions[i], extensions.p[j].extensionName) == 0) {
+                found = true;
+                break;
+            }
+        } 
+        if (!found) {
+            return false;
+        }
+    }
+
     return true;
+}
+
+bool does_physical_device_support_features(
+    VkPhysicalDevice physicalDevice)
+{
+    VkPhysicalDeviceVulkan14Features features1_4 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+        .pNext = nullptr,
+    };
+    VkPhysicalDeviceVulkan13Features features1_3 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .pNext = &features1_4,
+    };
+    VkPhysicalDeviceVulkan12Features features1_2 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        .pNext = &features1_3,
+    };
+    VkPhysicalDeviceVulkan11Features features1_1 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+        .pNext = &features1_2,
+    };
+    VkPhysicalDeviceFeatures2 features1_0 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        .pNext = &features1_1,
+    };
+    vkGetPhysicalDeviceFeatures2(physicalDevice, &features1_0);
+    return features1_2.shaderSampledImageArrayNonUniformIndexing == VK_TRUE &&
+        features1_2.descriptorBindingSampledImageUpdateAfterBind == VK_TRUE &&
+        features1_2.descriptorBindingStorageImageUpdateAfterBind == VK_TRUE &&
+        features1_2.descriptorBindingUpdateUnusedWhilePending == VK_TRUE &&
+        features1_2.descriptorBindingPartiallyBound == VK_TRUE &&
+        features1_2.runtimeDescriptorArray == VK_TRUE &&
+        features1_2.timelineSemaphore == VK_TRUE &&
+        features1_2.bufferDeviceAddress == VK_TRUE &&
+        features1_3.synchronization2 == VK_TRUE &&
+        features1_3.dynamicRendering == VK_TRUE &&
+        features1_4.maintenance5 == VK_TRUE;
 }
 
 bool choose_queue_family(

@@ -58,12 +58,6 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_messenger_callback(
 /// @return The result of creating the debug messenger.
 static VkResult create_debug_messenger();
 
-/// @brief Creates the global context's logical device.
-/// @param mExtensions A bitmap of the extensions to enable.
-/// @return The result of creating the device.
-static VkResult create_device(
-    CuExtensionFlags mExtensions);
-
 /// @brief Fills the array with the necessary device extensions.
 /// @param [out] pExtensions A pointer to the extensions.
 /// @param mExtensions A bitmap of the enabled extensions.
@@ -71,6 +65,13 @@ static VkResult create_device(
 static uint32_t get_device_extensions(
     const char** pExtensions,
     CuExtensionFlags mExtensions);
+
+/// @brief Creates the global context's logical device.
+/// @param mExtensions A bitmap of the extensions to enable.
+/// @return The result of creating the device.
+static VkResult create_device(
+    const char* pExtensions[],
+    uint32_t nExtensions);
 
 /// @brief Creates the global context's command pool.
 /// @return The result of creating the command pool.
@@ -148,19 +149,24 @@ CuResult cu_context_init(
         pCreateInfo->appVersion.major,
         pCreateInfo->appVersion.minor,
         pCreateInfo->appVersion.patch);
-    const CuExtensionFlags mExtensions =
-        pCreateInfo->mRequiredExtensions | pCreateInfo->mPreferredExtensions;
     cu_try_catch_vk(create_vk_instance(
-        pCreateInfo->appName, appVersion, mExtensions, pCreateInfo->enableValidation));
+        pCreateInfo->appName,
+        appVersion,
+        pCreateInfo->mExtensions,
+        pCreateInfo->enableValidation));
     if (pCreateInfo->enableValidation) {
         cu_try_catch_vk(create_debug_messenger());
     }
+    const char* deviceExtensions[MAX_N_DEVICE_EXTENSIONS] = {};
+    const uint32_t nDeviceExtensions =
+        get_device_extensions(deviceExtensions, pCreateInfo->mExtensions);
     PhysicalDeviceInfo physicalDeviceInfo = {};
-    cu_try_catch(choose_physical_device(&physicalDeviceInfo, gContext._instance));
+    cu_try_catch(choose_physical_device(
+        &physicalDeviceInfo, gContext._instance, deviceExtensions, nDeviceExtensions));
     gContext._physicalDevice = physicalDeviceInfo.handle;
     gContext._memoryInfo = physicalDeviceInfo.memoryInfo;
     gContext._iQueueFamily = physicalDeviceInfo.iQueueFamily;
-    cu_try_catch_vk(create_device(mExtensions));
+    cu_try_catch_vk(create_device(deviceExtensions, nDeviceExtensions));
     cu_try_catch_vk(create_command_pool());
     vkGetDeviceQueue(
         gContext._device,
@@ -331,8 +337,26 @@ VkResult create_debug_messenger()
     return fCreateDebugMessenger(gContext._instance, &createInfo, nullptr, &gContext._debugMessenger);
 }
 
-VkResult create_device(
+uint32_t get_device_extensions(
+    const char** pExtensions,
     const CuExtensionFlags mExtensions)
+{
+    uint32_t n = 0;
+
+#if ON_APPLE
+    pExtensions[n++] = "VK_KHR_portability_subset";
+#endif
+
+    if (ones_overlap(mExtensions, CU_EXTENSION_SWAPCHAIN)) {
+        pExtensions[n++] = "VK_KHR_swapchain";
+    }
+
+    return n;
+}
+
+VkResult create_device(
+    const char* pExtensions[],
+    const uint32_t nExtensions)
 {
     const float queuePriorities[] = { 1.0F };
     const VkDeviceQueueCreateInfo queueCreateInfos[] = {
@@ -346,20 +370,20 @@ VkResult create_device(
         },
     };
 
-    const VkPhysicalDeviceVulkan14Features features14 = {
+    const VkPhysicalDeviceVulkan14Features features1_4 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
         .pNext = nullptr,
         .maintenance5 = VK_TRUE,
     };
-    const VkPhysicalDeviceVulkan13Features features13 = {
+    const VkPhysicalDeviceVulkan13Features features1_3 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-        .pNext = (void*)&features14,
+        .pNext = (void*)&features1_4,
         .synchronization2 = VK_TRUE,
         .dynamicRendering = VK_TRUE,
     };
-    const VkPhysicalDeviceVulkan12Features features12 = {
+    const VkPhysicalDeviceVulkan12Features features1_2 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-        .pNext = (void*)&features13,
+        .pNext = (void*)&features1_3,
         .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
         .descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
         .descriptorBindingStorageImageUpdateAfterBind = VK_TRUE,
@@ -369,45 +393,30 @@ VkResult create_device(
         .timelineSemaphore = VK_TRUE,
         .bufferDeviceAddress = VK_TRUE,
     };
-    const VkPhysicalDeviceVulkan11Features features11 = {
+    const VkPhysicalDeviceVulkan11Features features1_1 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-        .pNext = (void*)&features12,
+        .pNext = (void*)&features1_2,
     };
-    const char* extensions[MAX_N_DEVICE_EXTENSIONS] = {};
-    const uint32_t nExtensions = get_device_extensions(extensions, mExtensions);
+    const VkPhysicalDeviceFeatures2 features1_0 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        .pNext = (void*)&features1_1,
+    };
     const VkDeviceCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        .pNext = &features11,
+        .pNext = &features1_0,
         .flags = 0,
         .queueCreateInfoCount = arr_len(queueCreateInfos),
         .pQueueCreateInfos = queueCreateInfos,
         .enabledLayerCount = 0,
         .ppEnabledLayerNames = nullptr,
         .enabledExtensionCount = nExtensions,
-        .ppEnabledExtensionNames = extensions,
+        .ppEnabledExtensionNames = pExtensions,
     };
     return vkCreateDevice(
         gContext._physicalDevice,
         &createInfo,
         nullptr,
         &gContext._device);
-}
-
-uint32_t get_device_extensions(
-    const char** pExtensions,
-    CuExtensionFlags mExtensions)
-{
-    uint32_t n = 0;
-
-#if ON_APPLE
-    pExtensions[n++] = "VK_KHR_portability_subset";
-#endif
-
-    if (ones_overlap(mExtensions, CU_EXTENSION_SWAPCHAIN)) {
-        pExtensions[n++] = "VK_KHR_swapchain";
-    }
-
-    return n;
 }
 
 VkResult create_command_pool()

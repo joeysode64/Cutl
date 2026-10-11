@@ -27,6 +27,12 @@ uint32_t find_memory_types(
     uint32_t mAllowed);
 
 /// @brief Chooses the best-fit physical device.
+/// @param [out] pPhysicalDeviceInfo A pointer to the physical device info.
+/// @param instance The Vulkan intance handle.
+/// @param pExtensions A pointer to the extensions to enable.
+/// @param nExtensions The number of extensions.
 CuResult choose_physical_device(
     PhysicalDeviceInfo* pPhysicalDeviceInfo,
-    VkInstance instance);
+    VkInstance instance,
+    const char* pExtensions[],
+    uint32_t nExtensions);

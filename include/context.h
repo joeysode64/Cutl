@@ -64,11 +64,8 @@ typedef struct CuContext_T {
 
 /// @brief Create info for the context.
 typedef struct CuContextCreateInfo_T {
-    /// @brief A bitmask of the required extensions. Default is all.
-    CuExtensionFlags mRequiredExtensions;
-
-    /// @brief A bitmask of the preferred but non-required extensions. Default is none.
-    CuExtensionFlags mPreferredExtensions;
+    /// @brief A bitmask of the extensions to enable. Default is all.
+    CuExtensionFlags mExtensions;
 
     /// @brief The application name. Can be null. Default is null.
     const char* appName;
@@ -91,8 +88,7 @@ typedef struct CuContextCreateInfo_T {
 
 /// @brief The default context create info.
 constexpr CuContextCreateInfo CU_DEFAULT_CONTEXT_CREATE_INFO = {
-    .mRequiredExtensions = CU_EXTENSIONS_ALL,
-    .mPreferredExtensions = 0,
+    .mExtensions = CU_EXTENSIONS_ALL,
     .appName = nullptr,
     .appVersion = {
         .major = 0,
