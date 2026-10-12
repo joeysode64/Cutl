@@ -1,6 +1,7 @@
 #include "task.h"
 
 #include "g_context.h"
+#include "log.h"
 #include "result.h"
 #include "util.h"
 #include "vk.h"
@@ -21,11 +22,15 @@ CuResult cu_task_create(
     CuResult result = CU_SUCCESS;
 
     cu_try_catch(allocate_command_buffers(&pTask->_commandBuffer, 1));
+    cu_log_create(pTask->_commandBuffer);
+
     cu_try_catch(create_fence(&pTask->_taskFinished));
+    cu_log_create(pTask->_taskFinished);
 
     return CU_SUCCESS;
 
 FAIL:
+    cu_log_fail("Failed to create task", result);
     cu_task_destroy(pTask);
     return result;
 }
@@ -35,7 +40,9 @@ void cu_task_destroy(
 {
     cu_task_await(pTask, UINT64_MAX);
     vkDestroyFence(gContext._device, pTask->_taskFinished, nullptr);
+    cu_log_destroy(pTask->_taskFinished);
     vkFreeCommandBuffers(gContext._device, gContext._commandPool, 1, &pTask->_commandBuffer);
+    cu_log_destroy(pTask->_commandBuffer);
 }
 
 CuResult cu_task_begin(

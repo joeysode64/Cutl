@@ -2,6 +2,7 @@
 
 #include "g_context.h"
 #include "info.h"
+#include "log.h"
 #include "physical_device.h"
 #include "result.h"
 #include "util.h"
@@ -66,7 +67,7 @@ static uint32_t get_device_extensions(
     const char** pExtensions,
     CuExtensionFlags mExtensions);
 
-/// @brief Creates the global context's logical device.
+/// @brief Creates the global context's cu_logical device.
 /// @param mExtensions A bitmap of the extensions to enable.
 /// @return The result of creating the device.
 static VkResult create_device(
@@ -154,8 +155,11 @@ CuResult cu_context_init(
         appVersion,
         pCreateInfo->mExtensions,
         pCreateInfo->enableValidation));
+    cu_log_create(gContext._instance);
+
     if (pCreateInfo->enableValidation) {
         cu_try_catch_vk(create_debug_messenger());
+        cu_log_create(gContext._debugMessenger);
     }
     const char* deviceExtensions[MAX_N_DEVICE_EXTENSIONS] = {};
     const uint32_t nDeviceExtensions =
@@ -166,28 +170,41 @@ CuResult cu_context_init(
     gContext._physicalDevice = physicalDeviceInfo.handle;
     gContext._memoryInfo = physicalDeviceInfo.memoryInfo;
     gContext._iQueueFamily = physicalDeviceInfo.iQueueFamily;
+
     cu_try_catch_vk(create_device(deviceExtensions, nDeviceExtensions));
+    cu_log_create(gContext._device);
+
     cu_try_catch_vk(create_command_pool());
+    cu_log_create(gContext._commandPool);
+
     vkGetDeviceQueue(
         gContext._device,
         gContext._iQueueFamily,
         0,
         &gContext._queue
     );
+    cu_log_create(gContext._queue);
+
     cu_try_catch_vk(create_descriptor_pool(
         pCreateInfo->nSampledImageDescriptors,
         pCreateInfo->nSamplerDescriptors,
         pCreateInfo->nStorageImageDescriptors));
+    cu_log_create(gContext._descriptorPool);
+
     cu_try_catch_vk(create_descriptor_set_layout(
         pCreateInfo->nSampledImageDescriptors,
         pCreateInfo->nSamplerDescriptors,
         pCreateInfo->nStorageImageDescriptors));
+    cu_log_create(gContext._descriptorSetLayout);
+
     cu_try_catch_vk(allocate_descriptor_set());
+    cu_log_create(gContext._descriptorSet);
 
     gContext._isInitialized = true;
     return CU_SUCCESS;
 
 FAIL:
+    cu_log_fail("Failed to create context", result);
     cu_context_terminate();
     return result;
 }
@@ -199,16 +216,21 @@ void cu_context_terminate()
     if (gContext._device != VK_NULL_HANDLE) {
         vkDeviceWaitIdle(gContext._device);
         vkDestroyDescriptorSetLayout(gContext._device, gContext._descriptorSetLayout, nullptr);
+        cu_log_destroy(gContext._descriptorSetLayout);
         vkDestroyDescriptorPool(gContext._device, gContext._descriptorPool, nullptr);
+        cu_log_destroy(gContext._descriptorPool);
         vkDestroyCommandPool(gContext._device, gContext._commandPool, nullptr);
+        cu_log_destroy(gContext._commandPool);
         vkDestroyDevice(gContext._device, nullptr);
     }
 
     if (gContext._instance != VK_NULL_HANDLE) {
         if (gContext._debugMessenger != VK_NULL_HANDLE) {
             fDestroyDebugMessenger(gContext._instance, gContext._debugMessenger, nullptr);
+            cu_log_destroy(gContext._debugMessenger);
         }
         vkDestroyInstance(gContext._instance, nullptr);
+        cu_log_destroy(gContext._instance);
     }
 
     gContext = (CuContext){

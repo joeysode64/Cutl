@@ -3,10 +3,12 @@
 #include "enumerator.h"
 #include "def.h"
 #include "g_context.h"
+#include "log.h"
 #include "result.h"
 #include "util.h"
 #include "vk.h"
 #include "window.h"
+#include <math.h>
 #include <vulkan/vulkan_core.h>
 
 #define GLFW_INCLUDE_VULKAN
@@ -194,6 +196,8 @@ CuResult choose_surface_format(
         }
     }
 
+    cu_log("Chose surface format with format: 0x%X, and color space: 0x%X",
+        pSurfaceFormat->format, pSurfaceFormat->colorSpace);
     return CU_SUCCESS;
 }
 
@@ -212,5 +216,6 @@ CuResult choose_present_mode(
         }
     }
 
+    cu_log("Chose present mode 0x%X", *pPresentMode);
     return CU_SUCCESS;
 }

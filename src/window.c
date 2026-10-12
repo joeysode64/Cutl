@@ -1,5 +1,6 @@
 #include "window.h"
 
+#include "log.h"
 #include "result.h"
 #include "util.h"
 
@@ -18,12 +19,14 @@ CuResult cu_window_create(
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     pWindow->_handle = glfwCreateWindow((int)w, (int)h, title, nullptr, nullptr);
     cu_assert_catch(pWindow->_handle != nullptr, cu_glfw_error());
+    cu_log_create(pWindow->_handle);
 
     cu_window_update(pWindow);
 
     return CU_SUCCESS;
 
 FAIL:
+    cu_log_fail("Failed to create window", result);
     cu_window_destroy(pWindow);
     return result;
 }
@@ -36,6 +39,7 @@ void cu_window_destroy(
     }
 
     glfwDestroyWindow(pWindow->_handle);
+    cu_log_destroy(pWindow->_handle);
 }
 
 void cu_window_update(

@@ -3,6 +3,7 @@
 #include "frame.h"
 #include "g_context.h"
 #include "def.h"
+#include "log.h"
 #include "result.h"
 #include "swapchain.h"
 #include "util.h"
@@ -15,7 +16,7 @@
 #include <vulkan/vulkan_core.h>
 
 CuResult cu_renderer_create(
-    CuRenderer* const  pRenderer,
+    CuRenderer* const pRenderer,
     const CuRendererCreateInfo* pCreateInfo,
     const CuWindow* const pWindow)
 {
@@ -27,6 +28,8 @@ CuResult cu_renderer_create(
         pCreateInfo->minSwapchainImages,
         pWindow,
         VK_NULL_HANDLE));
+    cu_log_create(pRenderer->_swapchainInfo._surface);
+    cu_log_create(pRenderer->_swapchainInfo._handle);
     
     const size_t zSwapchainImages = pRenderer->_nSwapchainImages * sizeof(CuSwapchainImage);
     const size_t zFramesInFlight = pCreateInfo->maxFramesInFlight * sizeof(CuFrame);
@@ -52,6 +55,7 @@ CuResult cu_renderer_create(
         gContext._device,
         VK_SEMAPHORE_TYPE_TIMELINE,
         0));
+    cu_log_create(pRenderer->_timelineSemaphore);
     
     pRenderer->_frameCounter = (uint64_t)pRenderer->_nFramesInFlight - 1;
     pRenderer->_iSwapchainImage = 0;
@@ -59,6 +63,7 @@ CuResult cu_renderer_create(
     return CU_SUCCESS;
 
 FAIL:
+    cu_log("Failed to create renderer: %u:%i", result.t, result.v);
     cu_renderer_destroy(pRenderer);
     return result;
 }
@@ -73,6 +78,7 @@ void cu_renderer_destroy(
     vkDeviceWaitIdle(gContext._device);
 
     vkDestroySemaphore(gContext._device, pRenderer->_timelineSemaphore, nullptr);
+    cu_log_destroy(pRenderer->_timelineSemaphore);
     destroy_frames(
         pRenderer->_pFramesInFlight,
         pRenderer->_nFramesInFlight,
@@ -81,7 +87,9 @@ void cu_renderer_destroy(
     destroy_swapchain_images(
         pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
     vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchainInfo._handle, nullptr);
+    cu_log_destroy(pRenderer->_swapchainInfo._handle);
     vkDestroySurfaceKHR(gContext._instance, pRenderer->_swapchainInfo._surface, nullptr);
+    cu_log_destroy(pRenderer->_swapchainInfo._surface);
     free(pRenderer->_pData);
 }
 
