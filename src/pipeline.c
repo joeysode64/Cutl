@@ -20,8 +20,8 @@ CuResult cu_pipeline_layout_create(
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .setLayoutCount = 0,
-        .pSetLayouts = nullptr,
+        .setLayoutCount = 1,
+        .pSetLayouts = &gContext._descriptorSetLayout,
         .pushConstantRangeCount = pCreateInfo->pushConstantSize > 0 ? 1 : 0,
         .pPushConstantRanges = & pushConstantRange,
     };
