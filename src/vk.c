@@ -8,6 +8,38 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
+
+CuResult create_image(
+    VkImage* const pImage,
+    const uint32_t w,
+    const uint32_t h,
+    const VkFormat format,
+    const VkImageUsageFlags usage)
+{
+    const VkImageCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = format,
+        .extent = {
+            .width = w,
+            .height = h,
+            .depth = 1,
+        },
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = 1,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = usage,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .queueFamilyIndexCount = 0,
+        .pQueueFamilyIndices = nullptr,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+    };
+    return cu_vk_result(vkCreateImage(gContext._device, &createInfo, nullptr, pImage));
+}
 
 CuResult create_image_view(
     VkImageView* const pImageView,

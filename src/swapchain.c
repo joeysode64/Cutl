@@ -8,8 +8,6 @@
 #include "util.h"
 #include "vk.h"
 #include "window.h"
-#include <math.h>
-#include <vulkan/vulkan_core.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -100,7 +98,7 @@ CuResult create_swapchain(
         gContext._device, pSwapchainInfo->_handle, pnSwapchainImages, nullptr));
 
     pSwapchainInfo->_surface = surface;
-    pSwapchainInfo->_format = surfaceFormat.format;
+    pSwapchainInfo->_format = (CuFormat)surfaceFormat.format;
     pSwapchainInfo->_w = extent.width;
     pSwapchainInfo->_h = extent.height;
 
@@ -120,7 +118,7 @@ CuResult create_swapchain_images(
         CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
 
         cu_try(create_image_view(
-            &pSwapchainImage->_imageView, gContext._device, images[i], pSwapchainInfo->_format));
+            &pSwapchainImage->_imageView, gContext._device, images[i], (VkFormat)pSwapchainInfo->_format));
         cu_try(create_semaphore(
             &pSwapchainImage->_renderFinished, gContext._device, VK_SEMAPHORE_TYPE_BINARY, 0));
         pSwapchainImage->_image = images[i];

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 /// @brief Queries the Vulkan result and returns it as a `CuResult` if it's not `VK_SUCCESS`.
 #define vk_try(e)                                                                                  \
@@ -51,6 +52,14 @@
 
 /// @brief The timeout time.
 constexpr uint64_t TIMEOUT_NANOS = 2'000'000'000;
+
+/// @brief Creates an image.
+CuResult create_image(
+    VkImage* pImage,
+    uint32_t w,
+    uint32_t h,
+    VkFormat format,
+    VkImageUsageFlags usage);
 
 /// @brief Creates an image view.
 CuResult create_image_view(

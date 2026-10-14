@@ -1,9 +1,11 @@
 #include "frame.h"
 
+#include "cmd_buffer.h"
+#include "image.h"
 #include "renderer.h"
 
+#include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 void cu_frame_begin_render(
     CuFrame* const pFrame,
@@ -97,6 +99,82 @@ void cu_frame_begin_render(
         .pStencilAttachment = nullptr,
     };
     vkCmdBeginRendering(pFrame->_commandBuffer, &renderingInfo);
+}
+
+void cu_frame_begin_image_render(
+    CuFrame* const pFrame,
+    CuImage* const pImage,
+    const uint32_t w,
+    const uint32_t h)
+{
+    // Set the viewport and scissor.
+    const VkRect2D area = {
+        .offset = {
+            .x = 0,
+            .y = 0,
+        },
+        .extent = {
+            .width = w,
+            .height = h,
+        },
+    };
+    const VkViewport viewport = {
+        .x = 0.0F,
+        .y = (float)area.extent.height,
+        .width = (float)area.extent.width,
+        .height = -(float)area.extent.height,
+        .minDepth = 0.0F,
+        .maxDepth = 1.0F,
+    };
+    vkCmdSetViewport(pFrame->_commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(pFrame->_commandBuffer, 0, 1, &area);
+
+    // Begin rendering.
+    const VkRenderingAttachmentInfo colorAttachment = {
+        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+        .pNext = nullptr,
+        .imageView = pImage->_imageView,
+        .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .resolveMode = VK_RESOLVE_MODE_NONE,
+        .resolveImageView = VK_NULL_HANDLE,
+        .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .clearValue = {},
+    };
+    const VkRenderingInfo renderingInfo = {
+        .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .renderArea = area,
+        .layerCount = 1,
+        .viewMask = 0,
+        .colorAttachmentCount = 1,
+        .pColorAttachments = &colorAttachment,
+        .pDepthAttachment = nullptr,
+        .pStencilAttachment = nullptr,
+    };
+    vkCmdBeginRendering(pFrame->_commandBuffer, &renderingInfo);
+}
+
+void cu_frame_end_image_render(
+    CuFrame* const pFrame,
+    CuImage* const pImage,
+    const CuImageLayout newLayout)
+{
+    // End the render.
+    vkCmdEndRendering(pFrame->_commandBuffer);
+
+    // Convert the image for its next use, which is unknown, so block everything.
+    cu_cmd_image_barrier(
+        pFrame,
+        pImage,
+        CU_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT,
+        CU_ACCESS_COLOR_ATTACHMENT_WRITE,
+        CU_PIPELINE_STAGE_ALL_COMMANDS,
+        CU_ACCESS_MEMORY_READ | CU_ACCESS_MEMORY_WRITE,
+        CU_IMAGE_LAYOUT_COLOR_ATTACHMENT,
+        newLayout);
 }
 
 void cu_frame_end_render(

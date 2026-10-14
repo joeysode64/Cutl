@@ -1,6 +1,7 @@
 #pragma once
 
 #include "def.h"
+#include "image.h"
 #include "result.h"
 #include "version.h"
 
@@ -131,6 +132,30 @@ void cu_context_wait_for_idle();
 /// @brief Returns a bitmask of the enabled extensions.
 /// @return A bitmask of the enabled extensions.
 CuExtensionFlags cu_context_get_enabled_extensions();
+
+/// @brief Binds the image to the given sampled image descriptor.
+/// @param pImage A pointer to the image to bind.
+/// @param i The index of the descriptor to bind to.
+/// @return The result of binding the image.
+void cu_context_bind_sampled_image(
+    CuImage* pImage,
+    uint32_t i);
+
+/// @brief Binds the sampler to the given sampler descriptor.
+/// @param pSampler A pointer to the sampler to bind.
+/// @param i The index of the descriptor to bind to.
+/// @return The result of binding the sampler.
+void cu_context_bind_sampler(
+    CuSampler* pSampler,
+    uint32_t i);
+
+/// @brief Binds the image to the given storage image descriptor.
+/// @param pImage A pointer to the image to bind.
+/// @param i The index of the descriptor to bind to.
+/// @return The result of binding the image.
+void cu_context_bind_storage_image(
+    CuImage* pImage,
+    uint32_t i);
 
 #ifdef __cplusplus
 }

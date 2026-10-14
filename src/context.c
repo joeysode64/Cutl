@@ -248,6 +248,77 @@ CuExtensionFlags cu_context_get_enabled_extensions()
     return gContext.mEnabledExtensions;
 }
 
+void cu_context_bind_sampled_image(
+    CuImage* const pImage,
+    const uint32_t i)
+{
+    const VkDescriptorImageInfo imageInfo = {
+        .sampler = VK_NULL_HANDLE,
+        .imageView = pImage->_imageView,
+        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    };
+    const VkWriteDescriptorSet write = {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .pNext = nullptr,
+        .dstSet = gContext._descriptorSet,
+        .dstBinding = 0,
+        .dstArrayElement = i,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+        .pImageInfo = &imageInfo,
+        .pBufferInfo = nullptr,
+        .pTexelBufferView = nullptr,
+    };
+    vkUpdateDescriptorSets(gContext._device, 1, &write, 0, nullptr);
+}
+
+void cu_context_bind_sampler(
+    CuSampler* const pSampler,
+    const uint32_t i)
+{
+    const VkDescriptorImageInfo imageInfo = {
+        .sampler = pSampler->_sampler,
+        .imageView = VK_NULL_HANDLE,
+        .imageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+    };
+    const VkWriteDescriptorSet write = {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .pNext = nullptr,
+        .dstSet = gContext._descriptorSet,
+        .dstBinding = 1,
+        .dstArrayElement = i,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
+        .pImageInfo = &imageInfo,
+        .pBufferInfo = nullptr,
+        .pTexelBufferView = nullptr,
+    };
+    vkUpdateDescriptorSets(gContext._device, 1, &write, 0, nullptr);
+}
+
+void cu_context_bind_storage_image(
+    CuImage* const pImage,
+    const uint32_t i)
+{
+    const VkDescriptorImageInfo imageInfo = {
+        .sampler = VK_NULL_HANDLE,
+        .imageView = pImage->_imageView,
+        .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+    };
+    const VkWriteDescriptorSet write = {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .pNext = nullptr,
+        .dstSet = gContext._descriptorSet,
+        .dstBinding = 2,
+        .dstArrayElement = i,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+        .pImageInfo = &imageInfo,
+        .pBufferInfo = nullptr,
+        .pTexelBufferView = nullptr,
+    };
+    vkUpdateDescriptorSets(gContext._device, 1, &write, 0, nullptr);
+}
 
 VkResult create_vk_instance(
     const char* const appName,
@@ -333,7 +404,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debug_messenger_callback(
     (void)_types;
     (void)_pUserData;
 
-    fputs(pCallbackData->pMessage, stderr);
+    fprintf(stderr, "%s\n", pCallbackData->pMessage);
 
     return VK_FALSE;
 }

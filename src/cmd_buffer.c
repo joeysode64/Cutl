@@ -1,5 +1,8 @@
 #include "cmd_buffer.h"
 
+#include "color.h"
+#include "g_context.h"
+#include "image.h"
 #include "pipeline.h"
 
 #include <stdint.h>
@@ -82,4 +85,102 @@ void cu_cmd_buffer_copy(
         .pRegions = &region,
     };
     vkCmdCopyBuffer2(deref(commandBuffer), &copyInfo);
+}
+
+void cu_cmd_image_barrier(
+    const CuCmdBuffer commandBuffer,
+    const CuImage* const pImage,
+    const CuPipelineStageFlags srcStageMask,
+    const CuAccessFlags srcAccessMask,
+    const CuPipelineStageFlags dstStageMask,
+    const CuAccessFlags dstAccessMask,
+    const CuImageLayout oldLayout,
+    const CuImageLayout newLayout)
+{
+    const VkImageSubresourceRange subresourceRange = {
+        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1,
+    };
+    const VkImageMemoryBarrier2 imageBarrier = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+        .pNext = nullptr,
+        .srcStageMask = srcStageMask,
+        .srcAccessMask = srcAccessMask,
+        .dstStageMask = dstStageMask,
+        .dstAccessMask = dstAccessMask,
+        .oldLayout = (VkImageLayout)oldLayout,
+        .newLayout = (VkImageLayout)newLayout,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = pImage->_image,
+        .subresourceRange = subresourceRange,
+    };
+    const VkDependencyInfo dependencyInfo = {
+        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+        .pNext = nullptr,
+        .dependencyFlags = 0,
+        .memoryBarrierCount = 0,
+        .pMemoryBarriers = nullptr,
+        .bufferMemoryBarrierCount = 0,
+        .pBufferMemoryBarriers = nullptr,
+        .imageMemoryBarrierCount = 1,
+        .pImageMemoryBarriers = &imageBarrier,
+    };
+    vkCmdPipelineBarrier2(deref(commandBuffer), &dependencyInfo);
+}
+
+void cu_cmd_image_fill(
+    const CuCmdBuffer commandBuffer,
+    const CuImage* const pImage,
+    const CuImageLayout layout,
+    const CuRGBA color)
+{
+    const VkClearColorValue clearColor = {
+        .float32 = {
+            (float)color.r / 255.0F,
+            (float)color.g / 255.0F,
+            (float)color.b / 255.0F,
+            (float)color.a / 255.0F,
+        },
+    };
+    const VkImageSubresourceRange subresourceRange = {
+        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1,
+    };
+    vkCmdClearColorImage(
+        deref(commandBuffer),
+        pImage->_image,
+        (VkImageLayout)layout,
+        &clearColor,
+        1,
+        &subresourceRange
+    );
+}
+
+void cu_cmd_bind_descriptors(
+    const CuCmdBuffer commandBuffer,
+    const CuPipelineLayout pipelineLayout)
+{
+    const VkPipelineBindPoint bindPoints[] = {
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        VK_PIPELINE_BIND_POINT_COMPUTE,
+    };
+    for (size_t i = 0; i < sizeof(bindPoints) / sizeof(bindPoints[0]); i++) {
+        vkCmdBindDescriptorSets(
+            deref(commandBuffer),
+            bindPoints[i],
+            (VkPipelineLayout)pipelineLayout,
+            0,
+            1,
+            &gContext._descriptorSet,
+            0,
+            nullptr
+        );
+    }
 }
