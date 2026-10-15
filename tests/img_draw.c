@@ -108,9 +108,9 @@ int main()
     query(cu_pipeline_layout_create(
         &screenPipelineLayout, &CU_DEFAULT_PIPELINE_LAYOUT_CREATE_INFO));
     CuSpirV screenVert = {};
-    query(cu_spirv_read_from_file(&screenVert, "tests/shaders/img_draw.vert.spv"));
+    query(cu_spirv_read_from_file(&screenVert, "tests/shaders/img_tex.vert.spv"));
     CuSpirV screenFrag = {};
-    query(cu_spirv_read_from_file(&screenFrag, "tests/shaders/img_draw.frag.spv"));
+    query(cu_spirv_read_from_file(&screenFrag, "tests/shaders/img_tex.frag.spv"));
     CuGraphicsPipeline screenPipeline = {};
     const CuGraphicsPipelineCreateInfo screenPipelineCreateInfo = {
         .pVert = screenVert.data,
