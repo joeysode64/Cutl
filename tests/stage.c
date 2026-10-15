@@ -40,7 +40,7 @@ int main()
     query(cu_context_init(&CU_DEFAULT_CONTEXT_CREATE_INFO));
 
     CuWindow window = {};
-    query(cu_window_create(&window, 800, 450, "Staging Buffer Test"));
+    query(cu_window_create(&window, WIN_W, WIN_H, "Staging Buffer Test"));
 
     CuRenderer renderer = {};
     query(cu_renderer_create(&renderer, &CU_DEFAULT_RENDERER_CREATE_INFO, &window));

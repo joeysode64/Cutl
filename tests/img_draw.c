@@ -7,21 +7,18 @@
 #include <math.h>
 #include <string.h>
 
-#define W 400
-#define H 225
+#define W (WIN_W / 4)
+#define H (WIN_H / 4)
 
 typedef struct {
-    vec2 pos;
-    vec2 _pad;
     vec4 color;
-} Vertex;
+    CuBufferAddress vertices;
+} TrianglePushConstants;
 
-/// @return The color for the vertex at the given angle.
-static vec4 get_color(
-    float angle,
-    int i)
+/// @return The color for the triangle at the given angle.
+static vec4 get_color(float angle)
 {
-    const float phase = (angle * 1.3F) + ((float)i * 2.0943951F);
+    const float phase = angle * 1.3F;
     return (vec4){
         .x = 0.5F + (0.5F * cosf(phase)),
         .y = 0.5F + (0.5F * cosf(phase + 2.0943951F)),
@@ -35,7 +32,7 @@ int main()
     query(cu_context_init(&CU_DEFAULT_CONTEXT_CREATE_INFO));
 
     CuWindow window = {};
-    query(cu_window_create(&window, 800, 450, "Image Draw Test"));
+    query(cu_window_create(&window, WIN_W, WIN_H, "Image Draw Test"));
 
     CuRenderer renderer = {};
     query(cu_renderer_create(&renderer, &CU_DEFAULT_RENDERER_CREATE_INFO, &window));
@@ -84,14 +81,14 @@ int main()
 
     // The pipeline that draws the triangle to the image.
     const CuPipelineLayoutCreateInfo trianglePipelineLayoutCreateInfo = {
-        .pushConstantSize = sizeof(CuBufferAddress),
+        .pushConstantSize = sizeof(TrianglePushConstants),
     };
     CuPipelineLayout trianglePipelineLayout = {};
     query(cu_pipeline_layout_create(&trianglePipelineLayout, &trianglePipelineLayoutCreateInfo));
     CuSpirV triangleVert = {};
-    query(cu_spirv_read_from_file(&triangleVert, "tests/shaders/stage.vert.spv"));
+    query(cu_spirv_read_from_file(&triangleVert, "tests/shaders/img_tri.vert.spv"));
     CuSpirV triangleFrag = {};
-    query(cu_spirv_read_from_file(&triangleFrag, "tests/shaders/stage.frag.spv"));
+    query(cu_spirv_read_from_file(&triangleFrag, "tests/shaders/img_tri.frag.spv"));
     CuGraphicsPipeline trianglePipeline = {};
     const CuGraphicsPipelineCreateInfo trianglePipelineCreateInfo = {
         .pVert = triangleVert.data,
@@ -132,7 +129,7 @@ int main()
     query(cu_dynamic_buffer_create(
         &vertexBuffer,
         CU_DEFAULT_RENDERER_CREATE_INFO.maxFramesInFlight,
-        3 * sizeof(Vertex),
+        3 * sizeof(vec2),
         CU_BUFFER_STORAGE_BUFFER,
         CU_DEDICATED_ALLOCATOR_MODE));
     float angle = 0.0F;
@@ -145,12 +142,16 @@ int main()
         cu_dynamic_buffer_get_data_frame(
             &vertexBuffer, &pData, &address, cu_renderer_get_frame_index(&renderer));
 
-        const Vertex vertices[3] = {
-            { .pos = { -1.0F, -1.0F }, .color = get_color(angle, 0) },
-            { .pos = { 1.0F, -1.0F }, .color = get_color(angle, 1) },
-            { .pos = { cosf(angle), sinf(angle) }, .color = get_color(angle, 2) },
+        const vec2 vertices[3] = {
+            { -1.0F, -1.0F },
+            { 1.0F, -1.0F },
+            { cosf(angle), sinf(angle) },
         };
         memcpy(pData, vertices, sizeof(vertices));
+        const TrianglePushConstants pushConstants = {
+            .color = get_color(angle),
+            .vertices = address,
+        };
         angle += 0.02F;
 
         CuFrame* pFrame = nullptr;
@@ -167,7 +168,8 @@ int main()
             CU_IMAGE_LAYOUT_COLOR_ATTACHMENT);
         cu_frame_begin_image_render(pFrame, &image, W, H);
         cu_cmd_bind_graphics_pipeline(pFrame, trianglePipeline);
-        cu_cmd_write_push_constants(pFrame, trianglePipelineLayout, &address, sizeof(address), 0);
+        cu_cmd_write_push_constants(
+            pFrame, trianglePipelineLayout, &pushConstants, sizeof(pushConstants), 0);
         cu_cmd_draw(pFrame, 3, 0, 1, 0);
         cu_frame_end_image_render(pFrame, &image, CU_IMAGE_LAYOUT_SHADER_READ_ONLY);
 

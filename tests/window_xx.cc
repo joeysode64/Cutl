@@ -8,7 +8,7 @@ int main()
     query(Context::init());
 
     Window window{};
-    query(Window::create(window, 800, 450, "Window Test C++"));
+    query(Window::create(window, WIN_W, WIN_H, "Window Test C++"));
 
     Renderer renderer{};
     query(Renderer::create(renderer, window));

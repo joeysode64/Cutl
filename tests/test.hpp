@@ -1,9 +1,15 @@
 #pragma once
 
-#include "result.h"
+#include "result.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
+
+/** @brief The window width. */
+#define WIN_W 800
+
+/** @brief The test window height. */
+#define WIN_H 450
 
 /** @brief Fails the test if the expression does not return a success. */
 #define query(e)                                                                                   \
