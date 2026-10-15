@@ -30,7 +30,7 @@ CuResult cu_task_create(
     return CU_SUCCESS;
 
 FAIL:
-    cu_log_fail("Failed to create task", result);
+    cu_log_fail(result);
     cu_task_destroy(pTask);
     return result;
 }

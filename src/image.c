@@ -51,7 +51,7 @@ CuResult cu_image_create(
     return CU_SUCCESS;
 
 FAIL:
-    cu_log_fail("Failed to create image", result);
+    cu_log_fail(result);
     cu_image_destroy(pImage, mode);
     return result;
 }

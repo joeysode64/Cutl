@@ -194,7 +194,7 @@ CuResult choose_surface_format(
         }
     }
 
-    cu_log("Chose surface format with format: 0x%X, and color space: 0x%X",
+    cu_log_note("Chose surface format with format: 0x%X, and color space: 0x%X",
         pSurfaceFormat->format, pSurfaceFormat->colorSpace);
     return CU_SUCCESS;
 }
@@ -214,6 +214,6 @@ CuResult choose_present_mode(
         }
     }
 
-    cu_log("Chose present mode 0x%X", *pPresentMode);
+    cu_log_note("Chose present mode 0x%X", *pPresentMode);
     return CU_SUCCESS;
 }

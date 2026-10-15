@@ -15,6 +15,7 @@
     do {                                                                                           \
         const VkResult _result = (e);                                                              \
         if (_result != VK_SUCCESS) {                                                               \
+            cu_log_expect(e, _result);                                                             \
             return _result;                                                                        \
         }                                                                                          \
     } while(false)
@@ -24,6 +25,7 @@
     do {                                                                                           \
         const VkResult _result = (e);                                                              \
         if (_result != VK_SUCCESS) {                                                               \
+            cu_log_expect(e, _result);                                                             \
             return cu_vk_error(_result);                                                           \
         }                                                                                          \
     } while(false)
@@ -33,12 +35,21 @@
 #define vk_try_catch(e)                                                                            \
     result = (e);                                                                                  \
     if (result != VK_SUCCESS) {                                                                    \
+        cu_log_expect(e, result);                                                                  \
         goto FAIL;                                                                                 \
     }
 
 /// @brief Queries the Vulkan result and stores it in the local `CuResult result` variable. If it is
 /// not a success value, jumps to `FAIL`.
-#define cu_try_catch_vk(e) cu_try_catch(cu_vk_result(e))
+#define cu_try_catch_vk(e)                                                                         \
+    do {                                                                                           \
+        const VkResult _result = (e);                                                              \
+        result = cu_vk_result(_result);                                                            \
+        if (!cu_is_success(result)) {                                                              \
+            cu_log_expect(e, _result);                                                             \
+            goto FAIL;                                                                             \
+        }                                                                                          \
+    } while(false)
 
 /// @brief Tries to allocate to the elements and returns `VK_ERROR_OUT_OF_HOST_MEMORY` if it fails.
 #define vk_allocate_n(p, n)                                                                        \

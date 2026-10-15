@@ -63,7 +63,7 @@ CuResult cu_renderer_create(
     return CU_SUCCESS;
 
 FAIL:
-    cu_log("Failed to create renderer: %u:%i", result.t, result.v);
+    cu_log_fail(result);
     cu_renderer_destroy(pRenderer);
     return result;
 }

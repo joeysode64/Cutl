@@ -26,7 +26,7 @@ CuResult cu_window_create(
     return CU_SUCCESS;
 
 FAIL:
-    cu_log_fail("Failed to create window", result);
+    cu_log_fail(result);
     cu_window_destroy(pWindow);
     return result;
 }

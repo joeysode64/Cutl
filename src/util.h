@@ -1,6 +1,7 @@
 #pragma once
 
 #include "allocation.h"
+#include "log.h"
 #include "result.h"
 
 #include <errno.h>
@@ -98,6 +99,7 @@
     do {                                                                                           \
         const CuResult _result = (e);                                                              \
         if (!cu_is_success(_result)) {                                                             \
+            cu_log_expect(e, _result.v);                                                           \
             return _result;                                                                        \
         }                                                                                          \
     } while(false)
@@ -107,6 +109,7 @@
 #define cu_try_catch(e)                                                                            \
     result = (e);                                                                                  \
     if (!cu_is_success(result)) {                                                                  \
+        cu_log_expect(e, result.v);                                                                \
         goto FAIL;                                                                                 \
     }
 

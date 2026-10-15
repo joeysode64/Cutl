@@ -204,7 +204,7 @@ CuResult cu_context_init(
     return CU_SUCCESS;
 
 FAIL:
-    cu_log_fail("Failed to create context", result);
+    cu_log_fail(result);
     cu_context_terminate();
     return result;
 }
