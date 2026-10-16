@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 /** @return The dereferenced command buffer. */
 #define deref(p) (*(VkCommandBuffer*)p)

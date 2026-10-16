@@ -8,13 +8,11 @@
 #include "util.h"
 #include "vk.h"
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <vulkan/vulkan_core.h>
-
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 
 /** @brief The Cutl version in Vulkan format. */

@@ -8,7 +8,6 @@
 
 #include <stddef.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 CuResult cu_static_buffer_create(
     CuStaticBuffer* const pStaticBuffer,

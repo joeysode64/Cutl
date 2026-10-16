@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 typedef struct CuFrame_T CuFrame;
 

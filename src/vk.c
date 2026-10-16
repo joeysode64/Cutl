@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 CuResult create_image(
     VkImage* const pImage,

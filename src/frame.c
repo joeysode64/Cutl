@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 void cu_frame_begin_render(
     CuFrame* const pFrame,

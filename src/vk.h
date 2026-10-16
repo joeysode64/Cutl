@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 /** @brief Queries the Vulkan result and returns it as a `CuResult` if it's not `VK_SUCCESS`. */
 #define vk_try(e)                                                                                  \

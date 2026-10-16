@@ -1,5 +1,3 @@
-#include "cmd_buffer.h"
-#include "image.h"
 #define CU_INCLUDE_MATH
 #include "cutl.h"
 #include "test.h"

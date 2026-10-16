@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 /** @brief Returns a bitmask of the memory types that contain all the memory properties. */
 static uint32_t get_memory_types(

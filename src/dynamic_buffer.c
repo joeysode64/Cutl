@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 CuResult cu_dynamic_buffer_create(
     CuDynamicBuffer* const pDynamicBuffer,
