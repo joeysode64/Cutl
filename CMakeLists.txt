@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(
     Cutl
-    VERSION 0.18.1.0
+    VERSION 0.19.0.0
     LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 23)
@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(glfw3 REQUIRED)
 find_package(Vulkan REQUIRED)
+find_package(PNG 1.6 REQUIRED)
 
 # Build library.
 
@@ -35,7 +36,7 @@ endif()
 
 target_link_libraries(
     cutl
-    PUBLIC glfw Vulkan::Vulkan)
+    PUBLIC glfw Vulkan::Vulkan PNG::PNG)
 
 configure_file(
     ${CMAKE_SOURCE_DIR}/include/info.h.in

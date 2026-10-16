@@ -24,6 +24,8 @@ typedef enum : int32_t {
     CU_ERROR_ARENA_TOO_SMALL, /**< Tried to allocate too large of data to an arena. */
 
     CU_ERROR_ARENA_FULL, /**< Tried to allocate to an arena that didn't have enough room left. */
+
+    CU_ERROR_PNG_READ, /**< Failed to read a PNG image. */
 } CuError;
 
 /** @brief A Cutl result. */

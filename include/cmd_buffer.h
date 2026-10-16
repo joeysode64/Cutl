@@ -131,6 +131,25 @@ void cu_cmd_image_fill(
     CuRGBA color);
 
 /**
+ * @brief Copies data from a buffer into the whole image.
+ * @param [in, out] commandBuffer The command buffer.
+ * @param [in] pImage A pointer to the image.
+ * @param layout The image's current layout.
+ * @param w The image's width.
+ * @param h The image's height.
+ * @param src The source buffer, holding tightly packed pixels.
+ * @param oSrc The read offset.
+ */
+void cu_cmd_image_copy_from_buffer(
+    CuCmdBuffer commandBuffer,
+    const CuImage* pImage,
+    VkImageLayout layout,
+    uint32_t w,
+    uint32_t h,
+    VkBuffer src,
+    size_t oSrc);
+
+/**
  * @brief Binds the context's image and sampler descriptors for use in shaders.
  * @param [in, out] commandBuffer The command buffer.
  * @param pipelineLayout The pipeline layout.

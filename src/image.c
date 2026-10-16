@@ -7,6 +7,7 @@
 #include "util.h"
 #include "vk.h"
 
+#include <png.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
@@ -94,4 +95,44 @@ void cu_sampler_destroy(
     CuSampler* const pSampler)
 {
     vkDestroySampler(gContext._device, pSampler->_sampler, nullptr);
+}
+
+CuResult cu_png_load(
+    void* const pData,
+    uint32_t* const pW,
+    uint32_t* const pH,
+    const char* const path,
+    const png_uint_32 format)
+{
+    CuResult result = CU_SUCCESS;
+
+    png_image image = {};
+    image.version = PNG_IMAGE_VERSION;
+    cu_assert_catch(
+        png_image_begin_read_from_file(&image, path), cu_error(CU_ERROR_PNG_READ));
+
+    if (format != 0) {
+        image.format = format;
+    }
+
+    if (pW != nullptr) {
+        *pW = image.width;
+    }
+    if (pH != nullptr) {
+        *pH = image.height;
+    }
+
+    if (pData != nullptr) {
+        cu_assert_catch(
+            png_image_finish_read(&image, nullptr, pData, 0, nullptr),
+            cu_error(CU_ERROR_PNG_READ));
+    }
+
+    png_image_free(&image);
+    return CU_SUCCESS;
+
+FAIL:
+    cu_log_fail(result);
+    png_image_free(&image);
+    return result;
 }

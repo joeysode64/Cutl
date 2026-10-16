@@ -162,6 +162,42 @@ void cu_cmd_image_fill(
     );
 }
 
+void cu_cmd_image_copy_from_buffer(
+    const CuCmdBuffer commandBuffer,
+    const CuImage* const pImage,
+    const VkImageLayout layout,
+    const uint32_t w,
+    const uint32_t h,
+    const VkBuffer src,
+    const size_t oSrc)
+{
+    const VkBufferImageCopy2 region = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_IMAGE_COPY_2,
+        .pNext = nullptr,
+        .bufferOffset = oSrc,
+        .bufferRowLength = 0,
+        .bufferImageHeight = 0,
+        .imageSubresource = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .mipLevel = 0,
+            .baseArrayLayer = 0,
+            .layerCount = 1,
+        },
+        .imageOffset = { 0, 0, 0 },
+        .imageExtent = { w, h, 1 },
+    };
+    const VkCopyBufferToImageInfo2 copyInfo = {
+        .sType = VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2,
+        .pNext = nullptr,
+        .srcBuffer = src,
+        .dstImage = pImage->_image,
+        .dstImageLayout = layout,
+        .regionCount = 1,
+        .pRegions = &region,
+    };
+    vkCmdCopyBufferToImage2(deref(commandBuffer), &copyInfo);
+}
+
 void cu_cmd_bind_descriptors(
     const CuCmdBuffer commandBuffer,
     const CuPipelineLayout pipelineLayout)
