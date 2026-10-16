@@ -23,3 +23,8 @@
 #ifdef CU_INCLUDE_MATH
     #include "mdef.h"
 #endif
+
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#include <png.h>
+#include <vulkan/vulkan.h>
