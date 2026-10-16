@@ -1,5 +1,6 @@
 #pragma once
 
+#include "context.hpp"
 #include "result.hpp"
 
 #include <stdio.h>
@@ -45,5 +46,8 @@
  * @note Must be called from the main function.
  */
 #define success()                                                                                  \
-    fprintf(stderr, " Test passed!\n");                                                            \
+    atexit([] {                                                                                    \
+        cu::Context::terminate();                                                                  \
+        fprintf(stderr, " Test passed!\n");                                                        \
+    });                                                                                            \
     return EXIT_SUCCESS;

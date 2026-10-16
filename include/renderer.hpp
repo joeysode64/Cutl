@@ -3,16 +3,14 @@
 #include "renderer.h"
 #include "result.hpp"
 #include "window.hpp"
+#include "wrapper.hpp"
 
 #include <vulkan/vulkan.h>
 
 namespace cu
 {
     /** @brief A Vulkan renderer. */
-    class Renderer {
-    private:
-        CuRenderer me; /**< The renderer. */
-    
+    class Renderer : public Wrapper<CuRenderer> {
     public:
         /** @brief Create info for a renderer. */
         using CreateInfo = CuRendererCreateInfo;
@@ -27,7 +25,7 @@ namespace cu
 
         /** @brief Creates an uninitialized renderer. */
         constexpr Renderer()
-            : me{}
+            : Wrapper{}
         {
 
         }
@@ -58,22 +56,6 @@ namespace cu
             const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
             return cu_renderer_create(&renderer.me, &createInfo, &window.get());
-        }
-
-        /**
-         * @brief Returns the renderer.
-         * @return The renderer.
-         */
-        constexpr CuRenderer& get() {
-            return me;
-        }
-
-        /**
-         * @brief Returns the renderer.
-         * @return The renderer.
-         */
-        constexpr const CuRenderer& get() const {
-            return me;
         }
 
         /**

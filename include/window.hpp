@@ -2,14 +2,12 @@
 
 #include "result.hpp"
 #include "window.h"
+#include "wrapper.hpp"
 
 namespace cu
 {
     /** @brief A window. */
-    class Window {
-    private:
-        CuWindow me; /**< The window. */
-
+    class Window : public Wrapper<CuWindow> {
     public:
         inline ~Window()
         {
@@ -18,7 +16,7 @@ namespace cu
 
         /** @brief Creates an uninitialized window. */
         constexpr Window()
-            : me{}
+            : Wrapper{}
         {
 
         }
@@ -38,22 +36,6 @@ namespace cu
             const char* title)
         {
             return cu_window_create(&window.me, w, h, title);
-        }
-
-        /**
-         * @brief Returns the window.
-         * @return The window.
-         */
-        constexpr CuWindow& get() {
-            return me;
-        }
-
-        /**
-         * @brief Returns the window.
-         * @return The window.
-         */
-        constexpr const CuWindow& get() const {
-            return me;
         }
 
         /** @brief Updates the window. */
