@@ -10,7 +10,7 @@ int main()
     query(cu_context_init(&CU_DEFAULT_CONTEXT_CREATE_INFO));
 
     const CuPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {
-        .pushConstantSize = sizeof(CuBufferAddress),
+        .pushConstantSize = sizeof(VkDeviceAddress),
     };
     CuPipelineLayout pipelineLayout = {};
     query(cu_pipeline_layout_create(&pipelineLayout, &pipelineLayoutCreateInfo));
@@ -27,11 +27,11 @@ int main()
         &buffer,
         1,
         N * sizeof(float),
-        CU_BUFFER_STORAGE_BUFFER,
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
         CU_DEDICATED_ALLOCATOR_MODE));
 
     void* pData = nullptr;
-    CuBufferAddress address = 0;
+    VkDeviceAddress address = 0;
     cu_dynamic_buffer_get_data_frame(&buffer, &pData, &address, 0);
 
     float* values = (float*)pData;

@@ -12,7 +12,7 @@
 
 typedef struct {
     vec4 color;
-    CuBufferAddress vertices;
+    VkDeviceAddress vertices;
 } TrianglePushConstants;
 
 /// @return The color for the triangle at the given angle.
@@ -42,10 +42,10 @@ int main()
         &image,
         W,
         H,
-        CU_FORMAT_R8G8B8A8_UNORM,
-        CU_IMAGE_USAGE_SAMPLED_BIT |
-            CU_IMAGE_USAGE_TRANSFER_DST_BIT |
-            CU_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        VK_FORMAT_R8G8B8A8_UNORM,
+        VK_IMAGE_USAGE_SAMPLED_BIT |
+            VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
         CU_DEDICATED_ALLOCATOR_MODE));
     cu_context_bind_sampled_image(&image, 0);
 
@@ -59,22 +59,22 @@ int main()
     cu_cmd_image_barrier(
         &task,
         &image,
-        CU_PIPELINE_STAGE_NONE,
-        CU_ACCESS_NONE,
-        CU_PIPELINE_STAGE_CLEAR,
-        CU_ACCESS_TRANSFER_WRITE,
-        CU_IMAGE_LAYOUT_UNDEFINED,
-        CU_IMAGE_LAYOUT_TRANSFER_DST);
-    cu_cmd_image_fill(&task, &image, CU_IMAGE_LAYOUT_TRANSFER_DST, CU_RGBA_BLACK);
+        VK_PIPELINE_STAGE_2_NONE,
+        VK_ACCESS_2_NONE,
+        VK_PIPELINE_STAGE_2_CLEAR_BIT,
+        VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    cu_cmd_image_fill(&task, &image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, CU_RGBA_BLACK);
     cu_cmd_image_barrier(
         &task,
         &image,
-        CU_PIPELINE_STAGE_CLEAR,
-        CU_ACCESS_TRANSFER_WRITE,
-        CU_PIPELINE_STAGE_FRAGMENT_SHADER,
-        CU_ACCESS_SHADER_READ,
-        CU_IMAGE_LAYOUT_TRANSFER_DST,
-        CU_IMAGE_LAYOUT_SHADER_READ_ONLY);
+        VK_PIPELINE_STAGE_2_CLEAR_BIT,
+        VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+        VK_ACCESS_2_SHADER_READ_BIT,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     query(cu_task_submit(&task));
     cu_task_await(&task, UINT64_MAX);
     cu_task_destroy(&task);
@@ -95,7 +95,7 @@ int main()
         .nVert = triangleVert.n,
         .pFrag = triangleFrag.data,
         .nFrag = triangleFrag.n,
-        .pFormats = (CuFormat[]){ CU_FORMAT_R8G8B8A8_UNORM },
+        .pFormats = (VkFormat[]){ VK_FORMAT_R8G8B8A8_UNORM },
         .nFormats = 1,
     };
     query(cu_graphics_pipeline_create(
@@ -117,7 +117,7 @@ int main()
         .nVert = screenVert.n,
         .pFrag = screenFrag.data,
         .nFrag = screenFrag.n,
-        .pFormats = (CuFormat[]){ cu_renderer_get_format(&renderer) },
+        .pFormats = (VkFormat[]){ cu_renderer_get_format(&renderer) },
         .nFormats = 1,
     };
     query(cu_graphics_pipeline_create(
@@ -130,7 +130,7 @@ int main()
         &vertexBuffer,
         CU_DEFAULT_RENDERER_CREATE_INFO.maxFramesInFlight,
         3 * sizeof(vec2),
-        CU_BUFFER_STORAGE_BUFFER,
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
         CU_DEDICATED_ALLOCATOR_MODE));
     float angle = 0.0F;
 
@@ -138,7 +138,7 @@ int main()
         cu_window_update(&window);
 
         void* pData = nullptr;
-        CuBufferAddress address = 0;
+        VkDeviceAddress address = 0;
         cu_dynamic_buffer_get_data_frame(
             &vertexBuffer, &pData, &address, cu_renderer_get_frame_index(&renderer));
 
@@ -160,18 +160,18 @@ int main()
         cu_cmd_image_barrier(
             pFrame,
             &image,
-            CU_PIPELINE_STAGE_FRAGMENT_SHADER,
-            CU_ACCESS_SHADER_READ,
-            CU_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT,
-            CU_PIPELINE_STAGE_ALL_GRAPHICS,
-            CU_IMAGE_LAYOUT_SHADER_READ_ONLY,
-            CU_IMAGE_LAYOUT_COLOR_ATTACHMENT);
+            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+            VK_ACCESS_2_SHADER_READ_BIT,
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         cu_frame_begin_image_render(pFrame, &image, W, H);
         cu_cmd_bind_graphics_pipeline(pFrame, trianglePipeline);
         cu_cmd_write_push_constants(
             pFrame, trianglePipelineLayout, &pushConstants, sizeof(pushConstants), 0);
         cu_cmd_draw(pFrame, 3, 0, 1, 0);
-        cu_frame_end_image_render(pFrame, &image, CU_IMAGE_LAYOUT_SHADER_READ_ONLY);
+        cu_frame_end_image_render(pFrame, &image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
         cu_frame_begin_render(pFrame, &renderer);
         cu_cmd_bind_graphics_pipeline(pFrame, screenPipeline);

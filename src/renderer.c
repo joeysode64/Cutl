@@ -2,7 +2,6 @@
 
 #include "frame.h"
 #include "g_context.h"
-#include "def.h"
 #include "log.h"
 #include "result.h"
 #include "swapchain.h"
@@ -22,24 +21,30 @@ CuResult cu_renderer_create(
 {
     CuResult result = CU_SUCCESS;
 
-    cu_try_catch(create_swapchain(
-        &pRenderer->_swapchainInfo,
-        &pRenderer->_nSwapchainImages,
+    CuSwapchainInfo swapchainInfo = {};
+    cu_try_catch(cu_vk_create_swapchain(
+        &swapchainInfo,
         pCreateInfo->minSwapchainImages,
         pWindow,
         VK_NULL_HANDLE));
-    cu_log_create(pRenderer->_swapchainInfo._surface);
-    cu_log_create(pRenderer->_swapchainInfo._handle);
+    cu_log_create(swapchainInfo._surface);
+    cu_log_create(swapchainInfo._handle);
+    pRenderer->_surface = swapchainInfo._surface;
+    pRenderer->_swapchain = swapchainInfo._handle;
+    pRenderer->_swapchainFormat = swapchainInfo._format;
+    pRenderer->_swapchainExtent = swapchainInfo._extent;
+    pRenderer->_nSwapchainImages = swapchainInfo._nImages;
     
     const size_t zSwapchainImages = pRenderer->_nSwapchainImages * sizeof(CuSwapchainImage);
     const size_t zFramesInFlight = pCreateInfo->maxFramesInFlight * sizeof(CuFrame);
     allocate_z(pRenderer->_pData, zSwapchainImages + zFramesInFlight);
 
     pRenderer->_pSwapchainImages = (CuSwapchainImage*)pRenderer->_pData;
-    cu_try_catch(create_swapchain_images(
+    cu_try_catch(cu_swapchain_images_create(
         pRenderer->_pSwapchainImages,
         pRenderer->_nSwapchainImages,
-        &pRenderer->_swapchainInfo));
+        pRenderer->_swapchain,
+        pRenderer->_swapchainFormat));
 
     pRenderer->_pFramesInFlight =
         (CuFrame*)((uint8_t*)pRenderer->_pSwapchainImages + zSwapchainImages);
@@ -84,12 +89,12 @@ void cu_renderer_destroy(
         pRenderer->_nFramesInFlight,
         gContext._device,
         gContext._commandPool);
-    destroy_swapchain_images(
+    cu_swapchain_images_destroy(
         pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
-    vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchainInfo._handle, nullptr);
-    cu_log_destroy(pRenderer->_swapchainInfo._handle);
-    vkDestroySurfaceKHR(gContext._instance, pRenderer->_swapchainInfo._surface, nullptr);
-    cu_log_destroy(pRenderer->_swapchainInfo._surface);
+    vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
+    cu_log_destroy(pRenderer->_swapchain);
+    vkDestroySurfaceKHR(gContext._instance, pRenderer->_surface, nullptr);
+    cu_log_destroy(pRenderer->_surface);
     free(pRenderer->_pData);
 }
 
@@ -98,8 +103,6 @@ CuResult cu_renderer_begin_frame(
     CuRenderer* const pRenderer,
     CuFrame** const ppFrame)
 {
-    CuResult result = CU_SUCCESS;
-
     const uint32_t iFrame = cu_renderer_get_frame_index(pRenderer);
     CuFrame* const pFrame = &pRenderer->_pFramesInFlight[iFrame];
 
@@ -113,12 +116,12 @@ CuResult cu_renderer_begin_frame(
         .pSemaphores = &pRenderer->_timelineSemaphore,
         .pValues = &waitValue,
     };
-    cu_try_catch_vk(vkWaitSemaphores(gContext._device, &waitInfo, TIMEOUT_NANOS));
+    cu_try_vk(vkWaitSemaphores(gContext._device, &waitInfo, TIMEOUT_NANOS));
 
     // Get the next target swapchain image's index.
-    cu_try_catch_vk(vkAcquireNextImageKHR(
+    cu_try_vk(vkAcquireNextImageKHR(
         gContext._device,
-        pRenderer->_swapchainInfo._handle,
+        pRenderer->_swapchain,
         TIMEOUT_NANOS,
         pFrame->_imageAvailable,
         VK_NULL_HANDLE,
@@ -131,23 +134,18 @@ CuResult cu_renderer_begin_frame(
         .flags = 0,
         .pInheritanceInfo = nullptr,
     };
-    cu_try_catch_vk(vkBeginCommandBuffer(pFrame->_commandBuffer, &beginInfo));
+    cu_try_vk(vkBeginCommandBuffer(pFrame->_commandBuffer, &beginInfo));
 
     *ppFrame = pFrame;
     return CU_SUCCESS;
-
-FAIL:
-    return result;
 }
 
 CuResult cu_renderer_submit_frame(
     CuRenderer* const pRenderer,
     CuFrame* pFrame)
 {
-    CuResult result = CU_SUCCESS;
-
     // End the frame's command buffer.
-    cu_try_catch_vk(vkEndCommandBuffer(pFrame->_commandBuffer));
+    cu_try_vk(vkEndCommandBuffer(pFrame->_commandBuffer));
 
     CuSwapchainImage* const pSwapchainImage =
         &pRenderer->_pSwapchainImages[pRenderer->_iSwapchainImage];
@@ -196,7 +194,7 @@ CuResult cu_renderer_submit_frame(
         .signalSemaphoreInfoCount = 2,
         .pSignalSemaphoreInfos = signalSemaphoreInfos,
     };
-    cu_try_catch_vk(vkQueueSubmit2(gContext._queue, 1, &submitInfo, VK_NULL_HANDLE));
+    cu_try_vk(vkQueueSubmit2(gContext._queue, 1, &submitInfo, VK_NULL_HANDLE));
     pRenderer->_frameCounter += 1;
 
     // Submit presentation.
@@ -206,14 +204,11 @@ CuResult cu_renderer_submit_frame(
         .waitSemaphoreCount = 1,
         .pWaitSemaphores = &pSwapchainImage->_renderFinished,
         .swapchainCount = 1,
-        .pSwapchains = &pRenderer->_swapchainInfo._handle,
+        .pSwapchains = &pRenderer->_swapchain,
         .pImageIndices = &pRenderer->_iSwapchainImage,
         .pResults = nullptr,
     };
-    cu_try_catch_vk(vkQueuePresentKHR(gContext._queue, &presentInfo));
+    cu_try_vk(vkQueuePresentKHR(gContext._queue, &presentInfo));
 
     return CU_SUCCESS;
-
-FAIL:
-    return result;
 }

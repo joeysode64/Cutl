@@ -1,63 +1,99 @@
 #pragma once
 
-#include "def.h"
 #include "result.h"
 
 #include <stdint.h>
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
-/// @brief A GPU memory allocation.
+/** @brief A Vulkan memory allocation. */
 typedef struct CuAllocation_T {
-    /// @brief The memory handle.
-    cu_vk_t(DeviceMemory) _memory;
+    VkDeviceMemory _memory; /**< The memory allocation handle. */
 
-    /// @brief The memory offset.
-    uint64_t _offset;
+    VkDeviceSize _offset; /**< The offset from the allocation's base. */
 } CuAllocation;
 
-/// @brief A GPU memory allocator.
+/** @brief A Vulkan memory allocator. */
 typedef void CuAllocator;
 
-/// @brief Memory allocation requirements.
-/// @note Alias for `VkMemoryRequirements`.
-typedef struct VkMemoryRequirements CuMemoryRequirements;
-
-/// @brief An allocator's allocate callback.
-/// @param [out] pAllocation A pointer to the allocation.
-/// @param [out] ppData A pointer to the mapped memory. Ignored if null.
-/// @param [in, out] pAllocator A pointer to the allocator.
-/// @param pRequirements A pointer to the memory requirements.
-/// @param mRequired A bitmask of the required memory types.
-/// @param mPreferred A bitmask of the preferred (but not required) memory types.
-/// @return The result of the allocation.
+/**
+ * @brief An allocator's allocation callback.
+ * @param [out] pAllocation A pointer to the allocation.
+ * @param [out] ppData A pointer the mapped memory, or null to ignore.
+ * @param [in, out] pAllocator A pointer to the allocator.
+ * @param pRequirements A pointer to the memory requirements.
+ * @param mProperties A bitmap of the memory properties.
+ */
 typedef CuResult(*CuAllocateFn)(
     CuAllocation* pAllocation,
     void** ppData,
     CuAllocator* pAllocator,
-    const CuMemoryRequirements* pRequirements,
-    uint32_t mRequired,
-    uint32_t mPreferred);
+    const VkMemoryRequirements* pRequirements,
+    VkMemoryPropertyFlags mProperties);
 
-/// @brief An allocator's free callback.
-/// @param [in, out] pAllocation A pointer to the allocation.
-/// @param [in, out] pAllocator A pointer to the allocator.
+/**
+ * @brief An allocator's free callback.
+ * @param [in, out] pAllocation A pointer to the allocation.
+ * @param [in, out] pAllocator A pointer to the allocator.
+ */
 typedef void(*CuFreeFn)(
     CuAllocation* pAllocation,
     CuAllocator* pAllocator);
 
-/// @brief A GPU memory allocator's callback functions.
+/** @brief A Vulkan memory allocator's callbacks. */
 typedef struct CuAllocatorFns_T {
-    /// @brief The allocation function.
-    CuAllocateFn _fAllocate;
+    CuAllocateFn _fAllocate; /**< The allocate callback. */
 
-    /// @brief The free function.
-    CuFreeFn _fFree;
+    CuFreeFn _fFree; /**< The free callback. */
 } CuAllocatorFns;
 
-/// @brief A GPU allocation mode.
+/** @brief A Vulkan allocator mode. */
 typedef struct CuAllocationMode_T {
-    /// @brief A pointer to the allocator.
-    CuAllocator* _pAllocator;
+    CuAllocator* _pAllocator; /**< A pointer to the allocator. */
 
-    /// @brief The allocator's callback functions.
-    const CuAllocatorFns* _pFns;
+    const CuAllocatorFns* _pFns; /**< A pointer to the allocator's callbacks. */
 } CuAllocationMode;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Allocates using the allocation mode.
+ * @param [out] pAllocation A pointer to the allocation.
+ * @param [out] ppData A pointer to the mapped memory. Ignored if null.
+ * @param mode The allocation mode.
+ * @param pRequirements A pointer to the memory requirements.
+ * @param mProperties A bitmap of the memory type properties.
+ * @return The result of the allocation.
+ */
+static inline CuResult mode_allocate(
+    CuAllocation* const pAllocation,
+    void** const ppData,
+    const CuAllocationMode mode,
+    const VkMemoryRequirements* const pRequirements,
+    const VkMemoryPropertyFlags mProperties)
+{
+    return mode._pFns->_fAllocate(
+        pAllocation,
+        ppData,
+        mode._pAllocator,
+        pRequirements,
+        mProperties);
+}
+
+/**
+ * @brief Frees an allocation using the allocation mode.
+ * @param [in, out] pAllocation A pointer to the allocation.
+ * @param mode The allocation mode.
+ */
+static inline void mode_free(
+    CuAllocation* const pAllocation,
+    const CuAllocationMode mode)
+{
+    mode._pFns->_fFree(pAllocation, mode._pAllocator);
+}
+
+#ifdef __cplusplus
+}
+#endif

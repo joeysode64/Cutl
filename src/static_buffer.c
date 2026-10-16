@@ -1,7 +1,6 @@
 #include "static_buffer.h"
 
 #include "allocation.h"
-#include "buffer.h"
 #include "g_context.h"
 #include "result.h"
 #include "util.h"
@@ -9,11 +8,12 @@
 
 #include <stddef.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 CuResult cu_static_buffer_create(
     CuStaticBuffer* const pStaticBuffer,
     const size_t z,
-    const CuBufferUsage usage,
+    const VkBufferUsageFlags usage,
     const CuAllocationMode mode)
 {
     CuResult result = CU_SUCCESS;
@@ -25,8 +25,7 @@ CuResult cu_static_buffer_create(
         z,
         usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
         mode,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        0));
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
     pStaticBuffer->_address = get_buffer_device_address(pStaticBuffer->_buffer);
 
     return CU_SUCCESS;

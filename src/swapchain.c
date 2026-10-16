@@ -1,7 +1,6 @@
 #include "swapchain.h"
 
 #include "enumerator.h"
-#include "def.h"
 #include "g_context.h"
 #include "log.h"
 #include "result.h"
@@ -15,36 +14,120 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-/// @brief Creates a headless surface.
-/// @param pSurface A pointer to the surface.
-/// @return The result of the surface's creation.
-static VkResult create_headless_surface(
-    VkSurfaceKHR* pSurface);
-
-/// @return The extent clamped into the capabilities' range.
-static VkExtent2D get_extent(
-    const VkSurfaceCapabilitiesKHR* pCapabilities,
-    VkExtent2D preferred);
-
-/// @brief Chooses the surface format best suited for the swapchain.
-static CuResult choose_surface_format(
-    VkSurfaceFormatKHR* pSurfaceFormat,
-    VkSurfaceKHR surface);
-
-/// @brief Chooses the present mode best suited for the swapchain.
-static CuResult choose_present_mode(
-    VkPresentModeKHR* pPresentMode,
-    VkSurfaceKHR surface);
-
-/// @brief The preffered extent for a headless surface's swapchain.
+/** @brief The preferred extent for a headless surface's swapchain. */
 constexpr VkExtent2D PREFERRED_HEADLESS_EXTENT = {
     .width = 1280,
     .height = 720,
 };
 
-CuResult create_swapchain(
+
+/**
+ * @brief Creates a headless surface.
+ * @param [out] pSurface A pointer to the surface.
+ * @return The result of creating the surface.
+ */
+static VkResult create_headless_surface(
+    VkSurfaceKHR* const pSurface)
+{
+    const VkHeadlessSurfaceCreateInfoEXT createInfo = {
+        .sType = VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT,
+        .pNext = nullptr,
+        .flags = 0,
+    };
+    const auto fCreateHeadlessSurface = (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(
+            gContext._instance, "vkCreateHeadlessSurfaceEXT");
+    return fCreateHeadlessSurface(gContext._instance, &createInfo, nullptr, pSurface);
+}
+
+/**
+ * @brief Returns the preferred extent clamped within the surface capabilities.
+ * @param pCapabilities A pointer to the capabilities.
+ * @param preferred The preferred extent.
+ * @return The preferred extent clamped within the surface capabilities.
+ */
+static VkExtent2D get_extent(
+    const VkSurfaceCapabilitiesKHR* const pCapabilities,
+    const VkExtent2D preferred)
+{
+    const bool isExtentDefined = (pCapabilities->currentExtent.width != UINT32_MAX) ||
+        (pCapabilities->currentExtent.height != UINT32_MAX);
+    if (isExtentDefined) {
+        return pCapabilities->currentExtent;
+    } else {
+        return (VkExtent2D){
+            .width = clamp(
+                preferred.width,
+                pCapabilities->minImageExtent.width,
+                pCapabilities->maxImageExtent.width),
+            .height = clamp(
+                preferred.height,
+                pCapabilities->minImageExtent.height,
+                pCapabilities->maxImageExtent.height),
+        };
+    }
+}
+
+/**
+ * @brief Chooses a surface format for the surface.
+ * @param [out] pSurfaceFormat A pointer to the surface format.
+ * @param surface The surface handle.
+ * @return The result of choosing a surface format.
+ * @note Chooses The first 32-bit format with a non-linear SRGB color space, or the first surface
+ * format if none are found.
+ */
+static CuResult choose_surface_format(
+    VkSurfaceFormatKHR* const pSurfaceFormat,
+    const VkSurfaceKHR surface)
+{
+    Enumerator(VkSurfaceFormatKHR) surfaceFormats ENUMERATOR_AUTO_FREE = {};
+    enumerate_vk(surfaceFormats, vkGetPhysicalDeviceSurfaceFormatsKHR, gContext._physicalDevice, surface);
+
+    *pSurfaceFormat = surfaceFormats.p[0];
+    for (uint32_t i = 0; i < surfaceFormats.n; i++) {
+        const VkSurfaceFormatKHR surfaceFormat = surfaceFormats.p[i];
+        const bool hasGoodFormat = (surfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB) ||
+            (surfaceFormat.format == VK_FORMAT_R8G8B8A8_SRGB);
+        const bool hasGoodColorSpace =
+            surfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+        if (hasGoodFormat && hasGoodColorSpace) {
+            *pSurfaceFormat = surfaceFormat;
+            break;
+        }
+    }
+
+    cu_log_note("Chose surface format with format: 0x%X, and color space: 0x%X",
+        pSurfaceFormat->format, pSurfaceFormat->colorSpace);
+    return CU_SUCCESS;
+}
+
+/**
+ * @brief Chooses the present mode for the surface.
+ * @param [out] pPresentMode A pointer to the present mode.
+ * @param surface The surface handle.
+ * @return The result of choosing a present mode.
+ * @note Chooses mailbox if present, falling back to FIFO.
+ */
+static CuResult choose_present_mode(
+    VkPresentModeKHR* const pPresentMode,
+    const VkSurfaceKHR surface)
+{
+    Enumerator(VkPresentModeKHR) presentModes ENUMERATOR_AUTO_FREE = {};
+    enumerate_vk(presentModes, vkGetPhysicalDeviceSurfacePresentModesKHR, gContext._physicalDevice, surface);
+
+    *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
+    for (uint32_t i = 0; i < presentModes.n; i++) {
+        if (presentModes.p[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+            *pPresentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+            break;
+        }
+    }
+
+    cu_log_note("Chose present mode 0x%X", *pPresentMode);
+    return CU_SUCCESS;
+}
+
+CuResult cu_vk_create_swapchain(
     CuSwapchainInfo* const pSwapchainInfo,
-    uint32_t* const pnSwapchainImages,
     const uint32_t minSwapchainImages,
     const CuWindow* const pWindow,
     const VkSwapchainKHR oldSwapchain)
@@ -95,30 +178,30 @@ CuResult create_swapchain(
         gContext._device, &createInfo, nullptr, &pSwapchainInfo->_handle));
 
     cu_try_vk(vkGetSwapchainImagesKHR(
-        gContext._device, pSwapchainInfo->_handle, pnSwapchainImages, nullptr));
+        gContext._device, pSwapchainInfo->_handle, &pSwapchainInfo->_nImages, nullptr));
 
     pSwapchainInfo->_surface = surface;
-    pSwapchainInfo->_format = (CuFormat)surfaceFormat.format;
-    pSwapchainInfo->_w = extent.width;
-    pSwapchainInfo->_h = extent.height;
+    pSwapchainInfo->_format = surfaceFormat.format;
+    pSwapchainInfo->_extent = extent;
 
     return CU_SUCCESS;
 }
 
-CuResult create_swapchain_images(
+CuResult cu_swapchain_images_create(
     CuSwapchainImage* const pSwapchainImages,
     uint32_t nSwapchainImages,
-    const CuSwapchainInfo* const pSwapchainInfo)
+    const VkSwapchainKHR swapchain,
+    const VkFormat format)
 {
     VkImage images[nSwapchainImages];
     cu_try_vk(vkGetSwapchainImagesKHR(
-        gContext._device, pSwapchainInfo->_handle, &nSwapchainImages, images));
+        gContext._device, swapchain, &nSwapchainImages, images));
 
     for (uint32_t i = 0; i < nSwapchainImages; i++) {
         CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
 
         cu_try(create_image_view(
-            &pSwapchainImage->_imageView, gContext._device, images[i], (VkFormat)pSwapchainInfo->_format));
+            &pSwapchainImage->_imageView, gContext._device, images[i], format));
         cu_try(create_semaphore(
             &pSwapchainImage->_renderFinished, gContext._device, VK_SEMAPHORE_TYPE_BINARY, 0));
         pSwapchainImage->_image = images[i];
@@ -127,7 +210,7 @@ CuResult create_swapchain_images(
     return CU_SUCCESS;
 }
 
-void destroy_swapchain_images(
+void cu_swapchain_images_destroy(
     CuSwapchainImage* const pSwapchainImages,
     const uint32_t nSwapchainImages)
 {
@@ -137,83 +220,4 @@ void destroy_swapchain_images(
         vkDestroyImageView(gContext._device, pSwapchainImage->_imageView, nullptr);
         vkDestroySemaphore(gContext._device, pSwapchainImage->_renderFinished, nullptr);
     }
-}
-
-VkResult create_headless_surface(
-    VkSurfaceKHR* pSurface)
-{
-    const VkHeadlessSurfaceCreateInfoEXT createInfo = {
-        .sType = VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT,
-        .pNext = nullptr,
-        .flags = 0,
-    };
-    const auto fCreateHeadlessSurface = (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(
-            gContext._instance, "vkCreateHeadlessSurfaceEXT");
-    return fCreateHeadlessSurface(gContext._instance, &createInfo, nullptr, pSurface);
-}
-
-VkExtent2D get_extent(
-    const VkSurfaceCapabilitiesKHR* const pCapabilities,
-    const VkExtent2D preferred)
-{
-    const bool isExtentDefined = (pCapabilities->currentExtent.width != UINT32_MAX) ||
-        (pCapabilities->currentExtent.height != UINT32_MAX);
-    if (isExtentDefined) {
-        return pCapabilities->currentExtent;
-    } else {
-        return (VkExtent2D){
-            .width = clamp(
-                preferred.width,
-                pCapabilities->minImageExtent.width,
-                pCapabilities->maxImageExtent.width),
-            .height = clamp(
-                preferred.height,
-                pCapabilities->minImageExtent.height,
-                pCapabilities->maxImageExtent.height),
-        };
-    }
-}
-
-CuResult choose_surface_format(
-    VkSurfaceFormatKHR* const pSurfaceFormat,
-    const VkSurfaceKHR surface)
-{
-    Enumerator(VkSurfaceFormatKHR) surfaceFormats ENUMERATOR_AUTO_FREE = {};
-    enumerate_vk(surfaceFormats, vkGetPhysicalDeviceSurfaceFormatsKHR, gContext._physicalDevice, surface);
-
-    *pSurfaceFormat = surfaceFormats.p[0];
-    for (uint32_t i = 0; i < surfaceFormats.n; i++) {
-        const VkSurfaceFormatKHR surfaceFormat = surfaceFormats.p[i];
-        const bool hasGoodFormat = (surfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB) ||
-            (surfaceFormat.format == VK_FORMAT_R8G8B8A8_SRGB);
-        const bool hasGoodColorSpace =
-            surfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-        if (hasGoodFormat && hasGoodColorSpace) {
-            *pSurfaceFormat = surfaceFormat;
-            break;
-        }
-    }
-
-    cu_log_note("Chose surface format with format: 0x%X, and color space: 0x%X",
-        pSurfaceFormat->format, pSurfaceFormat->colorSpace);
-    return CU_SUCCESS;
-}
-
-CuResult choose_present_mode(
-    VkPresentModeKHR* const pPresentMode,
-    const VkSurfaceKHR surface)
-{
-    Enumerator(VkPresentModeKHR) presentModes ENUMERATOR_AUTO_FREE = {};
-    enumerate_vk(presentModes, vkGetPhysicalDeviceSurfacePresentModesKHR, gContext._physicalDevice, surface);
-
-    *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
-    for (uint32_t i = 0; i < presentModes.n; i++) {
-        if (presentModes.p[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
-            *pPresentMode = VK_PRESENT_MODE_MAILBOX_KHR;
-            break;
-        }
-    }
-
-    cu_log_note("Chose present mode 0x%X", *pPresentMode);
-    return CU_SUCCESS;
 }

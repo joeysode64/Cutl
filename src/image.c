@@ -15,8 +15,8 @@ CuResult cu_image_create(
     CuImage* const pImage,
     const uint32_t w,
     const uint32_t h,
-    const CuFormat format,
-    const CuImageUsageFlags usage,
+    const VkFormat format,
+    const VkImageUsageFlags usage,
     const CuAllocationMode mode)
 {
     CuResult result = CU_SUCCESS;
@@ -35,8 +35,7 @@ CuResult cu_image_create(
         &pImage->_allocation,
         nullptr, mode,
         &memoryRequirements,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        0));
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
 
     cu_try_catch_vk(vkBindImageMemory(
         gContext._device,

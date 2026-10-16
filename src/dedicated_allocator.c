@@ -14,14 +14,13 @@ CuResult dedicated_allocator_allocate(
     void** const ppData,
     CuAllocator* const _pAllocator,
     const VkMemoryRequirements* const pRequirements,
-    const uint32_t mRequired,
-    const uint32_t mPreferred)
+    const VkMemoryPropertyFlags mProperties)
 {
     (void)_pAllocator;
 
     const uint32_t mMemoryTypes = find_memory_types(
         &gContext._memoryInfo,
-        mRequired, mPreferred,
+        mProperties,
         pRequirements->memoryTypeBits);
     const uint32_t iMemoryType = __builtin_ctz(mMemoryTypes);
 

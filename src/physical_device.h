@@ -1,36 +1,33 @@
 #pragma once
 
-#include "def.h"
+#include "context.h"
 #include "result.h"
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-/// @brief A physical device's info.
+/** @brief A physical device's info. */
 typedef struct PhysicalDeviceInfo_T {
-    /// @brief The physical device handle.
-    VkPhysicalDevice handle;
+    VkPhysicalDevice handle; /**< The physical device handle. */
 
-    /// @brief The memory info.
-    CuPhysicalDeviceMemoryInfo memoryInfo;
+    CuPhysicalDeviceMemoryInfo memoryInfo; /**< The memory info. */
 
-    /// @brief The first queue family index that supports compute, graphics, transfer, and
-    /// presentation.
-    uint32_t iQueueFamily;
+    uint32_t iQueueFamily; /**< The index of the main queue family. */
 } PhysicalDeviceInfo;
 
-/// @brief Returns a bitmask of the best-fit memory types.
+/** @brief Returns a bitmask of the best-fit memory types. */
 uint32_t find_memory_types(
     const CuPhysicalDeviceMemoryInfo* pMemoryInfo,
-    VkMemoryPropertyFlags mRequired,
-    VkMemoryPropertyFlags mPreferred,
+    VkMemoryPropertyFlags mProperties,
     uint32_t mAllowed);
 
-/// @brief Chooses the best-fit physical device.
-/// @param [out] pPhysicalDeviceInfo A pointer to the physical device info.
-/// @param instance The Vulkan intance handle.
-/// @param pExtensions A pointer to the extensions to enable.
-/// @param nExtensions The number of extensions.
+/**
+ * @brief Chooses the best-fit physical device.
+ * @param [out] pPhysicalDeviceInfo A pointer to the physical device info.
+ * @param instance The Vulkan intance handle.
+ * @param pExtensions A pointer to the extensions to enable.
+ * @param nExtensions The number of extensions.
+ */
 CuResult choose_physical_device(
     PhysicalDeviceInfo* pPhysicalDeviceInfo,
     VkInstance instance,

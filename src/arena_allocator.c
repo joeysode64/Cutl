@@ -11,109 +11,14 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-/// @brief Returns whether the arena slot has room for the allocation.
-/// @param [in] pArena A pointer to the arena.
-/// @param i The index of the arena slot.
-/// @param z The size of the allocation.
-/// @return Whetehr the allocation will fit in the arena slot.
+/**
+ * @brief Returns whether the arena slot has room for the allocation.
+ * @param [in] pArena A pointer to the arena.
+ * @param i The index of the arena slot.
+ * @param z The size of the allocation.
+ * @return Whetehr the allocation will fit in the arena slot.
+ */
 static bool does_arena_slot_have_room(
-    const CuArena* pArena,
-    size_t i,
-    size_t z);
-
-/// @brief Allocates data from the arena slot into the allocation.
-/// @param [out] pAllocation A pointer to the allocation.
-/// @param [out] ppData A pointer to the mapped data.
-/// @param [in, out] pArena a pointer to the arena.
-/// @param i The index of the arena slot and memory type.
-/// @param size The allocation's size.
-/// @param align The allocation's alignment.
-/// @return The result of the allocation.
-/// @note This will allocate the slot if it hasn't been already.
-static CuResult allocate_to_slot(
-    CuAllocation* pAllocation,
-    void** ppData,
-    CuArena* pArena,
-    size_t i,
-    uint64_t size,
-    uint64_t align);
-
-/// @brief Allocates the arena slot.
-/// @param [in, out] pArena A pointer to the arena.
-/// @param i The index of the arena slot and memory type.
-/// @return The result of the allocation.
-static CuResult allocate_slot(
-    CuArena* pArena,
-    size_t i);
-
-CuResult cu_arena_create(
-    CuArena* const pArena,
-    const size_t size)
-{
-    for (size_t i = 0; i < CU_N_ARENA_ALLOCATOR_SLOTS; i++) {
-        pArena->_slots[i]._memory = VK_NULL_HANDLE;
-    }
-    pArena->_size = size;
-
-    return CU_SUCCESS;
-}
-
-void cu_arena_destroy(
-    CuArena* const pArena)
-{
-    for (size_t i = 0; i < CU_N_ARENA_ALLOCATOR_SLOTS; i++) {
-        vkFreeMemory(gContext._device, pArena->_slots[i]._memory, nullptr);
-    }
-}
-
-CuResult arena_allocate(
-    CuAllocation* const pAllocation,
-    void** const ppData,
-    CuAllocator* const pAllocator,
-    const VkMemoryRequirements* const pRequirements,
-    const uint32_t mRequired, 
-    const uint32_t mPreferred)
-{
-    CuArena* const pArena = (CuArena*)pAllocator;
-
-    if (pRequirements->size > pArena->_size) {
-        return cu_error(CU_ERROR_ARENA_TOO_SMALL);
-    }
-
-    uint32_t mMemoryTypes = find_memory_types(
-        &gContext._memoryInfo,
-        mRequired,
-        mPreferred,
-        pRequirements->memoryTypeBits);
-
-    // Find the first suitable slot that has room.
-    while (mMemoryTypes != 0) {
-        const uint32_t i = __builtin_ctz(mMemoryTypes);
-        mMemoryTypes &= ~(1U << i);
-
-        if (does_arena_slot_have_room(pArena, i, pRequirements->size)) {
-            return allocate_to_slot(
-                pAllocation,
-                ppData,
-                (CuArena*)pAllocator,
-                i,
-                pRequirements->size,
-                pRequirements->alignment);
-        }
-    }
-
-    return cu_error(CU_ERROR_ARENA_FULL);
-}
-
-void arena_free(
-    CuAllocation* const _pAllocation,
-    CuAllocator* const _pAllocator)
-{
-    (void)_pAllocation;
-    (void)_pAllocator;
-}
-
-bool does_arena_slot_have_room(
     const CuArena* pArena,
     size_t i,
     size_t z)
@@ -122,7 +27,39 @@ bool does_arena_slot_have_room(
     return (pSlot->_memory == VK_NULL_HANDLE) || (pSlot->_used + z < pArena->_size);
 }
 
-CuResult allocate_to_slot(
+/**
+ * @brief Allocates the arena slot.
+ * @param [in, out] pArena A pointer to the arena.
+ * @param i The index of the arena slot and memory type.
+ * @return The result of the allocation.
+ */
+static CuResult allocate_slot(
+    CuArena* pArena,
+    size_t i)
+{
+    CuArenaSlot* const pSlot = &pArena->_slots[i];
+
+    cu_try(allocate_memory(&pSlot->_memory, gContext._device, pArena->_size, i));
+    if (ones_overlap(gContext._memoryInfo._mHostVisible, 1u << i)) {
+        cu_try_vk(vkMapMemory(gContext._device, pSlot->_memory, 0, pArena->_size, 0, &pSlot->_pData));
+    }
+    pSlot->_used = 0;
+
+    return CU_SUCCESS;
+}
+
+/**
+ * @brief Allocates data from the arena slot into the allocation.
+ * @param [out] pAllocation A pointer to the allocation.
+ * @param [out] ppData A pointer to the mapped data.
+ * @param [in, out] pArena a pointer to the arena.
+ * @param i The index of the arena slot and memory type.
+ * @param size The allocation's size.
+ * @param align The allocation's alignment.
+ * @return The result of the allocation.
+ * @note This will allocate the slot if it hasn't been already.
+ */
+static CuResult allocate_to_slot(
     CuAllocation* const pAllocation,
     void** const ppData,
     CuArena* const pArena,
@@ -150,19 +87,69 @@ CuResult allocate_to_slot(
     return CU_SUCCESS;
 }
 
-CuResult allocate_slot(
-    CuArena* pArena,
-    size_t i)
+CuResult cu_arena_create(
+    CuArena* const pArena,
+    const size_t size)
 {
-    CuArenaSlot* const pSlot = &pArena->_slots[i];
-
-    cu_try(allocate_memory(&pSlot->_memory, gContext._device, pArena->_size, i));
-    if (ones_overlap(gContext._memoryInfo._mHostVisible, 1u << i)) {
-        cu_try_vk(vkMapMemory(gContext._device, pSlot->_memory, 0, pArena->_size, 0, &pSlot->_pData));
+    for (size_t i = 0; i < VK_MAX_MEMORY_TYPES; i++) {
+        pArena->_slots[i]._memory = VK_NULL_HANDLE;
     }
-    pSlot->_used = 0;
+    pArena->_size = size;
 
     return CU_SUCCESS;
+}
+
+void cu_arena_destroy(
+    CuArena* const pArena)
+{
+    for (size_t i = 0; i < VK_MAX_MEMORY_TYPES; i++) {
+        vkFreeMemory(gContext._device, pArena->_slots[i]._memory, nullptr);
+    }
+}
+
+CuResult arena_allocate(
+    CuAllocation* const pAllocation,
+    void** const ppData,
+    CuAllocator* const pAllocator,
+    const VkMemoryRequirements* const pRequirements,
+    const VkMemoryPropertyFlags mProperties)
+{
+    CuArena* const pArena = (CuArena*)pAllocator;
+
+    if (pRequirements->size > pArena->_size) {
+        return cu_error(CU_ERROR_ARENA_TOO_SMALL);
+    }
+
+    uint32_t mMemoryTypes = find_memory_types(
+        &gContext._memoryInfo,
+        mProperties,
+        pRequirements->memoryTypeBits);
+
+    // Find the first suitable slot that has room.
+    while (mMemoryTypes != 0) {
+        const uint32_t i = __builtin_ctz(mMemoryTypes);
+        mMemoryTypes &= ~(1U << i);
+
+        if (does_arena_slot_have_room(pArena, i, pRequirements->size)) {
+            return allocate_to_slot(
+                pAllocation,
+                ppData,
+                (CuArena*)pAllocator,
+                i,
+                pRequirements->size,
+                pRequirements->alignment);
+        }
+    }
+
+    return cu_error(CU_ERROR_ARENA_FULL);
+}
+
+void arena_free(
+    CuAllocation* const _pAllocation,
+    CuAllocator* const _pAllocator)
+{
+    (void)_pAllocation;
+    (void)_pAllocator;
 }
 
 const CuAllocatorFns CU_ARENA_ALLOCATOR_FNS = {

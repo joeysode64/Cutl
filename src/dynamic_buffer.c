@@ -1,7 +1,6 @@
 #include "dynamic_buffer.h"
 
 #include "allocation.h"
-#include "buffer.h"
 #include "g_context.h"
 #include "result.h"
 #include "vk.h"
@@ -15,7 +14,7 @@ CuResult cu_dynamic_buffer_create(
     CuDynamicBuffer* const pDynamicBuffer,
     const size_t n,
     const size_t z,
-    const CuBufferUsage usage,
+    const VkBufferUsageFlags usage,
     const CuAllocationMode mode)
 {
     CuResult result = CU_SUCCESS;
@@ -27,8 +26,7 @@ CuResult cu_dynamic_buffer_create(
         n * z,
         usage | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
         mode,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        0));
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
     pDynamicBuffer->_address = get_buffer_device_address(pDynamicBuffer->_buffer);
     pDynamicBuffer->_n = n;
     pDynamicBuffer->_z = z;
@@ -51,7 +49,7 @@ void cu_dynamic_buffer_destroy(
 void cu_dynamic_buffer_get_data_frame(
     CuDynamicBuffer* const pDynamicBuffer,
     void** const ppData,
-    CuBufferAddress* const pDeviceAddress,
+    VkDeviceAddress* const pDeviceAddress,
     const size_t i)
 {
     const size_t offset = pDynamicBuffer->_z * i;

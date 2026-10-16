@@ -1,9 +1,11 @@
 #pragma once
 
-#include "def.h"
 #include "renderer.h"
 #include "result.hpp"
 #include "window.hpp"
+
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 namespace cu
 {
@@ -102,7 +104,7 @@ namespace cu
          * @brief Returns the renderer's target image format.
          * @return The renderer's target image format.
          */
-        inline CuFormat format() const
+        inline VkFormat get_format() const
         {
             return cu_renderer_get_format(&me);
         }
@@ -111,7 +113,7 @@ namespace cu
          * @brief Returns the renderer's frame index.
          * @return The renderer's current frame index.
          */
-        inline uint32_t frame_index() const
+        inline uint32_t get_frame_index() const
         {
             return cu_renderer_get_frame_index(&me);
         }

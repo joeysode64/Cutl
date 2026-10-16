@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 void cu_frame_begin_render(
     CuFrame* const pFrame,
@@ -17,10 +18,7 @@ void cu_frame_begin_render(
             .x = 0,
             .y = 0,
         },
-        .extent = {
-            .width = pRenderer->_swapchainInfo._w,
-            .height = pRenderer->_swapchainInfo._h,
-        },
+        .extent = pRenderer->_swapchainExtent,
     };
     const VkViewport viewport = {
         .x = 0.0F,
@@ -160,20 +158,20 @@ void cu_frame_begin_image_render(
 void cu_frame_end_image_render(
     CuFrame* const pFrame,
     CuImage* const pImage,
-    const CuImageLayout newLayout)
+    const VkImageLayout newLayout)
 {
     // End the render.
     vkCmdEndRendering(pFrame->_commandBuffer);
 
-    // Convert the image for its next use, which is unknown, so block everything.
+    // Convert the image for its next use.
     cu_cmd_image_barrier(
         pFrame,
         pImage,
-        CU_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT,
-        CU_ACCESS_COLOR_ATTACHMENT_WRITE,
-        CU_PIPELINE_STAGE_ALL_COMMANDS,
-        CU_ACCESS_MEMORY_READ | CU_ACCESS_MEMORY_WRITE,
-        CU_IMAGE_LAYOUT_COLOR_ATTACHMENT,
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+        VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+        VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         newLayout);
 }
 

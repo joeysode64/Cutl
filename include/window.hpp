@@ -66,7 +66,7 @@ namespace cu
          * @brief Returns the window's framebuffer width.
          * @return The window's width.
          */
-        inline uint32_t width() const
+        inline uint32_t get_width() const
         {
             return cu_window_get_width(&me);
         }
@@ -75,7 +75,7 @@ namespace cu
          * @brief Returns the window's framebuffer height.
          * @return The window's height.
          */
-        inline uint32_t height() const
+        inline uint32_t get_height() const
         {
             return cu_window_get_height(&me);
         }

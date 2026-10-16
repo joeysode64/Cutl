@@ -99,8 +99,8 @@ Simple example programs are in [`tests`](tests).
 ## Version 1.0 Roadmap
 
 Before version 1.0:
-- Expose Vulkan and remove remapped `enum`s
-- Standardize formatting
+- ~~Expose Vulkan and remove remapped `enum`s~~
+- ~~Standardize formatting~~
 - Add image loading/saving (`libpng`)
 - Add swapchain recreation
 - Add the ability to include custom extensions

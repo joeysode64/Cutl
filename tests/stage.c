@@ -46,7 +46,7 @@ int main()
     query(cu_renderer_create(&renderer, &CU_DEFAULT_RENDERER_CREATE_INFO, &window));
 
     const CuPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {
-        .pushConstantSize = sizeof(CuBufferAddress),
+        .pushConstantSize = sizeof(VkDeviceAddress),
     };
     CuPipelineLayout pipelineLayout = {};
     query(cu_pipeline_layout_create(&pipelineLayout, &pipelineLayoutCreateInfo));
@@ -63,7 +63,7 @@ int main()
         .nVert = vert.n,
         .pFrag = frag.data,
         .nFrag = frag.n,
-        .pFormats = (CuFormat[]){ cu_renderer_get_format(&renderer) },
+        .pFormats = (VkFormat[]){ cu_renderer_get_format(&renderer) },
         .nFormats = 1,
     };
     query(cu_graphics_pipeline_create(&graphicsPipeline, &graphicsPipelineCreateInfo, pipelineLayout));
@@ -82,7 +82,7 @@ int main()
 
     CuStaticBuffer vertexBuffer = {};
     query(cu_static_buffer_create(
-        &vertexBuffer, sizeof(vertices), CU_BUFFER_STORAGE_BUFFER, CU_DEDICATED_ALLOCATOR_MODE));
+        &vertexBuffer, sizeof(vertices), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, CU_DEDICATED_ALLOCATOR_MODE));
 
     CuStagingBuffer stagingBuffer = {};
     query(cu_staging_buffer_create(&stagingBuffer, sizeof(vertices), CU_DEDICATED_ALLOCATOR_MODE));
@@ -104,7 +104,7 @@ int main()
     cu_task_destroy(&task);
     cu_staging_buffer_destroy(&stagingBuffer, CU_DEDICATED_ALLOCATOR_MODE);
 
-    const CuBufferAddress address = cu_buffer_get_address(&vertexBuffer);
+    const VkDeviceAddress address = cu_buffer_get_address(&vertexBuffer);
 
     while (!cu_window_should_close(&window)) {
         cu_window_update(&window);

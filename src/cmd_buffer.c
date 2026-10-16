@@ -9,7 +9,7 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 
-/// @return The dereferenced command buffer.
+/** @return The dereferenced command buffer. */
 #define deref(p) (*(VkCommandBuffer*)p)
 
 void cu_cmd_bind_graphics_pipeline(
@@ -63,9 +63,9 @@ void cu_cmd_write_push_constants(
 
 void cu_cmd_buffer_copy(
     CuCmdBuffer commandBuffer,
-    CuBuffer dst,
+    VkBuffer dst,
     size_t oDst,
-    CuBuffer src,
+    VkBuffer src,
     size_t oSrc,
     size_t z)
 {
@@ -90,12 +90,12 @@ void cu_cmd_buffer_copy(
 void cu_cmd_image_barrier(
     const CuCmdBuffer commandBuffer,
     const CuImage* const pImage,
-    const CuPipelineStageFlags srcStageMask,
-    const CuAccessFlags srcAccessMask,
-    const CuPipelineStageFlags dstStageMask,
-    const CuAccessFlags dstAccessMask,
-    const CuImageLayout oldLayout,
-    const CuImageLayout newLayout)
+    const VkPipelineStageFlags2 srcStageMask,
+    const VkAccessFlags2 srcAccessMask,
+    const VkPipelineStageFlags2 dstStageMask,
+    const VkAccessFlags2 dstAccessMask,
+    const VkImageLayout oldLayout,
+    const VkImageLayout newLayout)
 {
     const VkImageSubresourceRange subresourceRange = {
         .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -111,8 +111,8 @@ void cu_cmd_image_barrier(
         .srcAccessMask = srcAccessMask,
         .dstStageMask = dstStageMask,
         .dstAccessMask = dstAccessMask,
-        .oldLayout = (VkImageLayout)oldLayout,
-        .newLayout = (VkImageLayout)newLayout,
+        .oldLayout = oldLayout,
+        .newLayout = newLayout,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .image = pImage->_image,
@@ -135,7 +135,7 @@ void cu_cmd_image_barrier(
 void cu_cmd_image_fill(
     const CuCmdBuffer commandBuffer,
     const CuImage* const pImage,
-    const CuImageLayout layout,
+    const VkImageLayout layout,
     const CuRGBA color)
 {
     const VkClearColorValue clearColor = {

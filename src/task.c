@@ -10,11 +10,21 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-/// @brief Creates a fence.
-/// @param [out] pFence The fence to create.
-/// @return The result of creating the fence.
+/**
+ * @brief Creates a fence.
+ * @param [out] pFence The fence to create.
+ * @return The result of creating the fence.
+ */
 static CuResult create_fence(
-    VkFence* pFence);
+    VkFence* const pFence)
+{
+    const VkFenceCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = VK_FENCE_CREATE_SIGNALED_BIT,
+    };
+    return cu_vk_result(vkCreateFence(gContext._device, &createInfo, nullptr, pFence));
+}
 
 CuResult cu_task_create(
     CuTask* const pTask)
@@ -93,15 +103,4 @@ void cu_task_await(
     uint64_t timeout)
 {
     vkWaitForFences(gContext._device, 1, &pTask->_taskFinished, VK_TRUE, timeout);
-}
-
-CuResult create_fence(
-    VkFence* const pFence)
-{
-    const VkFenceCreateInfo createInfo = {
-        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = VK_FENCE_CREATE_SIGNALED_BIT,
-    };
-    return cu_vk_result(vkCreateFence(gContext._device, &createInfo, nullptr, pFence));
 }

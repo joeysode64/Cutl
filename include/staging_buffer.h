@@ -1,16 +1,16 @@
 #pragma once
 
 #include "allocation.h"
-#include "def.h"
 #include "result.h"
 
 #include <stddef.h>
+#include <vulkan/vulkan.h>
 
 /** @brief A staging buffer. */
 typedef struct CuStagingBuffer_T {
     void* _pData; /**< A pointer to the buffer's mapped memory. */
 
-    cu_vk_t(Buffer) _buffer; /**< The buffer handle. */
+    VkBuffer _buffer; /**< The buffer handle. */
 
     CuAllocation _allocation; /**< The buffer memory allocation. */
 } CuStagingBuffer;

@@ -1,69 +1,60 @@
 #pragma once
 
 #include "allocation.h"
-#include "def.h"
 #include "result.h"
 
 #include <stddef.h>
 #include <stdint.h>
+#include <vulkan/vulkan.h>
 
-/// @brief An arena allocator memory type slot.
+/** @brief An arena allocator slot. */
 typedef struct CuArenaSlot_T {
-    /// @brief The allocated memory handle.
-    cu_vk_t(DeviceMemory) _memory;
+    VkDeviceMemory _memory; /**< The memory allocation handle. */
 
-    /// @brief The mapped CPU memory pointer.
-    /// @note Unused for memory types that aren't device local.
-    void* _pData;
+    void* _pData; /**< A pointer to the mapped memory if relevant. */
 
-    /// @brief The number of bytes used in the arena slot.
-    uint64_t _used;
+    VkDeviceSize _used; /**< The number of bytes used by the slot. */
 } CuArenaSlot;
 
-/// @brief The number of potential slots in an arena allocator.
-/// @note This follows 1 slot per memory type which Vulkan limits at 32.
-constexpr size_t CU_N_ARENA_ALLOCATOR_SLOTS = 32;
-
-/// @brief An arena allocator.
+/** @brief A Vulkan arena allocator. */
 typedef struct CuArena_T {
-    /// @brief The arena slots.
-    CuArenaSlot _slots[CU_N_ARENA_ALLOCATOR_SLOTS];
+    CuArenaSlot _slots[VK_MAX_MEMORY_TYPES]; /**< The allocation slots. */
 
-    /// @brief The arena's slot size.
-    size_t _size;
+    VkDeviceSize _size; /**< The size of the slots' allocations. */
 } CuArena;
+
+/** @brief The arena allocator callbacks. */
+extern const CuAllocatorFns CU_ARENA_ALLOCATOR_FNS;
+
+/**
+ * @brief Returns an allocation mode for the arena.
+ * @param pArena A pointer to the arena allocator.
+ * @return An allocation mode for the arena.
+ */
+#define cu_arena_mode(pArena) \
+    ((CuAllocationMode){ ._pAllocator = (pArena), ._pFns = &CU_ARENA_ALLOCATOR_FNS, })
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/// @brief The arena allocator allocation callback functions.
-extern const CuAllocatorFns CU_ARENA_ALLOCATOR_FNS;
-
-/// @brief Creates an arena allocator.
-/// @param [out] pArena A pointer to the arena allocator.
-/// @param size The arena's slot size.
-/// @return The result of creating the arena.
+/**
+ * @brief Creates the arena allocator.
+ * @param [out] pArena A pointer to the arena.
+ * @param size The size of the arena's slots.
+ * @return The result of the allocation.
+ */
 CuResult cu_arena_create(
     CuArena* pArena,
     size_t size);
 
-/// @brief Destroys the arena allocator.
-/// @param [in, out] pArena A pointer to the arena allocator.
+/**
+ * @brief Destroys the arena allocator.
+ * @param [in, out] pArena A pointer to the arena.
+ * @warning This makes all allocations depending on the arena become invalid.
+ */
 void cu_arena_destroy(
     CuArena* pArena);
-
-/// @brief Creates an allocation mode to use the arena allocator.
-/// @param [in, out] pArena A pointer to the arena allocator.
-/// @return The allocation mode for the arena allocator.
-static inline CuAllocationMode cu_arena_mode(
-    CuArena* const pArena)
-{
-    return (CuAllocationMode){
-        ._pAllocator = pArena,
-        ._pFns = &CU_ARENA_ALLOCATOR_FNS,
-    };
-}
 
 #ifdef __cplusplus
 }

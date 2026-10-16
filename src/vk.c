@@ -135,8 +135,7 @@ CuResult create_buffer(
     const size_t z,
     const VkBufferUsageFlags usage,
     const CuAllocationMode mode,
-    const VkMemoryPropertyFlags mRequired,
-    const VkMemoryPropertyFlags mPreferred)
+    const VkMemoryPropertyFlags mProperties)
 {
     CuResult result = CU_SUCCESS;
 
@@ -161,8 +160,7 @@ CuResult create_buffer(
         ppData,
         mode,
         &memoryRequirements,
-        mRequired,
-        mPreferred));
+        mProperties));
     
     cu_try_catch_vk(vkBindBufferMemory(
         gContext._device,
