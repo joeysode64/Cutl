@@ -17,7 +17,7 @@ namespace cu
         uint16_t tweak; /**< The version tweak. */
 
         /** @brief Creates a version with a major minor patch and tweak version of 0. */
-        constexpr inline Version()
+        constexpr Version()
             : major{}, minor{}, patch{}, tweak{}
         {
 
@@ -30,7 +30,7 @@ namespace cu
          * @param patch The version patch (ignore for 0).
          * @param tweak The version tweak (ignore for 0).
          */
-        constexpr inline Version(
+        constexpr Version(
             const uint16_t major,
             const uint16_t minor = {},
             const uint16_t patch = {},
