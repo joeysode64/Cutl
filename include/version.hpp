@@ -1,19 +1,20 @@
 #pragma once
 
+#include "version.h"
 #include <stdint.h>
+#include <vulkan/vulkan.h>
 
 namespace cu
 {
     /** @brief A version. */
-    template<typename T = uint16_t>
     struct Version {
-        T major; /**< The version major. */
+        uint16_t major; /**< The version major. */
 
-        T minor; /**< The version minor. */
+        uint16_t minor; /**< The version minor. */
 
-        T patch; /**< The version patch. */
+        uint16_t patch; /**< The version patch. */
 
-        T tweak; /**< The version tweak. */
+        uint16_t tweak; /**< The version tweak. */
 
         /** @brief Creates a version with a major minor patch and tweak version of 0. */
         constexpr inline Version()
@@ -30,13 +31,31 @@ namespace cu
          * @param tweak The version tweak (ignore for 0).
          */
         constexpr inline Version(
-            const T major,
-            const T minor = {},
-            const T patch = {},
-            const T tweak = {})
+            const uint16_t major,
+            const uint16_t minor = {},
+            const uint16_t patch = {},
+            const uint16_t tweak = {})
             : major{major}, minor{minor}, patch{patch}, tweak{tweak}
         {
 
+        }
+
+        /**
+        * @brief Returns the version as a `uint32_t` Vulkan-style version.
+        * @return The version as a `uint32_t` Vulkan-style version.
+        * @note This does not use the version's tweak value.
+        */
+        constexpr uint32_t vk_version() const {
+            return VK_MAKE_API_VERSION(0, major, minor, patch);
+        }
+
+        constexpr operator CuVersion() const {
+            return CuVersion{
+                .major = major,
+                .minor = minor,
+                .patch = patch,
+                .tweak = tweak,
+            };
         }
     };
 }
