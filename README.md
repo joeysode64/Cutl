@@ -28,6 +28,10 @@ All Vulkan internals are accessible to use yourself if needed.
 
 You can initialize CMake with `-DCUTL_DEBUGGING=ON` for debug logging of everything under the hood.
 
+Some CMake options are available:
+    - `-DCUTL_DEBUGGING`: Whether to perform debug logging and use validation layers
+    - `-DCUTL_GEN_DOCS`: Whether to generate documentation using Doxygen via `make docs`
+
 ## Examples
 
 Drawing a triangle:

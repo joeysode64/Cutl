@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file
+ * @note This file is only included by `cutl.h` if `CU_INCLUDE_MATH` is defined.
+ */
+
 #include <stdint.h>
 
 /** @brief A 2D vector of 32-bit floats. */

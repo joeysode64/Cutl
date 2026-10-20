@@ -16,7 +16,6 @@
  * @param e The enumerator.
  * @param r The value to return if the allocation fails.
  * @param f The enumeration function.
- * @param _ The arguments.
  */
 #define enumerate(e, r, f, ...)                                                                    \
     f(__VA_ARGS__, &e.n, nullptr);                                                                 \
@@ -30,7 +29,6 @@
  * @brief Enumerate a Vulkan enumeration function.
  * @param e The enumerator.
  * @param f The enumeration function.
- * @param _ The arguments.
  * @note Returns the first `VkResult` that's an error, if any.
  */
 #define enumerate_vk(e, f, ...)                                                                    \
@@ -45,7 +43,6 @@
  * @brief Enumerate a Vulkan enumeration function.
  * @param e The enumerator.
  * @param f The enumeration function.
- * @param _ The arguments.
  * @note Returns the first `CuResult` that's an error, if any.
  */
 #define enumerate_cu(e, f, ...)                                                                    \

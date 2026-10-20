@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(
     Cutl
-    VERSION 0.21.0.0
+    VERSION 0.22.0.0
     LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 23)
@@ -114,4 +114,16 @@ if(COMPILED_SHADERS)
         add_dependencies(
             ${test_name} test_shaders)
     endforeach()
+endif()
+
+# Generate docs.
+
+option(CUTL_GEN_DOCS "Whether to build docs" OFF)
+if(CUTL_GEN_DOCS)
+    find_package(Doxygen REQUIRED)
+    set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/docs)
+    set(DOXYGEN_EXTRACT_ALL YES)
+    set(DOXYGEN_EXTRACT_PRIVATE YES)
+    set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
+    doxygen_add_docs(docs include src README.md)
 endif()
