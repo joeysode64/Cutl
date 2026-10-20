@@ -1,5 +1,5 @@
 #include "cutl.hpp"
-#include "test.hpp"
+#include "test.h"
 
 using namespace cu;
 

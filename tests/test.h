@@ -20,14 +20,23 @@
 /** @brief The test window height. */
 #define WIN_H 450
 
+/** @brief Fails the test and prints the message. */
+#define fail(msg, ...)                                                                             \
+    fprintf(stderr, " " ANSI_RED "Failure:" ANSI_RESET " " msg __VA_OPT__(,) __VA_ARGS__);         \
+    exit(EXIT_FAILURE);                                                                            \
+
+/** @brief Prints a success message and exits with a success code. */
+#define success()                                                                                  \
+    fprintf(stderr, " " ANSI_GREEN "Test passed!" ANSI_RESET "\n");                                \
+    exit(EXIT_SUCCESS);
+
 /** @brief Fails the test if the expression does not return a success. */
 #define query(e)                                                                                   \
     do {                                                                                           \
         const CuResult _r = (e);                                                                   \
         if (!cu_is_success(_r)) {                                                                  \
-            fprintf(                                                                               \
-                stderr,                                                                            \
-                " " ANSI_RED "Failed:" ANSI_RESET " running `" #e "` on line #%i: %u:%i\n",        \
+            fail(                                                                                  \
+                "Error running `" #e "` on line #%i: %u:%i\n",                                     \
                 __LINE__,                                                                          \
                 _r.t,                                                                              \
                 _r.v                                                                               \
@@ -37,18 +46,7 @@
     } while (false)
 
 /** @brief Prints the message and fails the test if the expression is not true. */
-#define expect(e, ...)                                                                             \
+#define expect(e, msg, ...)                                                                        \
     if (!(e)) {                                                                                    \
-        fprintf(stderr, __VA_ARGS__);                                                              \
-        exit(EXIT_FAILURE);                                                                        \
+        fail(msg __VA_OPT__(,) __VA_ARGS__);                                                       \
     }
-
-/** @brief Fails the test and prints the message. */
-#define fail(...)                                                                                  \
-    fprintf(stderr, __VA_ARGS__);                                                                  \
-    exit(EXIT_FAILURE);                                                                            \
-
-/** @brief Prints a success message and exits with a success code. */
-#define success()                                                                                  \
-    fprintf(stderr, " Test passed!\n");                                                            \
-    exit(EXIT_SUCCESS);
