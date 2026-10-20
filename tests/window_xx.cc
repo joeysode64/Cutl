@@ -6,6 +6,7 @@ using namespace cu;
 int main()
 {
     query(Context::init());
+    const auto contextGuard = Context::Guard{};
 
     Window window{};
     query(Window::create(window, WIN_W, WIN_H, "Window Test C++"));

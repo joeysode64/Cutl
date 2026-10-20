@@ -2,9 +2,9 @@
 
 #include "context.h"
 #include "result.hpp"
+#include "version.hpp"
 
-#include <cstdlib>
-#include <stdlib.h>
+#include <stdint.h>
 
 namespace cu
 {
@@ -17,9 +17,88 @@ namespace cu
         /** @brief The default context create info. */
         static constexpr CreateInfo DEFAULT_CREATE_INFO = CU_DEFAULT_CONTEXT_CREATE_INFO;
 
+        /** @brief A guard for safe context deconstruction with RAII. */
+        class Guard {
+            Guard(const Guard&) = delete;
+
+            Guard(Guard&&) = delete;
+
+            Guard& operator=(const Guard&) = delete;
+
+            Guard& operator=(Guard&&) = delete;
+        
+        public:
+            inline ~Guard() {
+                Context::terminate();
+            }
+
+            constexpr Guard() = default;
+        };
+
+        /** @brief A context builder. */
+        struct Builder {
+            /** @brief The context create info. */
+            Context::CreateInfo createInfo{Context::DEFAULT_CREATE_INFO};
+
+            /** @brief Creates a builder with the default create info. */
+            constexpr Builder() = default;
+
+            /**
+             * @brief Creates a builder with the given create info.
+             * @param createInfo The create info.
+             */
+            constexpr Builder(const Context::CreateInfo& createInfo)
+                : createInfo{createInfo}
+            {
+
+            }
+
+            constexpr Builder& extensions(const CuExtensionFlags mExtensions) {
+                createInfo.mExtensions = mExtensions;
+                return *this;
+            }
+
+            constexpr Builder& app_name(const char* const appName) {
+                createInfo.appName = appName;
+                return *this;
+            }
+
+            constexpr Builder& app_version(const uint32_t appVersion) {
+                createInfo.appVersion = appVersion;
+                return *this;
+            }
+
+            constexpr Builder& app_version(const Version version) {
+                createInfo.appVersion = version.vk_version();
+                return *this;
+            }
+
+            constexpr Builder& n_sampled_image_descriptors(const uint32_t n) {
+                createInfo.nSampledImageDescriptors = n;
+                return *this;
+            }
+
+            constexpr Builder& n_sampler_descriptors(const uint32_t n) {
+                createInfo.nSamplerDescriptors = n;
+                return *this;
+            }
+
+            constexpr Builder& n_storage_image_descriptors(const uint32_t n) {
+                createInfo.nStorageImageDescriptors = n;
+                return *this;
+            }
+
+            /**
+             * @brief Initializes the context with the builder.
+             * @return The result of the context's initialization.
+             */
+            inline Result build() const {
+                return Context::init(createInfo);
+            }
+        };
+
         /**
          * @brief Returns the global GPU context.
-         *
          * @return The global GPU context.
          */
         static inline CuContext& get()
@@ -36,19 +115,7 @@ namespace cu
         static inline Result init(
             const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
-            const Result result = cu_context_init(&createInfo);
-            if (!result.is_success()) {
-                return result;
-            }
-
-            // Run cleanup at exit time.
-            static bool registered = false;
-            if (!registered) {
-                atexit(&cu_context_terminate);
-                registered = true;
-            }
-
-            return SUCCESS;
+            return cu_context_init(&createInfo);
         }
 
         /** @brief Destroys the context. */

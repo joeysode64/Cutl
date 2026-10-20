@@ -15,6 +15,20 @@
 #include <stdio.h>
 #include <vulkan/vulkan.h>
 
+#if defined(CU_DEBUGGING)
+#include <stdlib.h>
+
+/** @brief Prints a warning if the context is not termminated at exit. */
+static void context_unterminated_warn() {
+    if (cu_context_is_initialized()) {
+        cu_log_warning("The context was not terminated before program exit");
+    }
+}
+#endif
+
+/** @brief A null/uninitialized context. */
+#define CU_UNINITIALIZED_CONTEXT (CuContext){ ._instance = VK_NULL_HANDLE }
+
 /** @brief The Cutl version in Vulkan format. */
 constexpr uint32_t CUTL_VK_VERSION =
     VK_MAKE_VERSION(CU_VERSION_MAJOR, CU_VERSION_MINOR, CU_VERSION_PATCH);
@@ -58,8 +72,7 @@ static PFN_vkDestroyDebugUtilsMessengerEXT fDestroyDebugMessenger = nullptr;
  */
 static uint32_t get_instance_extensions(
     const char** const pExtensions,
-    const CuExtensionFlags mExtensions,
-    const bool enableValidation)
+    const CuExtensionFlags mExtensions)
 {
     uint32_t n = 0;
 
@@ -78,9 +91,9 @@ static uint32_t get_instance_extensions(
         pExtensions[n++] = "VK_EXT_headless_surface";
     }
 
-    if (enableValidation) {
+    #if defined(CU_DEBUGGING)
         pExtensions[n++] = "VK_EXT_debug_utils";
-    }
+    #endif
 
     return n;
 }
@@ -93,11 +106,10 @@ static uint32_t get_instance_extensions(
  * @param enableValidation Whether to enable validation layers.
  * @return The result of creating the instance.
  */
-static VkResult create_vk_instance(
+static VkResult create_instance(
     const char* const appName,
     const uint32_t appVersion,
-    const CuExtensionFlags mExtensions,
-    const bool enableValidation)
+    const CuExtensionFlags mExtensions)
 {
     const VkApplicationInfo appInfo = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -111,15 +123,19 @@ static VkResult create_vk_instance(
     constexpr VkInstanceCreateFlags flags =
         ON_APPLE ? VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR : 0;
     const char* extensions[MAX_N_INSTANCE_EXTENSIONS] = {};
-    const uint32_t nExtensions = get_instance_extensions(
-        extensions, mExtensions, enableValidation);
+    const uint32_t nExtensions = get_instance_extensions(extensions, mExtensions);
     const VkInstanceCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pNext = nullptr,
         .flags = flags,
         .pApplicationInfo = &appInfo,
-        .enabledLayerCount = enableValidation ? 1 : 0,
+    #if defined(CU_DEBUGGING)
+        .enabledLayerCount = 1,
         .ppEnabledLayerNames = (const char*[]){ "VK_LAYER_KHRONOS_validation" },
+    #else
+        .enabledLayerCount = 0,
+        .ppEnabledLayerNames = nullptr,
+    #endif
         .enabledExtensionCount = nExtensions,
         .ppEnabledExtensionNames = extensions,
     };
@@ -412,7 +428,7 @@ static VkResult allocate_descriptor_set()
     return vkAllocateDescriptorSets(gContext._device, &allocateInfo, &gContext._descriptorSet);
 }
 
-CuContext gContext = { ._isInitialized = false };
+CuContext gContext = CU_UNINITIALIZED_CONTEXT;
 
 CuContext* cu_context_get()
 {
@@ -422,25 +438,25 @@ CuContext* cu_context_get()
 CuResult cu_context_init(
     const CuContextCreateInfo* pCreateInfo)
 {
+    #if defined(CU_DEBUGGING)
+        atexit(&context_unterminated_warn);
+    #endif
+
     CuResult result = CU_SUCCESS;
 
     cu_assert_catch(glfwInit() == GLFW_TRUE, cu_glfw_error());
 
-    const uint32_t appVersion = VK_MAKE_VERSION(
-        pCreateInfo->appVersion.major,
-        pCreateInfo->appVersion.minor,
-        pCreateInfo->appVersion.patch);
-    cu_try_catch_vk(create_vk_instance(
+    cu_try_catch_vk(create_instance(
         pCreateInfo->appName,
-        appVersion,
-        pCreateInfo->mExtensions,
-        pCreateInfo->enableValidation));
+        pCreateInfo->appVersion,
+        pCreateInfo->mExtensions));
     cu_log_create(gContext._instance);
 
-    if (pCreateInfo->enableValidation) {
+    #if defined(CU_DEBUGGING)
         cu_try_catch_vk(create_debug_messenger());
         cu_log_create(gContext._debugMessenger);
-    }
+    #endif
+
     const char* deviceExtensions[MAX_N_DEVICE_EXTENSIONS] = {};
     const uint32_t nDeviceExtensions =
         get_device_extensions(deviceExtensions, pCreateInfo->mExtensions);
@@ -480,7 +496,6 @@ CuResult cu_context_init(
     cu_try_catch_vk(allocate_descriptor_set());
     cu_log_create(gContext._descriptorSet);
 
-    gContext._isInitialized = true;
     return CU_SUCCESS;
 
 FAIL:
@@ -513,9 +528,7 @@ void cu_context_terminate()
         cu_log_destroy(gContext._instance);
     }
 
-    gContext = (CuContext){
-        ._isInitialized = false,
-    };
+    gContext = CU_UNINITIALIZED_CONTEXT;
 }
 
 void cu_context_wait_for_idle()

@@ -8,6 +8,9 @@
 /** @brief ANSI escape code for green text. */
 #define ANSI_GREEN "\x1b[32m"
 
+/** @brief ANSI escape code for yellow text. */
+#define ANSI_YELLOW "\x1b[33m"
+
 /** @brief ANSI escape code for blue text. */
 #define ANSI_BLUE "\x1b[34m"
 
@@ -55,3 +58,9 @@
  */
 #define cu_log_expect(e, v) \
     cu_log(ANSI_RED "Error:" ANSI_RESET " `" #e "` returned an unexpected value: %i", (v))
+
+/**
+ * @brief Logs a warning.
+ * @param msg The message.
+ */
+#define cu_log_warning(msg) cu_log(ANSI_YELLOW "Warning:" ANSI_RESET " " msg)

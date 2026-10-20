@@ -18,6 +18,54 @@ namespace cu
         /** @brief The default renderer create info. */
         static constexpr CreateInfo DEFAULT_CREATE_INFO = CU_DEFAULT_RENDERER_CREATE_INFO;
 
+        /** @brief A context builder. */
+        struct Builder {
+            /** @brief The context create info. */
+            Renderer::CreateInfo createInfo{Renderer::DEFAULT_CREATE_INFO};
+
+            /** @brief Creates a builder with the default create info. */
+            constexpr Builder() = default;
+
+            /**
+             * @brief Creates a builder with the given create info.
+             * @param createInfo The create info.
+             */
+            constexpr Builder(const Renderer::CreateInfo& createInfo)
+                : createInfo{createInfo}
+            {
+
+            }
+
+            constexpr Builder& max_frames_in_flight(const uint32_t n) {
+                createInfo.maxFramesInFlight = n;
+                return *this;
+            }
+
+            constexpr Builder& min_swapchain_images(const uint32_t n) {
+                createInfo.minSwapchainImages = n;
+                return *this;
+            }
+
+            /**
+             * @brief Builds/creates the renderer.
+             * @param [out] renderer The renderer.
+             * @return The result of creating the renderer.
+             */
+            inline Result build(Renderer& renderer) const {
+                return Renderer::create(renderer, createInfo);
+            }
+
+            /**
+             * @brief Builds/creates the renderer.
+             * @param [out] renderer The renderer.
+             * @param window The target window.
+             * @return The result of creating the renderer.
+             */
+            inline Result build(Renderer& renderer, const Window& window) const {
+                return Renderer::create(renderer, window, createInfo);
+            }
+        };
+
         inline ~Renderer()
         {
             cu_renderer_destroy(&me);

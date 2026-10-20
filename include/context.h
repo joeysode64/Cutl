@@ -2,10 +2,10 @@
 
 #include "image.h"
 #include "result.h"
-#include "version.h"
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 /** @brief Bits for Vulkan extensions usable by Cutl. */
 typedef enum : uint64_t {
@@ -60,8 +60,6 @@ typedef struct CuContext_T {
     VkDescriptorSet _descriptorSet; /**< The descriptor set handle. */
 
     CuExtensionFlags mEnabledExtensions; /**< A bitmap of the enabled extensions. */
-
-    bool _isInitialized; /**< Whether the context is fully initialized. */
 } CuContext;
 
 /** @brief Create info for the context. */
@@ -70,7 +68,7 @@ typedef struct CuContextCreateInfo_T {
 
     const char* appName; /**< The application name. Can be null. Default is null. */
 
-    CuVersion appVersion; /**< The application version. Default is v0.0.0. */
+    uint32_t appVersion; /**< The application version. Default is v0.0.0. */
 
     /** @brief The number of sampled image descriptors. Default is 16 (spec minimum). */
     uint32_t nSampledImageDescriptors;
@@ -80,30 +78,16 @@ typedef struct CuContextCreateInfo_T {
 
     /** @brief the number of storage image descriptors. Default is 4 (spec minimum). */
     uint32_t nStorageImageDescriptors;
-
-    bool enableValidation; /**< Whether to enable validation layers. Default is true if `NDEBUG` is
-        not defined or `CUTL_DEBUGGING` was set set to on, false otherwise. */
 } CuContextCreateInfo;
 
 /** @brief The default context create info. */
 constexpr CuContextCreateInfo CU_DEFAULT_CONTEXT_CREATE_INFO = {
     .mExtensions = CU_EXTENSIONS_ALL,
     .appName = nullptr,
-    .appVersion = {
-        .major = 0,
-        .minor = 0,
-        .patch = 0,
-        .tweak = 0,
-    },
+    .appVersion = 0,
     .nSampledImageDescriptors = 16,
     .nSamplerDescriptors = 16,
     .nStorageImageDescriptors = 4,
-    .enableValidation =
-#if defined(CU_DEBUGGING) || !defined(NDEBUG)
-        true,
-#else
-        false,
-#endif
 };
 
 #ifdef __cplusplus
@@ -173,12 +157,12 @@ static inline CuExtensionFlags cu_context_get_enabled_extensions()
 }
 
 /**
- * @brief Returns whether the context is fully initialized.
- * @return Whether the context is fully initialized.
+ * @brief Returns whether the context is initialized at all and should be terminated.
+ * @return Whether the context is initialized at all.
  */
 static inline bool cu_context_is_initialized()
 {
-    return cu_context_get()->_isInitialized;
+    return cu_context_get()->_instance != VK_NULL_HANDLE;
 }
 
 #ifdef __cplusplus
