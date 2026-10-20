@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(
     Cutl
-    VERSION 0.20.0.3
+    VERSION 0.21.0.0
     LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 23)

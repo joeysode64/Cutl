@@ -7,7 +7,7 @@
 
 /**
  * @brief A non-graphical GPU task.
- * @note Thsi type can be used as a command buffer.
+ * @note This type can be used as a command buffer.
  */
 typedef struct CuTask_T {
     VkCommandBuffer _commandBuffer; /**< The command buffer handle. */
