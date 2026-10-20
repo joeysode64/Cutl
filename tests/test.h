@@ -5,6 +5,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/** @brief ANSI escape code for red text. */
+#define ANSI_RED "\x1b[31m"
+
+/** @brief ANSI escape code for green text. */
+#define ANSI_GREEN "\x1b[32m"
+
+/** @brief ANSI escape code to reset. */
+#define ANSI_RESET "\x1b[0m"
+
 /** @brief The window width. */
 #define WIN_W 800
 
@@ -18,8 +27,7 @@
         if (!cu_is_success(_r)) {                                                                  \
             fprintf(                                                                               \
                 stderr,                                                                            \
-                " Error running `%s` on line #%i: %u:%i\n",                                        \
-                #e,                                                                                \
+                " " ANSI_RED "Failed:" ANSI_RESET " running `" #e "` on line #%i: %u:%i\n",        \
                 __LINE__,                                                                          \
                 _r.t,                                                                              \
                 _r.v                                                                               \
