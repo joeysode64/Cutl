@@ -8,7 +8,7 @@
 
 namespace cu
 {
-    /** @brief A Vulkan GPU context. */
+    /** @ref CuContext */
     class Context {
     public:
         /** @brief Create info for a GPU context. */
@@ -36,55 +36,63 @@ namespace cu
         };
 
         /** @brief A context builder. */
-        struct Builder {
-            /** @brief The context create info. */
-            Context::CreateInfo createInfo{Context::DEFAULT_CREATE_INFO};
-
+        struct Builder: public Context::CreateInfo {
             /** @brief Creates a builder with the default create info. */
-            constexpr Builder() = default;
+            constexpr Builder()
+                : Context::CreateInfo{Context::DEFAULT_CREATE_INFO}
+            {
+
+            }
 
             /**
              * @brief Creates a builder with the given create info.
              * @param createInfo The create info.
              */
             constexpr Builder(const Context::CreateInfo& createInfo)
-                : createInfo{createInfo}
+                : Context::CreateInfo{createInfo}
             {
 
             }
 
-            constexpr Builder& extensions(const CuExtensionFlags mExtensions) {
-                createInfo.mExtensions = mExtensions;
+            /** @ref CuContextCreateInfo::mExtensions */
+            constexpr Builder& extensions(const CuExtensionFlags x) {
+                mExtensions = x;
                 return *this;
             }
 
-            constexpr Builder& app_name(const char* const appName) {
-                createInfo.appName = appName;
+            /** @ref CuContextCreateInfo::appName */
+            constexpr Builder& app_name(const char* const x) {
+                appName = x;
                 return *this;
             }
 
-            constexpr Builder& app_version(const uint32_t appVersion) {
-                createInfo.appVersion = appVersion;
+            /** @ref CuContextCreateInfo::appVersion */
+            constexpr Builder& app_version(const uint32_t x) {
+                appVersion = x;
                 return *this;
             }
 
-            constexpr Builder& app_version(const Version version) {
-                createInfo.appVersion = version.vk_version();
+            /** @ref CuContextCreateInfo::appVersion */
+            constexpr Builder& app_version(const Version x) {
+                appVersion = x.vk_version();
                 return *this;
             }
 
-            constexpr Builder& n_sampled_image_descriptors(const uint32_t n) {
-                createInfo.nSampledImageDescriptors = n;
+            /** @ref CuContextCreateInfo::nSampledImageDescriptors */
+            constexpr Builder& n_sampled_image_descriptors(const uint32_t x) {
+                nSampledImageDescriptors = x;
                 return *this;
             }
 
-            constexpr Builder& n_sampler_descriptors(const uint32_t n) {
-                createInfo.nSamplerDescriptors = n;
+            /** @ref CuContextCreateInfo::nSamplerDescriptors */
+            constexpr Builder& n_sampler_descriptors(const uint32_t x) {
+                nSamplerDescriptors = x;
                 return *this;
             }
 
-            constexpr Builder& n_storage_image_descriptors(const uint32_t n) {
-                createInfo.nStorageImageDescriptors = n;
+            /** @ref CuContextCreateInfo::nStorageImageDescriptors */
+            constexpr Builder& n_storage_image_descriptors(const uint32_t x) {
+                nStorageImageDescriptors = x;
                 return *this;
             }
 
@@ -93,38 +101,30 @@ namespace cu
              * @return The result of the context's initialization.
              */
             inline Result build() const {
-                return Context::init(createInfo);
+                return Context::init(*this);
             }
         };
 
-        /**
-         * @brief Returns the global GPU context.
-         * @return The global GPU context.
-         */
+        /** @ref cu_context_get() */
         static inline CuContext& get()
         {
             return *cu_context_get();
         }
 
-        /**
-         * @brief Initializes the context.
-         * @param createInfo The create info to use (default is `Context::DEFAULT_CREATE_INFO`).
-         * @return The result of creating the context.
-         * @note On success, `terminate()` is registered to run when the program exits.
-         */
+        /** @ref cu_context_init()  */
         static inline Result init(
             const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
             return cu_context_init(&createInfo);
         }
 
-        /** @brief Destroys the context. */
+        /** @ref cu_context_terminate() */
         static inline void terminate()
         {
             return cu_context_terminate();
         }
 
-        /** @brief Waits for the context to idle. */
+        /** @ref cu_context_wait_for_idle() */
         static inline void await()
         {
             return cu_context_wait_for_idle();

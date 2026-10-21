@@ -9,7 +9,7 @@ int main()
     const auto contextGuard = Context::Guard{};
 
     Renderer renderer{};
-    query(Renderer::create(renderer));
+    query(renderer.init());
 
     success();
 }

@@ -1,17 +1,16 @@
 #pragma once
 
+#include <string.h>
+
 namespace cu
 {
     /** @brief A wrapper for a Cutl C structure. */
     template<typename T>
-    class Wrapper {
-    protected:
-        T me; /**< The internal structure. */
-        
+    class Wrapper : protected T {
     public:
         /** @brief Creates the value initialized to zero. */
         constexpr Wrapper()
-            : me{}
+            : T{}
         {
 
         }
@@ -22,7 +21,7 @@ namespace cu
          */
         constexpr T& get()
         {
-            return me;
+            return *this;
         }
 
         /**
@@ -31,7 +30,7 @@ namespace cu
          */
         constexpr const T& get() const
         {
-            return me;
+            return *this;
         }
     };
 }

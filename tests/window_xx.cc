@@ -9,10 +9,10 @@ int main()
     const auto contextGuard = Context::Guard{};
 
     Window window{};
-    query(Window::create(window, WIN_W, WIN_H, "Window Test C++"));
+    query(window.init(WIN_W, WIN_H, "Window Test C++"));
 
     Renderer renderer{};
-    query(Renderer::create(renderer, window));
+    query(renderer.init(window));
 
     while (!window.should_close()) {
         window.update();

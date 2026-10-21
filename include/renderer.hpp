@@ -9,40 +9,43 @@
 
 namespace cu
 {
-    /** @brief A Vulkan renderer. */
+    /** @ref CuRenderer */
     class Renderer : public Wrapper<CuRenderer> {
     public:
-        /** @brief Create info for a renderer. */
+        /** @ref CuRendererCreateInfo */
         using CreateInfo = CuRendererCreateInfo;
 
-        /** @brief The default renderer create info. */
+        /** @ref CU_DEFAULT_RENDERER_CREATE_INFO */
         static constexpr CreateInfo DEFAULT_CREATE_INFO = CU_DEFAULT_RENDERER_CREATE_INFO;
 
         /** @brief A context builder. */
-        struct Builder {
-            /** @brief The context create info. */
-            Renderer::CreateInfo createInfo{Renderer::DEFAULT_CREATE_INFO};
-
+        struct Builder : Renderer::CreateInfo {
             /** @brief Creates a builder with the default create info. */
-            constexpr Builder() = default;
+            constexpr Builder()
+                : Renderer::CreateInfo{Renderer::DEFAULT_CREATE_INFO}
+            {
+
+            }
 
             /**
              * @brief Creates a builder with the given create info.
              * @param createInfo The create info.
              */
             constexpr Builder(const Renderer::CreateInfo& createInfo)
-                : createInfo{createInfo}
+                : Renderer::CreateInfo{createInfo}
             {
 
             }
 
+            /** @ref CuRendererCreateInfo::maxFramesInFlight */
             constexpr Builder& max_frames_in_flight(const uint32_t n) {
-                createInfo.maxFramesInFlight = n;
+                maxFramesInFlight = n;
                 return *this;
             }
 
+            /** @ref CuRendererCreateInfo::minSwapchainImages */
             constexpr Builder& min_swapchain_images(const uint32_t n) {
-                createInfo.minSwapchainImages = n;
+                minSwapchainImages = n;
                 return *this;
             }
 
@@ -52,7 +55,7 @@ namespace cu
              * @return The result of creating the renderer.
              */
             inline Result build(Renderer& renderer) const {
-                return Renderer::create(renderer, createInfo);
+                return renderer.init(*this);
             }
 
             /**
@@ -62,13 +65,14 @@ namespace cu
              * @return The result of creating the renderer.
              */
             inline Result build(Renderer& renderer, const Window& window) const {
-                return Renderer::create(renderer, window, createInfo);
+                return renderer.init(window, *this);
             }
         };
 
+        /** @ref cu_renderer_destroy() */
         inline ~Renderer()
         {
-            cu_renderer_destroy(&me);
+            cu_renderer_destroy(this);
         }
 
         /** @brief Creates an uninitialized renderer. */
@@ -78,73 +82,45 @@ namespace cu
 
         }
 
-        /**
-         * @brief Creates the renderer.
-         * @param [out] renderer The renderer to create.
-         * @param createInfo The create info. Ignore for default.
-         * @return The result of creating the renderer.
-         */
-        static inline Result create(
-            Renderer& renderer,
+        /** @ref cu_renderer_create() */
+        inline Result init(
             const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
-            return cu_renderer_create(&renderer.me, &createInfo, nullptr);
+            return cu_renderer_create(this, &createInfo, nullptr);
         }
 
-        /**
-         * @brief Creates the renderer.
-         * @param [out] renderer The renderer to create.
-         * @param window The target window.
-         * @param createInfo The create info. Ignore for default.
-         * @return The result of creating the renderer.
-         */
-        static inline Result create(
-            Renderer& renderer,
+        /** @ref cu_renderer_create() */
+        inline Result init(
             const Window& window,
             const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
-            return cu_renderer_create(&renderer.me, &createInfo, &window.get());
+            return cu_renderer_create(this, &createInfo, &window.get());
         }
 
-        /**
-         * @brief Begins the next frame.
-         * @param [out] pFrame A pointer to the frame.
-         * @return The result of beginning the frame.
-         */
+        /** @ref cu_renderer_begin_frame() */
         inline Result begin_frame(
             CuFrame*& pFrame)
         {
-            return cu_renderer_begin_frame(&me, &pFrame);
+            return cu_renderer_begin_frame(this, &pFrame);
         }
 
-        /**
-         * @brief Submits the frame.
-         * @param pFrame A pointer to the frame.
-         * @return The result of submitting the frame.
-         * @warning The frame becomes unusable after being submitted.
-         */
+        /** @ref cu_renderer_submit_frame() */
         inline Result submit_frame(
             CuFrame* pFrame)
         {
-            return cu_renderer_submit_frame(&me, pFrame);
+            return cu_renderer_submit_frame(this, pFrame);
         }
 
-        /**
-         * @brief Returns the renderer's target image format.
-         * @return The renderer's target image format.
-         */
+        /** @ref cu_renderer_get_formats() */
         inline VkFormat get_format() const
         {
-            return cu_renderer_get_format(&me);
+            return cu_renderer_get_format(this);
         }
 
-        /**
-         * @brief Returns the renderer's frame index.
-         * @return The renderer's current frame index.
-         */
+        /** @ref cu_renderer_get_frame_index() */
         inline uint32_t get_frame_index() const
         {
-            return cu_renderer_get_frame_index(&me);
+            return cu_renderer_get_frame_index(this);
         }
     };
 }

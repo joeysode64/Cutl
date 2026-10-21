@@ -99,8 +99,8 @@ bool cu_task_is_running(
 }
 
 void cu_task_await(
-    CuTask* pTask,
-    uint64_t timeout)
+    CuTask* const pTask,
+    const uint64_t timeout)
 {
     vkWaitForFences(gContext._device, 1, &pTask->_taskFinished, VK_TRUE, timeout);
 }
