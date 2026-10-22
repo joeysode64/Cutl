@@ -154,6 +154,9 @@ int main()
 
         CuFrame* pFrame = nullptr;
         query(cu_renderer_begin_frame(&renderer, &pFrame));
+        if (pFrame == nullptr) {
+            continue;
+        }
 
         cu_cmd_image_barrier(
             pFrame,

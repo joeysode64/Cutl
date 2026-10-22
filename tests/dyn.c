@@ -64,7 +64,10 @@ int main()
         angle += 0.02F;
 
         CuFrame* pFrame = nullptr;
-        cu_renderer_begin_frame(&renderer, &pFrame);
+        query(cu_renderer_begin_frame(&renderer, &pFrame));
+        if (pFrame == nullptr) {
+            continue;
+        }
 
         cu_frame_begin_render(pFrame, &renderer);
         cu_cmd_bind_graphics_pipeline(pFrame, graphicsPipeline);
@@ -72,7 +75,7 @@ int main()
         cu_cmd_draw(pFrame, 3, 0, 1, 0);
         cu_frame_end_render(pFrame, &renderer);
 
-        cu_renderer_submit_frame(&renderer, pFrame);
+        query(cu_renderer_submit_frame(&renderer, pFrame));
     }
 
     cu_context_wait_for_idle();

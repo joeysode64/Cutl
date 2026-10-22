@@ -125,6 +125,9 @@ int main()
 
         CuFrame* pFrame = nullptr;
         query(cu_renderer_begin_frame(&renderer, &pFrame));
+        if (pFrame == nullptr) {
+            continue;
+        }
 
         cu_frame_begin_render(pFrame, &renderer);
         cu_cmd_bind_graphics_pipeline(pFrame, graphicsPipeline);
