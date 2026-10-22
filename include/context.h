@@ -5,7 +5,6 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 /** @brief Bits for Vulkan extensions usable by Cutl. */
 typedef enum : uint64_t {

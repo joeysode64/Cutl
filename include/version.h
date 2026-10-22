@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.h>
 
 /** @brief A version. */
 typedef struct CuVersion_T {

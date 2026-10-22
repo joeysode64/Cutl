@@ -5,7 +5,6 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 /**
  * @brief A swapchain's information.
