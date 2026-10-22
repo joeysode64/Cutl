@@ -19,7 +19,7 @@
  * @return The result of creating the new swapchain.
  */
 static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer) {
-    cu_log_note("Resizing the swapchain %p", (void*)pRenderer->_swapchain);
+    cu_log_note("Recreating the swapchain %p", (void*)pRenderer->_swapchain);
 
     CuSwapchainInfo swapchainInfo = {};
     cu_try(cu_vk_create_swapchain(
@@ -30,6 +30,7 @@ static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer) {
         pRenderer->_swapchain));
     cu_log_create(swapchainInfo._handle);
 
+    vkQueueWaitIdle(gContext._queue);
     vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
     cu_log_destroy(pRenderer->_swapchain);
     cu_swapchain_images_destroy(pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
