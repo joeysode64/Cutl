@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 /**
  * @brief A swapchain's information.
@@ -12,8 +13,6 @@
  */
 typedef struct CuSwapchainInfo_T {
     VkSwapchainKHR _handle; /**< The swapchain handle. */
-
-    VkSurfaceKHR _surface; /**< The surface handle. */
 
     VkExtent2D _extent; /**< The swapchain's extent. */
 
@@ -40,6 +39,7 @@ extern "C" {
  * @param [out] pSwapchainInfo A pointer to the swapchain info.
  * @param minSwapchainImages The minimum number of swapchain images.
  * @param pWindow A pointer to the target window, or null for headless.
+ * @param surface The surface handle.
  * @param oldSwapchain The old swapchain handle, or null for none.
  * @return The result of creating the swapchain.
  */
@@ -47,6 +47,7 @@ CuResult cu_vk_create_swapchain(
     CuSwapchainInfo* pSwapchainInfo,
     uint32_t minSwapchainImages,
     const CuWindow* pWindow,
+    VkSurfaceKHR surface,
     VkSwapchainKHR oldSwapchain);
 
 /**

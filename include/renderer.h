@@ -14,9 +14,11 @@ typedef struct CuRenderer_T CuRenderer;
 
 /** @brief A renderer. */
 struct CuRenderer_T {
-    void* _pData; /**< A pointer to the allocated data. */
+    const CuWindow* _pWindow; /**< A pointer to the target window. */
 
-    CuSwapchainImage* _pSwapchainImages; /**< A pointer to the swapchain images. */
+    uint32_t _minSwapchainImages; /**< The minimum number of swapchain images to create. */
+
+    struct CuSwapchainImage_T* _pSwapchainImages; /**< A pointer to the swapchain images. */
 
     uint32_t _nSwapchainImages; /**< The number of swapchain images. */
 
@@ -81,6 +83,7 @@ void cu_renderer_destroy(
  * @param [in, out] pRenderer A pointerer to the renderer.
  * @param [out] ppFrame A double pointer to the frame.
  * @return The result of beginning the frame.
+ * @note If the swapchain has to be recreated, the frame is set to null and must be skipped.
  */
 CuResult cu_renderer_begin_frame(
     CuRenderer* pRenderer,

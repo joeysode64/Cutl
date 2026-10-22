@@ -5,6 +5,8 @@
 #include "result.h"
 #include "util.h"
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
@@ -71,6 +73,21 @@
 /** @brief The timeout time. */
 constexpr uint64_t TIMEOUT_NANOS = 2'000'000'000;
 
+/**
+ * @brief Creates the surface.
+ * @param [out] pSurface A pointer to the surface handle.
+ * @param window The window the surface is for.
+ * @return The result of creating the surface.
+ */
+CuResult create_surface(VkSurfaceKHR* pSurface, GLFWwindow* window);
+
+/**
+ * @brief Creates the headless surface.
+ * @param [out] pSurface A pointer to the surface handle.
+ * @return The result of creating the surface.
+ */
+CuResult create_headless_surface(VkSurfaceKHR* pSurface);
+
 /** @brief Creates an image. */
 CuResult create_image(
     VkImage* pImage,
@@ -82,7 +99,6 @@ CuResult create_image(
 /** @brief Creates an image view. */
 CuResult create_image_view(
     VkImageView* pImageView,
-    VkDevice device,
     VkImage image,
     VkFormat format);
 
@@ -99,7 +115,6 @@ CuResult allocate_command_buffers(
 /** @brief Creates a semaphore. */
 CuResult create_semaphore(
     VkSemaphore* pSemaphore,
-    VkDevice device,
     VkSemaphoreType type,
     uint64_t x);
 
@@ -148,13 +163,9 @@ VkDeviceAddress get_buffer_device_address(
 /** @brief Creates N frames. */
 CuResult create_frames(
     CuFrame* pFrames,
-    size_t nFrames,
-    VkDevice device,
-    VkCommandPool commandPool);
+    size_t nFrames);
 
 /** @brief Destroys N frames. */
 void destroy_frames(
     CuFrame* pFrames,
-    size_t nFrames,
-    VkDevice device,
-    VkCommandPool commandPool);
+    size_t nFrames);

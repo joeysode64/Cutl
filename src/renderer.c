@@ -13,6 +13,46 @@
 #include <stdlib.h>
 #include <vulkan/vulkan.h>
 
+/**
+ * @brief Recreates the renderer's swapchain.
+ * @param [in, out] pRenderer A pointer to the renderer.
+ * @return The result of creating the new swapchain.
+ */
+static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer) {
+    cu_log_note("Resizing the swapchain %p", (void*)pRenderer->_swapchain);
+
+    CuSwapchainInfo swapchainInfo = {};
+    cu_try(cu_vk_create_swapchain(
+        &swapchainInfo,
+        pRenderer->_minSwapchainImages,
+        pRenderer->_pWindow,
+        pRenderer->_surface,
+        pRenderer->_swapchain));
+    cu_log_create(swapchainInfo._handle);
+
+    vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
+    cu_log_destroy(pRenderer->_swapchain);
+    cu_swapchain_images_destroy(pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
+
+    if (swapchainInfo._nImages != pRenderer->_nSwapchainImages) {
+        free(pRenderer->_pSwapchainImages);
+        allocate_n(pRenderer->_pSwapchainImages, swapchainInfo._nImages);
+    }
+
+    pRenderer->_swapchain = swapchainInfo._handle;
+    pRenderer->_swapchainFormat = swapchainInfo._format;
+    pRenderer->_swapchainExtent = swapchainInfo._extent;
+    pRenderer->_nSwapchainImages = swapchainInfo._nImages;
+
+    cu_try(cu_swapchain_images_create(
+        pRenderer->_pSwapchainImages,
+        pRenderer->_nSwapchainImages,
+        pRenderer->_swapchain,
+        pRenderer->_swapchainFormat));
+    
+    return CU_SUCCESS;
+}
+
 CuResult cu_renderer_create(
     CuRenderer* const pRenderer,
     const CuRendererCreateInfo* pCreateInfo,
@@ -20,47 +60,46 @@ CuResult cu_renderer_create(
 {
     CuResult result = CU_SUCCESS;
 
+    if (pWindow != nullptr) {
+        cu_try_catch(create_surface(&pRenderer->_surface, pWindow->_handle));
+    } else {
+        cu_try_catch(create_headless_surface(&pRenderer->_surface));
+    }
+    cu_log_create(pRenderer->_surface);
+
     CuSwapchainInfo swapchainInfo = {};
     cu_try_catch(cu_vk_create_swapchain(
         &swapchainInfo,
         pCreateInfo->minSwapchainImages,
         pWindow,
+        pRenderer->_surface,
         VK_NULL_HANDLE));
-    cu_log_create(swapchainInfo._surface);
-    cu_log_create(swapchainInfo._handle);
-    pRenderer->_surface = swapchainInfo._surface;
     pRenderer->_swapchain = swapchainInfo._handle;
     pRenderer->_swapchainFormat = swapchainInfo._format;
     pRenderer->_swapchainExtent = swapchainInfo._extent;
     pRenderer->_nSwapchainImages = swapchainInfo._nImages;
     
-    const size_t zSwapchainImages = pRenderer->_nSwapchainImages * sizeof(CuSwapchainImage);
-    const size_t zFramesInFlight = pCreateInfo->maxFramesInFlight * sizeof(CuFrame);
-    allocate_z(pRenderer->_pData, zSwapchainImages + zFramesInFlight);
-
-    pRenderer->_pSwapchainImages = (CuSwapchainImage*)pRenderer->_pData;
+    allocate_n(pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
     cu_try_catch(cu_swapchain_images_create(
         pRenderer->_pSwapchainImages,
         pRenderer->_nSwapchainImages,
         pRenderer->_swapchain,
         pRenderer->_swapchainFormat));
 
-    pRenderer->_pFramesInFlight =
-        (CuFrame*)((uint8_t*)pRenderer->_pSwapchainImages + zSwapchainImages);
+    pRenderer->_nFramesInFlight = pCreateInfo->maxFramesInFlight;
+    allocate_n(pRenderer->_pFramesInFlight, pRenderer->_nFramesInFlight);
     cu_try_catch(create_frames(
         pRenderer->_pFramesInFlight,
-        pCreateInfo->maxFramesInFlight,
-        gContext._device,
-        gContext._commandPool));
-    pRenderer->_nFramesInFlight = pCreateInfo->maxFramesInFlight;
+        pRenderer->_nFramesInFlight));
 
     cu_try_catch(create_semaphore(
         &pRenderer->_timelineSemaphore,
-        gContext._device,
         VK_SEMAPHORE_TYPE_TIMELINE,
         0));
     cu_log_create(pRenderer->_timelineSemaphore);
     
+    pRenderer->_pWindow = pWindow;
+    pRenderer->_minSwapchainImages = pCreateInfo->minSwapchainImages;
     pRenderer->_frameCounter = (uint64_t)pRenderer->_nFramesInFlight - 1;
     pRenderer->_iSwapchainImage = 0;
 
@@ -83,18 +122,15 @@ void cu_renderer_destroy(
 
     vkDestroySemaphore(gContext._device, pRenderer->_timelineSemaphore, nullptr);
     cu_log_destroy(pRenderer->_timelineSemaphore);
-    destroy_frames(
-        pRenderer->_pFramesInFlight,
-        pRenderer->_nFramesInFlight,
-        gContext._device,
-        gContext._commandPool);
+    destroy_frames(pRenderer->_pFramesInFlight, pRenderer->_nFramesInFlight);
+    free(pRenderer->_pFramesInFlight);
     cu_swapchain_images_destroy(
         pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
+    free(pRenderer->_pSwapchainImages);
     vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
     cu_log_destroy(pRenderer->_swapchain);
     vkDestroySurfaceKHR(gContext._instance, pRenderer->_surface, nullptr);
     cu_log_destroy(pRenderer->_surface);
-    free(pRenderer->_pData);
 }
 
 
@@ -118,13 +154,19 @@ CuResult cu_renderer_begin_frame(
     cu_try_vk(vkWaitSemaphores(gContext._device, &waitInfo, TIMEOUT_NANOS));
 
     // Get the next target swapchain image's index.
-    cu_try_vk(vkAcquireNextImageKHR(
+    const VkResult acquireResult = vkAcquireNextImageKHR(
         gContext._device,
         pRenderer->_swapchain,
         TIMEOUT_NANOS,
         pFrame->_imageAvailable,
         VK_NULL_HANDLE,
-        &pRenderer->_iSwapchainImage));
+        &pRenderer->_iSwapchainImage);
+    if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
+        *ppFrame = nullptr;
+        return renderer_recreate_swapchain(pRenderer);
+    } else if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
+        return cu_vk_error(acquireResult);
+    }
 
     // Begin the frame's command buffer.
     const VkCommandBufferBeginInfo beginInfo = {
@@ -207,7 +249,12 @@ CuResult cu_renderer_submit_frame(
         .pImageIndices = &pRenderer->_iSwapchainImage,
         .pResults = nullptr,
     };
-    cu_try_vk(vkQueuePresentKHR(gContext._queue, &presentInfo));
+    const VkResult presentResult = vkQueuePresentKHR(gContext._queue, &presentInfo);
+    if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
+        cu_try(renderer_recreate_swapchain(pRenderer));
+    } else if (presentResult != VK_SUCCESS) {
+        return cu_vk_error(presentResult);
+    }
 
     return CU_SUCCESS;
 }

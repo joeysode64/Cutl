@@ -5,9 +5,30 @@
 #include "result.h"
 #include "util.h"
 
+#include <GLFW/glfw3.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+
+CuResult create_surface(VkSurfaceKHR* pSurface, GLFWwindow* window) {
+    return cu_vk_result(glfwCreateWindowSurface(gContext._instance, window, nullptr, pSurface));
+}
+
+CuResult create_headless_surface(VkSurfaceKHR* pSurface) {
+    const auto fCreateHeadlessSurface = (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(
+            gContext._instance, "vkCreateHeadlessSurfaceEXT");
+    if (fCreateHeadlessSurface == nullptr) {
+        return cu_vk_error(VK_ERROR_EXTENSION_NOT_PRESENT);
+    }
+
+    const VkHeadlessSurfaceCreateInfoEXT createInfo = {
+        .sType = VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT,
+        .pNext = nullptr,
+        .flags = 0,
+    };
+    return cu_vk_result(fCreateHeadlessSurface(
+        gContext._instance, &createInfo, nullptr, pSurface));
+}
 
 CuResult create_image(
     VkImage* const pImage,
@@ -42,7 +63,6 @@ CuResult create_image(
 
 CuResult create_image_view(
     VkImageView* const pImageView,
-    const VkDevice device,
     const VkImage image,
     const VkFormat format)
 {
@@ -69,7 +89,7 @@ CuResult create_image_view(
         .components = componentMapping,
         .subresourceRange = subresourceRange,
     };
-    return cu_vk_result(vkCreateImageView(device, &createInfo, nullptr, pImageView));
+    return cu_vk_result(vkCreateImageView(gContext._device, &createInfo, nullptr, pImageView));
 }
 
 CuResult allocate_command_buffers(
@@ -88,7 +108,6 @@ CuResult allocate_command_buffers(
 
 CuResult create_semaphore(
     VkSemaphore* const pSemaphore,
-    const VkDevice device,
     const VkSemaphoreType type,
     const uint64_t x)
 {
@@ -103,7 +122,7 @@ CuResult create_semaphore(
         .pNext = &typeCreateInfo,
         .flags = 0,
     };
-    return cu_vk_result(vkCreateSemaphore(device, &createInfo, nullptr, pSemaphore));
+    return cu_vk_result(vkCreateSemaphore(gContext._device, &createInfo, nullptr, pSemaphore));
 }
 
 CuResult allocate_memory(
@@ -190,9 +209,7 @@ VkDeviceAddress get_buffer_device_address(
 
 CuResult create_frames(
     CuFrame* const pFrames,
-    const size_t nFrames,
-    const VkDevice device,
-    const VkCommandPool commandPool)
+    const size_t nFrames)
 {
     CuResult result = CU_SUCCESS;
 
@@ -203,22 +220,20 @@ CuResult create_frames(
         CuFrame* const pFrame = &pFrames[i];
 
         cu_try_catch(create_semaphore(
-            &pFrame->_imageAvailable, device, VK_SEMAPHORE_TYPE_BINARY, 0));
+            &pFrame->_imageAvailable, VK_SEMAPHORE_TYPE_BINARY, 0));
         pFrame->_commandBuffer = commandBuffers[i];
     }
 
     return CU_SUCCESS;
 
 FAIL:
-    destroy_frames(pFrames, nFrames, device, commandPool);
+    destroy_frames(pFrames, nFrames);
     return result;
 }
 
 void destroy_frames(
     CuFrame* const pFrames,
-    const size_t nFrames,
-    const VkDevice device,
-    const VkCommandPool commandPool)
+    const size_t nFrames)
 {
     VkCommandBuffer commandBuffers[nFrames];
 
@@ -226,8 +241,8 @@ void destroy_frames(
         CuFrame* const pFrame = &pFrames[i];
 
         commandBuffers[i] = pFrame->_commandBuffer;
-        vkDestroySemaphore(device, pFrame->_imageAvailable, nullptr);
+        vkDestroySemaphore(gContext._device, pFrame->_imageAvailable, nullptr);
     }
 
-    vkFreeCommandBuffers(device, commandPool, nFrames, commandBuffers);
+    vkFreeCommandBuffers(gContext._device, gContext._commandPool, nFrames, commandBuffers);
 }

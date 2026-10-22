@@ -20,25 +20,6 @@ constexpr VkExtent2D PREFERRED_HEADLESS_EXTENT = {
     .height = 720,
 };
 
-
-/**
- * @brief Creates a headless surface.
- * @param [out] pSurface A pointer to the surface.
- * @return The result of creating the surface.
- */
-static VkResult create_headless_surface(
-    VkSurfaceKHR* const pSurface)
-{
-    const VkHeadlessSurfaceCreateInfoEXT createInfo = {
-        .sType = VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT,
-        .pNext = nullptr,
-        .flags = 0,
-    };
-    const auto fCreateHeadlessSurface = (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(
-            gContext._instance, "vkCreateHeadlessSurfaceEXT");
-    return fCreateHeadlessSurface(gContext._instance, &createInfo, nullptr, pSurface);
-}
-
 /**
  * @brief Returns the preferred extent clamped within the surface capabilities.
  * @param pCapabilities A pointer to the capabilities.
@@ -130,15 +111,9 @@ CuResult cu_vk_create_swapchain(
     CuSwapchainInfo* const pSwapchainInfo,
     const uint32_t minSwapchainImages,
     const CuWindow* const pWindow,
+    const VkSurfaceKHR surface,
     const VkSwapchainKHR oldSwapchain)
 {
-    const bool headless = pWindow == nullptr;
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
-    if (headless) {
-        cu_try_vk(create_headless_surface(&surface));
-    } else {
-        cu_try_vk(glfwCreateWindowSurface(gContext._instance, pWindow->_handle, nullptr, &surface));
-    }
     VkSurfaceCapabilitiesKHR capabilities = {};
     cu_try_vk(
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gContext._physicalDevice, surface, &capabilities));
@@ -146,9 +121,9 @@ CuResult cu_vk_create_swapchain(
     cu_try(choose_surface_format(&surfaceFormat, surface));
     VkPresentModeKHR presentMode = 0;
     cu_try(choose_present_mode(&presentMode, surface));
-    const VkExtent2D preferred = headless
-        ? PREFERRED_HEADLESS_EXTENT
-        : (VkExtent2D){ .width = pWindow->_w, .height = pWindow->_h };
+    const VkExtent2D preferred = (pWindow != nullptr)
+        ? (VkExtent2D){ .width = pWindow->_w, .height = pWindow->_h }
+        : PREFERRED_HEADLESS_EXTENT;
     const VkExtent2D extent = get_extent(&capabilities, preferred);
     const uint32_t nSwapchainImages = clamp(
         minSwapchainImages,
@@ -176,11 +151,13 @@ CuResult cu_vk_create_swapchain(
     };
     cu_try_vk(vkCreateSwapchainKHR(
         gContext._device, &createInfo, nullptr, &pSwapchainInfo->_handle));
+    cu_log_create(pSwapchainInfo->_handle);
 
     cu_try_vk(vkGetSwapchainImagesKHR(
         gContext._device, pSwapchainInfo->_handle, &pSwapchainInfo->_nImages, nullptr));
+    cu_log_note("Swapchain %p was created with %u swapchain images",
+        (void*)pSwapchainInfo->_handle, pSwapchainInfo->_nImages);
 
-    pSwapchainInfo->_surface = surface;
     pSwapchainInfo->_format = surfaceFormat.format;
     pSwapchainInfo->_extent = extent;
 
@@ -201,9 +178,9 @@ CuResult cu_swapchain_images_create(
         CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
 
         cu_try(create_image_view(
-            &pSwapchainImage->_imageView, gContext._device, images[i], format));
+            &pSwapchainImage->_imageView, images[i], format));
         cu_try(create_semaphore(
-            &pSwapchainImage->_renderFinished, gContext._device, VK_SEMAPHORE_TYPE_BINARY, 0));
+            &pSwapchainImage->_renderFinished, VK_SEMAPHORE_TYPE_BINARY, 0));
         pSwapchainImage->_image = images[i];
     }
 

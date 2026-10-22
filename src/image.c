@@ -44,7 +44,7 @@ CuResult cu_image_create(
         pImage->_allocation._offset));
 
     cu_try_catch(create_image_view(
-        &pImage->_imageView, gContext._device, pImage->_image, (VkFormat)format));
+        &pImage->_imageView, pImage->_image, (VkFormat)format));
     cu_log_create(pImage->_imageView);
 
     return CU_SUCCESS;
