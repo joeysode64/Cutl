@@ -31,17 +31,13 @@ static uint32_t get_memory_types(
 }
 
 /** @brief Returns whether the physical device supports all the extensions. */
-static bool does_physical_device_support_extensions(
-    VkPhysicalDevice physicalDevice,
-    const char* pExtensions[],
-    uint32_t nExtensions)
-{
+static bool does_physical_device_support_extensions(VkPhysicalDevice physicalDevice) {
     Enumerator(VkExtensionProperties) extensions ENUMERATOR_AUTO_FREE = {};
     enumerate(extensions, false, vkEnumerateDeviceExtensionProperties, physicalDevice, nullptr);
-    for (uint32_t i = 0; i < nExtensions; i++) {
+    for (uint32_t i = 0; i < N_DEVICE_EXTENSIONS; i++) {
         bool found = false;
         for (uint32_t j = 0; j < extensions.n; j++) {
-            if (strcmp(pExtensions[i], extensions.p[j].extensionName) == 0) {
+            if (strcmp(DEVICE_EXTENSIONS[i], extensions.p[j].extensionName) == 0) {
                 found = true;
                 break;
             }
@@ -93,12 +89,9 @@ static bool does_physical_device_support_features(
 }
 
 /** @brief Returns whether the physical device is suitable. */
-static bool is_physical_device_suitable(
-    const VkPhysicalDevice physicalDevice,
-    const char* pExtensions[],
-    const uint32_t nExtensions)
+static bool is_physical_device_suitable(const VkPhysicalDevice physicalDevice)
 {
-    return does_physical_device_support_extensions(physicalDevice, pExtensions, nExtensions) &&
+    return does_physical_device_support_extensions(physicalDevice) &&
         does_physical_device_support_features(physicalDevice);
 }
 
@@ -202,9 +195,7 @@ uint32_t find_memory_types(
 /** @brief Chooses the best-fit physical device. */
 CuResult choose_physical_device(
     PhysicalDeviceInfo* const pPhysicalDeviceInfo,
-    const VkInstance instance,
-    const char* pExtensions[],
-    const uint32_t nExtensions)
+    const VkInstance instance)
 {
     Enumerator(VkPhysicalDevice) physicalDevices ENUMERATOR_AUTO_FREE = {};
     enumerate_cu(physicalDevices, vkEnumeratePhysicalDevices, instance);
@@ -220,7 +211,7 @@ CuResult choose_physical_device(
         cu_log_note("Querying device %p (%s):", (void*)contestant, properties.deviceName);
 #endif
 
-        if (!is_physical_device_suitable(contestant, pExtensions, nExtensions)) {
+        if (!is_physical_device_suitable(contestant)) {
             cu_log_note("Device not suitable");
             continue;
         }

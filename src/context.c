@@ -18,144 +18,17 @@
 #if defined(CU_DEBUGGING)
 #include <stdlib.h>
 
-/** @brief Prints a warning if the context is not termminated at exit. */
-static void context_unterminated_warn() {
-    if (cu_context_is_initialized()) {
-        cu_log_warning("The context was not terminated before program exit");
-    }
-}
-#endif
-
-/** @brief A null/uninitialized context. */
-#define CU_UNINITIALIZED_CONTEXT (CuContext){ ._instance = VK_NULL_HANDLE }
-
-/** @brief The Cutl version in Vulkan format. */
-constexpr uint32_t CUTL_VK_VERSION =
-    VK_MAKE_VERSION(CU_VERSION_MAJOR, CU_VERSION_MINOR, CU_VERSION_PATCH);
-
-/**
- * @brief The maximum number of instance extensions.
- * @note Surface (general and platform), headless surface, debug, on Apple.
- */
-constexpr size_t MAX_N_INSTANCE_EXTENSIONS = 5;
-
-/**
- * @brief The maximum number of instance extensions.
- * @note Swapchain on Apple.
- */
-constexpr size_t MAX_N_DEVICE_EXTENSIONS = 2;
-
-/** @brief The surface extension for the platform. */
-static const char* SURFACE_EXTENSION =
-#if ON_APPLE
-    "VK_EXT_metal_surface";
-#elif ON_LINUX
-    "VK_KHR_xcb_surface";
-#elif ON_WINDOWS
-    "VK_KHR_win32_surface";
-#else
-    #error "Unsupported platform"
-#endif
-
 /** @brief The callback for creating a debug messenger. */
 static PFN_vkCreateDebugUtilsMessengerEXT fCreateDebugMessenger = nullptr;
 
 /** @brief The callback for destroying a debug messenger. */
 static PFN_vkDestroyDebugUtilsMessengerEXT fDestroyDebugMessenger = nullptr;
 
-/**
- * @brief Fills the array with the necessary instance extensions.
- * @param [out] pExtensions A pointer to the extensions.
- * @param mExtensions A bitmap of the enabled extensions.
- * @param enableValidation Whether validation layers will be used.
- * @return The number of extensions.
- */
-static uint32_t get_instance_extensions(
-    const char** const pExtensions,
-    const CuExtensionFlags mExtensions)
-{
-    uint32_t n = 0;
-
-#if ON_APPLE
-    pExtensions[n++] = "VK_KHR_portability_enumeration";
-#endif
-
-    constexpr CuExtensionFlags SURFACE_FLAGS =
-        CU_EXTENSION_SWAPCHAIN | CU_EXTENSION_HEADLESS_SURFACE;
-    if (ones_overlap(mExtensions, SURFACE_FLAGS)) {
-        pExtensions[n++] = "VK_KHR_surface";
-        pExtensions[n++] = SURFACE_EXTENSION;
+/** @brief Prints a warning if the context is not termminated at exit. */
+static void context_unterminated_warn() {
+    if (cu_context_is_initialized()) {
+        cu_log_warning("The context was not terminated before program exit");
     }
-
-    if (ones_overlap(mExtensions, CU_EXTENSION_HEADLESS_SURFACE)) {
-        pExtensions[n++] = "VK_EXT_headless_surface";
-    }
-
-    #if defined(CU_DEBUGGING)
-        pExtensions[n++] = "VK_EXT_debug_utils";
-    #endif
-
-    return n;
-}
-
-/**
- * @brief Creates the global context's Vulkan instance.
- * @param appName The application name.
- * @param appVersion The application version.
- * @param mExtensions A bitmap of the enabled extensions.
- * @param enableValidation Whether to enable validation layers.
- * @return The result of creating the instance.
- */
-static VkResult create_instance(
-    const char* const appName,
-    const uint32_t appVersion,
-    const CuExtensionFlags mExtensions)
-{
-    const VkApplicationInfo appInfo = {
-        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .pNext = nullptr,
-        .pApplicationName = appName,
-        .applicationVersion = appVersion,
-        .pEngineName = "Cutl",
-        .engineVersion = CUTL_VK_VERSION,
-        .apiVersion = VK_API_VERSION_1_4,
-    };
-    constexpr VkInstanceCreateFlags flags =
-        ON_APPLE ? VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR : 0;
-    const char* extensions[MAX_N_INSTANCE_EXTENSIONS] = {};
-    const uint32_t nExtensions = get_instance_extensions(extensions, mExtensions);
-    const VkInstanceCreateInfo createInfo = {
-        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = flags,
-        .pApplicationInfo = &appInfo,
-    #if defined(CU_DEBUGGING)
-        .enabledLayerCount = 1,
-        .ppEnabledLayerNames = (const char*[]){ "VK_LAYER_KHRONOS_validation" },
-    #else
-        .enabledLayerCount = 0,
-        .ppEnabledLayerNames = nullptr,
-    #endif
-        .enabledExtensionCount = nExtensions,
-        .ppEnabledExtensionNames = extensions,
-    };
-    return vkCreateInstance(&createInfo, nullptr, &gContext._instance);
-}
-
-/**
- * @brief Sets the functions for creating and destroying a debug messenger.
- * @return Whether both functions were retrieved successfully.
- */
-static bool get_debug_messenger_fns()
-{
-    fCreateDebugMessenger = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-        gContext._instance, "vkCreateDebugUtilsMessengerEXT");
-    cu_assert(fCreateDebugMessenger != nullptr, false);
-    fDestroyDebugMessenger = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-        gContext._instance, "vkDestroyDebugUtilsMessengerEXT");
-    cu_assert(fDestroyDebugMessenger != nullptr, false);
-
-    return true;
 }
 
 /**
@@ -179,6 +52,22 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_messenger_callback(
     fprintf(stderr, "%s\n", pCallbackData->pMessage);
 
     return VK_FALSE;
+}
+
+/*
+ * @brief Sets the functions for creating and destroying a debug messenger.
+ * @return Whether both functions were retrieved successfully.
+ */
+static bool get_debug_messenger_fns()
+{
+    fCreateDebugMessenger = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+        gContext._instance, "vkCreateDebugUtilsMessengerEXT");
+    cu_assert(fCreateDebugMessenger != nullptr, false);
+    fDestroyDebugMessenger = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+        gContext._instance, "vkDestroyDebugUtilsMessengerEXT");
+    cu_assert(fDestroyDebugMessenger != nullptr, false);
+
+    return true;
 }
 
 /**
@@ -205,38 +94,73 @@ static VkResult create_debug_messenger()
     };
     return fCreateDebugMessenger(gContext._instance, &createInfo, nullptr, &gContext._debugMessenger);
 }
-
-/**
- * @brief Fills the array with the necessary device extensions.
- * @param [out] pExtensions A pointer to the extensions.
- * @param mExtensions A bitmap of the enabled extensions.
- * @return The number of extensions.
- */
-static uint32_t get_device_extensions(
-    const char** pExtensions,
-    const CuExtensionFlags mExtensions)
-{
-    uint32_t n = 0;
-
-#if ON_APPLE
-    pExtensions[n++] = "VK_KHR_portability_subset";
 #endif
 
-    if (ones_overlap(mExtensions, CU_EXTENSION_SWAPCHAIN)) {
-        pExtensions[n++] = "VK_KHR_swapchain";
-    }
+/** @brief The instance extensions. */
+static const char* const INSTANCE_EXTENSIONS[] = {
+    "VK_KHR_surface",
+    "VK_EXT_headless_surface",
+#if ON_APPLE
+    "VK_KHR_portability_enumeration",
+    "VK_EXT_metal_surface",
+#elif ON_LINUX
+    "VK_KHR_xcb_surface",
+    "VK_KHR_xlib_surface",
+    "VK_KHR_wayland_surface",
+#elif ON_WINDOWS
+    "VK_KHR_win32_surface",
+#endif
+#if defined(CU_DEBUGGING)
+    "VK_EXT_debug_utils",
+#endif
+};
 
-    return n;
+/** @brief The number of instance extensions. */
+constexpr size_t N_INSTANCE_EXTENSIONS = arr_len(INSTANCE_EXTENSIONS);
+
+/**
+ * @brief Creates the global context's Vulkan instance.
+ * @param appName The application name.
+ * @param appVersion The application version.
+ * @return The result of creating the instance.
+ */
+static VkResult create_instance(const char* const appName, const uint32_t appVersion) {
+    const VkApplicationInfo appInfo = {
+        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        .pNext = nullptr,
+        .pApplicationName = appName,
+        .applicationVersion = appVersion,
+        .pEngineName = "Cutl",
+        .engineVersion = cu_version_vk_version(&CU_VERSION),
+        .apiVersion = VK_API_VERSION_1_4,
+    };
+    const VkInstanceCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pNext = nullptr,
+    #if ON_APPLE
+        .flags = VK_INSTANCE_CREATE_ENUMERATION_PORTABILITY_BIT_KHR,
+    #else
+	.flags = 0,
+        .pApplicationInfo = &appInfo,
+    #endif
+    #if defined(CU_DEBUGGING)
+        .enabledLayerCount = 1,
+        .ppEnabledLayerNames = (const char*[]){ "VK_LAYER_KHRONOS_validation" },
+    #else
+        .enabledLayerCount = 0,
+        .ppEnabledLayerNames = nullptr,
+    #endif
+        .enabledExtensionCount = N_INSTANCE_EXTENSIONS,
+        .ppEnabledExtensionNames = INSTANCE_EXTENSIONS,
+    };
+    return vkCreateInstance(&createInfo, nullptr, &gContext._instance);
 }
 
 /**
  * @brief Creates the global context's cu_logical device.
- * @param mExtensions A bitmap of the extensions to enable.
  * @return The result of creating the device.
  */
-static VkResult create_device(
-    const char* pExtensions[],
-    const uint32_t nExtensions)
+static VkResult create_device()
 {
     const float queuePriorities[] = { 1.0F };
     const VkDeviceQueueCreateInfo queueCreateInfos[] = {
@@ -289,8 +213,8 @@ static VkResult create_device(
         .pQueueCreateInfos = queueCreateInfos,
         .enabledLayerCount = 0,
         .ppEnabledLayerNames = nullptr,
-        .enabledExtensionCount = nExtensions,
-        .ppEnabledExtensionNames = pExtensions,
+        .enabledExtensionCount = N_DEVICE_EXTENSIONS,
+        .ppEnabledExtensionNames = DEVICE_EXTENSIONS,
     };
     return vkCreateDevice(
         gContext._physicalDevice,
@@ -428,7 +352,7 @@ static VkResult allocate_descriptor_set()
     return vkAllocateDescriptorSets(gContext._device, &allocateInfo, &gContext._descriptorSet);
 }
 
-CuContext gContext = CU_UNINITIALIZED_CONTEXT;
+CuContext gContext = { ._instance = VK_NULL_HANDLE };
 
 CuContext* cu_context_get()
 {
@@ -446,10 +370,7 @@ CuResult cu_context_init(
 
     cu_assert_catch(glfwInit() == GLFW_TRUE, cu_glfw_error());
 
-    cu_try_catch_vk(create_instance(
-        pCreateInfo->appName,
-        pCreateInfo->appVersion,
-        pCreateInfo->mExtensions));
+    cu_try_catch_vk(create_instance(pCreateInfo->appName, pCreateInfo->appVersion));
     cu_log_create(gContext._instance);
 
     #if defined(CU_DEBUGGING)
@@ -457,17 +378,14 @@ CuResult cu_context_init(
         cu_log_create(gContext._debugMessenger);
     #endif
 
-    const char* deviceExtensions[MAX_N_DEVICE_EXTENSIONS] = {};
-    const uint32_t nDeviceExtensions =
-        get_device_extensions(deviceExtensions, pCreateInfo->mExtensions);
     PhysicalDeviceInfo physicalDeviceInfo = {};
     cu_try_catch(choose_physical_device(
-        &physicalDeviceInfo, gContext._instance, deviceExtensions, nDeviceExtensions));
+        &physicalDeviceInfo, gContext._instance));
     gContext._physicalDevice = physicalDeviceInfo.handle;
     gContext._memoryInfo = physicalDeviceInfo.memoryInfo;
     gContext._iQueueFamily = physicalDeviceInfo.iQueueFamily;
 
-    cu_try_catch_vk(create_device(deviceExtensions, nDeviceExtensions));
+    cu_try_catch_vk(create_device());
     cu_log_create(gContext._device);
 
     cu_try_catch_vk(create_command_pool());
@@ -528,7 +446,7 @@ void cu_context_terminate()
         cu_log_destroy(gContext._instance);
     }
 
-    gContext = CU_UNINITIALIZED_CONTEXT;
+    gContext = (CuContext){ ._instance = VK_NULL_HANDLE };
 }
 
 void cu_context_wait_for_idle()

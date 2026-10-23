@@ -84,7 +84,7 @@ CuResult cu_sampler_create(
         .compareOp = VK_COMPARE_OP_NEVER,
         .minLod = 0.0F,
         .maxLod = 0.0F,
-        .borderColor = {},
+        .borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
         .unnormalizedCoordinates = VK_FALSE,
     };
     return cu_vk_result(vkCreateSampler(

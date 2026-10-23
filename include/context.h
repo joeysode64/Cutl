@@ -6,19 +6,6 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-/** @brief Bits for Vulkan extensions usable by Cutl. */
-typedef enum : uint64_t {
-    CU_EXTENSION_SWAPCHAIN = 1 << 0, /**< "VK_KHR_swapchain". */
-
-    CU_EXTENSION_HEADLESS_SURFACE = 1 << 1, /**< "VK_KHR_headless_surface". */
-} CuExtensionFlagBits;
-
-/** @brief A bitmask of `CuExtensionFlagBits`. */
-typedef uint64_t CuExtensionFlags;
-
-/** @brief A bitmask of all Vulkan extensions usable by Cutl. */
-constexpr CuExtensionFlags CU_EXTENSIONS_ALL = UINT64_MAX;
-
 /** @brief A physical device's memory type info. */
 typedef struct CuPhysicalDeviceMemoryInfo_T {
     uint32_t _mDeviceLocal; /**< A bitmask of the device local memory types. */
@@ -57,14 +44,10 @@ typedef struct CuContext_T {
     VkDescriptorSetLayout _descriptorSetLayout; /**< The descriptor set layout handle. */
 
     VkDescriptorSet _descriptorSet; /**< The descriptor set handle. */
-
-    CuExtensionFlags mEnabledExtensions; /**< A bitmap of the enabled extensions. */
 } CuContext;
 
 /** @brief Create info for the context. */
 typedef struct CuContextCreateInfo_T {
-    CuExtensionFlags mExtensions; /**< A bitmask of the extensions to enable. Default is all. */
-
     const char* appName; /**< The application name. Can be null. Default is null. */
 
     uint32_t appVersion; /**< The application version. Default is v0.0.0. */
@@ -81,7 +64,6 @@ typedef struct CuContextCreateInfo_T {
 
 /** @brief The default context create info. */
 constexpr CuContextCreateInfo CU_DEFAULT_CONTEXT_CREATE_INFO = {
-    .mExtensions = CU_EXTENSIONS_ALL,
     .appName = nullptr,
     .appVersion = 0,
     .nSampledImageDescriptors = 16,
@@ -145,15 +127,6 @@ void cu_context_bind_sampler(
 void cu_context_bind_storage_image(
     CuImage* pImage,
     uint32_t i);
-
-/**
- * @brief Returns a bitmask of the enabled extensions.
- * @return A bitmask of the enabled extensions.
- */
-static inline CuExtensionFlags cu_context_get_enabled_extensions()
-{
-    return cu_context_get()->mEnabledExtensions;
-}
 
 /**
  * @brief Returns whether the context is initialized at all and should be terminated.

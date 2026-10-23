@@ -53,14 +53,8 @@ namespace cu
             {
 
             }
-
-            /** @ref CuContextCreateInfo::mExtensions */
-            constexpr Builder& extensions(const CuExtensionFlags x) {
-                mExtensions = x;
-                return *this;
-            }
-
-            /** @ref CuContextCreateInfo::appName */
+            
+	    /** @ref CuContextCreateInfo::appName */
             constexpr Builder& app_name(const char* const x) {
                 appName = x;
                 return *this;

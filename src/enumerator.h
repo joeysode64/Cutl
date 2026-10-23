@@ -60,6 +60,6 @@
 static inline void enumerator_auto_free_(
     void* pEnumerator)
 {
-    auto e = *(Enumerator(void)*)pEnumerator;
-    free(e.p);
+    Enumerator(void)* e = pEnumerator;
+    free(e->p);
 }

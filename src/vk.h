@@ -73,6 +73,17 @@
 /** @brief The timeout time. */
 constexpr uint64_t TIMEOUT_NANOS = 2'000'000'000;
 
+/** @brief The device extensions. */
+static const char* const DEVICE_EXTENSIONS[] = {
+    "VK_KHR_swapchain",
+#if ON_APPLE
+    "VK_KHR_portability_subset",
+#endif
+};
+
+/**@ brief The number of device extensions. */
+constexpr size_t N_DEVICE_EXTENSIONS = arr_len(DEVICE_EXTENSIONS);
+
 /**
  * @brief Creates the surface.
  * @param [out] pSurface A pointer to the surface handle.

@@ -15,7 +15,7 @@ CuResult create_surface(VkSurfaceKHR* pSurface, GLFWwindow* window) {
 }
 
 CuResult create_headless_surface(VkSurfaceKHR* pSurface) {
-    const auto fCreateHeadlessSurface = (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(
+    auto const fCreateHeadlessSurface = (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(
             gContext._instance, "vkCreateHeadlessSurfaceEXT");
     if (fCreateHeadlessSurface == nullptr) {
         return cu_vk_error(VK_ERROR_EXTENSION_NOT_PRESENT);
@@ -244,5 +244,7 @@ void destroy_frames(
         vkDestroySemaphore(gContext._device, pFrame->_imageAvailable, nullptr);
     }
 
-    vkFreeCommandBuffers(gContext._device, gContext._commandPool, nFrames, commandBuffers);
+    if (nFrames > 0) {
+        vkFreeCommandBuffers(gContext._device, gContext._commandPool, nFrames, commandBuffers);
+    }
 }
