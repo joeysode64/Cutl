@@ -31,8 +31,7 @@ FAIL:
     return result;
 }
 
-void cu_window_destroy(
-    CuWindow* const pWindow)
+void cu_window_destroy(CuWindow* const pWindow)
 {
     if (pWindow == nullptr) {
         return;
@@ -42,8 +41,7 @@ void cu_window_destroy(
     cu_log_destroy(pWindow->_handle);
 }
 
-void cu_window_update(
-    CuWindow* const pWindow)
+void cu_window_update(CuWindow* const pWindow)
 {
     glfwPollEvents();
 

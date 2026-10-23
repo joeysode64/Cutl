@@ -26,10 +26,11 @@ int main()
         .nVert = vert.n,
         .pFrag = frag.data,
         .nFrag = frag.n,
-        .pFormats = (VkFormat[]){ cu_renderer_get_format(&renderer) },
+        .pFormats = (VkFormat[]){cu_renderer_get_format(&renderer)},
         .nFormats = 1,
     };
-    query(cu_graphics_pipeline_create(&graphicsPipeline, &graphicsPipelineCreateInfo, pipelineLayout));
+    query(cu_graphics_pipeline_create(
+        &graphicsPipeline, &graphicsPipelineCreateInfo, pipelineLayout));
 
     while (!cu_window_should_close(&window)) {
         cu_window_update(&window);

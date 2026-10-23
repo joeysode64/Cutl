@@ -11,7 +11,8 @@ typedef VkPipelineLayout CuPipelineLayout;
 
 /** @brief Create info for a pipeline layout. */
 typedef struct CuPipelineLayoutCreateInfo_T {
-    uint32_t pushConstantSize; /**< The size of the push constant data. Default is 0. */
+    uint32_t pushConstantSize; /**< The size of the push constant data. Default is
+                                  0. */
 } CuPipelineLayoutCreateInfo;
 
 /** @brief The default pipeline layout create info. */
@@ -21,7 +22,6 @@ static const CuPipelineLayoutCreateInfo CU_DEFAULT_PIPELINE_LAYOUT_CREATE_INFO =
 
 /** @brief A compute pipeline. */
 typedef VkPipeline CuComputePipeline;
-
 
 /** @brief A graphics pipeline. */
 typedef VkPipeline CuGraphicsPipeline;
@@ -59,8 +59,7 @@ CuResult cu_pipeline_layout_create(
  * @brief Destroys the pipeline layout.
  * @param pipelineLayout The pipeline layout.
  */
-void cu_pipeline_layout_destroy(
-    CuPipelineLayout pipelineLayout);
+void cu_pipeline_layout_destroy(CuPipelineLayout pipelineLayout);
 
 /**
  * @brief Creates the compute pipeline.
@@ -80,8 +79,7 @@ CuResult cu_compute_pipeline_create(
  * @brief Destroys the compute pipeline.
  * @param computePipeline The compute pipeline to destroy.
  */
-void cu_compute_pipeline_destroy(
-    CuComputePipeline computePipeline);
+void cu_compute_pipeline_destroy(CuComputePipeline computePipeline);
 
 /**
  * @brief Creates the graphics pipeline.
@@ -99,8 +97,7 @@ CuResult cu_graphics_pipeline_create(
  * @brief Destroys the graphics pipeline.
  * @param graphicsPipeline The graphics pipeline to destroy.
  */
-void cu_graphics_pipeline_destroy(
-    CuGraphicsPipeline graphicsPipeline);
+void cu_graphics_pipeline_destroy(CuGraphicsPipeline graphicsPipeline);
 
 #ifdef __cplusplus
 }

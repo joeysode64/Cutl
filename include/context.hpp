@@ -6,8 +6,7 @@
 
 #include <stdint.h>
 
-namespace cu
-{
+namespace cu {
     /** @ref CuContext */
     class Context {
     public:
@@ -26,9 +25,10 @@ namespace cu
             Guard& operator=(const Guard&) = delete;
 
             Guard& operator=(Guard&&) = delete;
-        
+
         public:
-            inline ~Guard() {
+            inline ~Guard()
+            {
                 Context::terminate();
             }
 
@@ -36,12 +36,11 @@ namespace cu
         };
 
         /** @brief A context builder. */
-        struct Builder: public Context::CreateInfo {
+        struct Builder : public Context::CreateInfo {
             /** @brief Creates a builder with the default create info. */
             constexpr Builder()
                 : Context::CreateInfo{Context::DEFAULT_CREATE_INFO}
             {
-
             }
 
             /**
@@ -51,41 +50,46 @@ namespace cu
             constexpr Builder(const Context::CreateInfo& createInfo)
                 : Context::CreateInfo{createInfo}
             {
-
             }
-            
-	    /** @ref CuContextCreateInfo::appName */
-            constexpr Builder& app_name(const char* const x) {
+
+            /** @ref CuContextCreateInfo::appName */
+            constexpr Builder& app_name(const char* const x)
+            {
                 appName = x;
                 return *this;
             }
 
             /** @ref CuContextCreateInfo::appVersion */
-            constexpr Builder& app_version(const uint32_t x) {
+            constexpr Builder& app_version(const uint32_t x)
+            {
                 appVersion = x;
                 return *this;
             }
 
             /** @ref CuContextCreateInfo::appVersion */
-            constexpr Builder& app_version(const Version x) {
+            constexpr Builder& app_version(const Version x)
+            {
                 appVersion = x.vk_version();
                 return *this;
             }
 
             /** @ref CuContextCreateInfo::nSampledImageDescriptors */
-            constexpr Builder& n_sampled_image_descriptors(const uint32_t x) {
+            constexpr Builder& n_sampled_image_descriptors(const uint32_t x)
+            {
                 nSampledImageDescriptors = x;
                 return *this;
             }
 
             /** @ref CuContextCreateInfo::nSamplerDescriptors */
-            constexpr Builder& n_sampler_descriptors(const uint32_t x) {
+            constexpr Builder& n_sampler_descriptors(const uint32_t x)
+            {
                 nSamplerDescriptors = x;
                 return *this;
             }
 
             /** @ref CuContextCreateInfo::nStorageImageDescriptors */
-            constexpr Builder& n_storage_image_descriptors(const uint32_t x) {
+            constexpr Builder& n_storage_image_descriptors(const uint32_t x)
+            {
                 nStorageImageDescriptors = x;
                 return *this;
             }
@@ -94,7 +98,8 @@ namespace cu
              * @brief Initializes the context with the builder.
              * @return The result of the context's initialization.
              */
-            inline Result build() const {
+            inline Result build() const
+            {
                 return Context::init(*this);
             }
         };
@@ -106,8 +111,7 @@ namespace cu
         }
 
         /** @ref cu_context_init()  */
-        static inline Result init(
-            const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
+        static inline Result init(const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
             return cu_context_init(&createInfo);
         }
@@ -124,4 +128,4 @@ namespace cu
             return cu_context_wait_for_idle();
         }
     };
-}
+} // namespace cu

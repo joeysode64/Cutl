@@ -22,16 +22,13 @@ extern "C" {
  * @param path The source file path.
  * @return The result of the SPIR-V reading.
  */
-CuResult cu_spirv_read_from_file(
-    CuSpirV* pSpirV,
-    const char* path);
+CuResult cu_spirv_read_from_file(CuSpirV* pSpirV, const char* path);
 
 /**
  * @brief Destroys the SPIR-V object.
  * @param pSpirV A pointer to the SPIR-V object to destroy.
  */
-void cu_spirv_destroy(
-    CuSpirV* pSpirV);
+void cu_spirv_destroy(CuSpirV* pSpirV);
 
 #ifdef __cplusplus
 }

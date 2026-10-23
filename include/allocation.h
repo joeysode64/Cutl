@@ -23,7 +23,7 @@ typedef void CuAllocator;
  * @param pRequirements A pointer to the memory requirements.
  * @param mProperties A bitmap of the memory properties.
  */
-typedef CuResult(*CuAllocateFn)(
+typedef CuResult (*CuAllocateFn)(
     CuAllocation* pAllocation,
     void** ppData,
     CuAllocator* pAllocator,
@@ -35,9 +35,7 @@ typedef CuResult(*CuAllocateFn)(
  * @param [in, out] pAllocation A pointer to the allocation.
  * @param [in, out] pAllocator A pointer to the allocator.
  */
-typedef void(*CuFreeFn)(
-    CuAllocation* pAllocation,
-    CuAllocator* pAllocator);
+typedef void (*CuFreeFn)(CuAllocation* pAllocation, CuAllocator* pAllocator);
 
 /** @brief A Vulkan memory allocator's callbacks. */
 typedef struct CuAllocatorFns_T {
@@ -74,11 +72,7 @@ static inline CuResult mode_allocate(
     const VkMemoryPropertyFlags mProperties)
 {
     return mode._pFns->_fAllocate(
-        pAllocation,
-        ppData,
-        mode._pAllocator,
-        pRequirements,
-        mProperties);
+        pAllocation, ppData, mode._pAllocator, pRequirements, mProperties);
 }
 
 /**
@@ -86,9 +80,7 @@ static inline CuResult mode_allocate(
  * @param [in, out] pAllocation A pointer to the allocation.
  * @param mode The allocation mode.
  */
-static inline void mode_free(
-    CuAllocation* const pAllocation,
-    const CuAllocationMode mode)
+static inline void mode_free(CuAllocation* const pAllocation, const CuAllocationMode mode)
 {
     mode._pFns->_fFree(pAllocation, mode._pAllocator);
 }

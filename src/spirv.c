@@ -8,9 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-CuResult cu_spirv_read_from_file(
-    CuSpirV* pSpirV,
-    const char* path)
+CuResult cu_spirv_read_from_file(CuSpirV* pSpirV, const char* path)
 {
     CuResult result = CU_SUCCESS;
 
@@ -54,8 +52,7 @@ FAIL:
     return result;
 }
 
-void cu_spirv_destroy(
-    CuSpirV* pSpirV)
+void cu_spirv_destroy(CuSpirV* pSpirV)
 {
     free(pSpirV->data);
 }

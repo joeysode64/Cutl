@@ -18,15 +18,13 @@
  * @param [in, out] pRenderer A pointer to the renderer.
  * @return The result of creating the new swapchain.
  */
-static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer) {
+static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer)
+{
     cu_log_note("Recreating the swapchain %p", (void*)pRenderer->_swapchain);
 
     CuSwapchainInfo swapchainInfo = {};
     cu_try(cu_vk_create_swapchain(
-        &swapchainInfo,
-        pRenderer->_minSwapchainImages,
-        pRenderer->_pWindow,
-        pRenderer->_surface,
+        &swapchainInfo, pRenderer->_minSwapchainImages, pRenderer->_pWindow, pRenderer->_surface,
         pRenderer->_swapchain));
     cu_log_create(swapchainInfo._handle);
 
@@ -46,11 +44,9 @@ static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer) {
     pRenderer->_nSwapchainImages = swapchainInfo._nImages;
 
     cu_try(cu_swapchain_images_create(
-        pRenderer->_pSwapchainImages,
-        pRenderer->_nSwapchainImages,
-        pRenderer->_swapchain,
+        pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages, pRenderer->_swapchain,
         pRenderer->_swapchainFormat));
-    
+
     return CU_SUCCESS;
 }
 
@@ -70,35 +66,25 @@ CuResult cu_renderer_create(
 
     CuSwapchainInfo swapchainInfo = {};
     cu_try_catch(cu_vk_create_swapchain(
-        &swapchainInfo,
-        pCreateInfo->minSwapchainImages,
-        pWindow,
-        pRenderer->_surface,
+        &swapchainInfo, pCreateInfo->minSwapchainImages, pWindow, pRenderer->_surface,
         VK_NULL_HANDLE));
     pRenderer->_swapchain = swapchainInfo._handle;
     pRenderer->_swapchainFormat = swapchainInfo._format;
     pRenderer->_swapchainExtent = swapchainInfo._extent;
     pRenderer->_nSwapchainImages = swapchainInfo._nImages;
-    
+
     allocate_n(pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
     cu_try_catch(cu_swapchain_images_create(
-        pRenderer->_pSwapchainImages,
-        pRenderer->_nSwapchainImages,
-        pRenderer->_swapchain,
+        pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages, pRenderer->_swapchain,
         pRenderer->_swapchainFormat));
 
     pRenderer->_nFramesInFlight = pCreateInfo->maxFramesInFlight;
     allocate_n(pRenderer->_pFramesInFlight, pRenderer->_nFramesInFlight);
-    cu_try_catch(create_frames(
-        pRenderer->_pFramesInFlight,
-        pRenderer->_nFramesInFlight));
+    cu_try_catch(create_frames(pRenderer->_pFramesInFlight, pRenderer->_nFramesInFlight));
 
-    cu_try_catch(create_semaphore(
-        &pRenderer->_timelineSemaphore,
-        VK_SEMAPHORE_TYPE_TIMELINE,
-        0));
+    cu_try_catch(create_semaphore(&pRenderer->_timelineSemaphore, VK_SEMAPHORE_TYPE_TIMELINE, 0));
     cu_log_create(pRenderer->_timelineSemaphore);
-    
+
     pRenderer->_pWindow = pWindow;
     pRenderer->_minSwapchainImages = pCreateInfo->minSwapchainImages;
     pRenderer->_frameCounter = (uint64_t)pRenderer->_nFramesInFlight - 1;
@@ -112,8 +98,7 @@ FAIL:
     return result;
 }
 
-void cu_renderer_destroy(
-    CuRenderer* const pRenderer)
+void cu_renderer_destroy(CuRenderer* const pRenderer)
 {
     if (pRenderer == nullptr) {
         return;
@@ -125,8 +110,7 @@ void cu_renderer_destroy(
     cu_log_destroy(pRenderer->_timelineSemaphore);
     destroy_frames(pRenderer->_pFramesInFlight, pRenderer->_nFramesInFlight);
     free(pRenderer->_pFramesInFlight);
-    cu_swapchain_images_destroy(
-        pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
+    cu_swapchain_images_destroy(pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
     free(pRenderer->_pSwapchainImages);
     vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
     cu_log_destroy(pRenderer->_swapchain);
@@ -134,10 +118,7 @@ void cu_renderer_destroy(
     cu_log_destroy(pRenderer->_surface);
 }
 
-
-CuResult cu_renderer_begin_frame(
-    CuRenderer* const pRenderer,
-    CuFrame** const ppFrame)
+CuResult cu_renderer_begin_frame(CuRenderer* const pRenderer, CuFrame** const ppFrame)
 {
     const uint32_t iFrame = cu_renderer_get_frame_index(pRenderer);
     CuFrame* const pFrame = &pRenderer->_pFramesInFlight[iFrame];
@@ -156,12 +137,8 @@ CuResult cu_renderer_begin_frame(
 
     // Get the next target swapchain image's index.
     const VkResult acquireResult = vkAcquireNextImageKHR(
-        gContext._device,
-        pRenderer->_swapchain,
-        TIMEOUT_NANOS,
-        pFrame->_imageAvailable,
-        VK_NULL_HANDLE,
-        &pRenderer->_iSwapchainImage);
+        gContext._device, pRenderer->_swapchain, TIMEOUT_NANOS, pFrame->_imageAvailable,
+        VK_NULL_HANDLE, &pRenderer->_iSwapchainImage);
     if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
         *ppFrame = nullptr;
         return renderer_recreate_swapchain(pRenderer);
@@ -182,9 +159,7 @@ CuResult cu_renderer_begin_frame(
     return CU_SUCCESS;
 }
 
-CuResult cu_renderer_submit_frame(
-    CuRenderer* const pRenderer,
-    CuFrame* pFrame)
+CuResult cu_renderer_submit_frame(CuRenderer* const pRenderer, CuFrame* pFrame)
 {
     // End the frame's command buffer.
     cu_try_vk(vkEndCommandBuffer(pFrame->_commandBuffer));

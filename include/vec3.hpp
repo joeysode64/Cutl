@@ -5,11 +5,9 @@
 
 #include <stdint.h>
 
-namespace cu
-{
+namespace cu {
     /** @brief A 2-dimensional vector. */
-    template<Num T>
-    struct Vec3 {
+    template <Num T> struct Vec3 {
         T x; /**< The x factor. */
 
         T y; /**< The y factor. */
@@ -20,18 +18,15 @@ namespace cu
         constexpr Vec3()
             : x{}, y{}, z{}
         {
-
         }
 
         /**
          * @brief Creates a vector with the given x y and z value.
          * @param xyz The x y and z value.
          */
-        constexpr Vec3(
-            const T xyz)
+        constexpr Vec3(const T xyz)
             : x{xyz}, y{xyz}, z{xyz}
         {
-
         }
 
         /**
@@ -40,13 +35,9 @@ namespace cu
          * @param y The y value.
          * @param z The z value.
          */
-        constexpr Vec3(
-            const T x,
-            const T y,
-            const T z)
+        constexpr Vec3(const T x, const T y, const T z)
             : x{x}, y{y}, z{z}
         {
-
         }
 
         /**
@@ -54,12 +45,9 @@ namespace cu
          * @param xy The x and y values.
          * @param z The z value. Ignore for 0.
          */
-        constexpr Vec3(
-            const Vec2<T> xy,
-            const T z = {})
+        constexpr Vec3(const Vec2<T> xy, const T z = {})
             : x{xy.x}, y{xy.y}, z{z}
         {
-
         }
 
         /**
@@ -67,12 +55,9 @@ namespace cu
          * @param x The x value.
          * @param yz The y and z value.
          */
-        constexpr Vec3(
-            const T x,
-            const Vec2<T> yz)
+        constexpr Vec3(const T x, const Vec2<T> yz)
             : x{x}, y{yz.y}, z{yz.z}
         {
-
         }
 
         /**
@@ -80,8 +65,7 @@ namespace cu
          * @param rhs The other vector.
          * @return The cross product of the two vectors.
          */
-        constexpr T dot(
-            const Vec3<T> rhs) const 
+        constexpr T dot(const Vec3<T> rhs) const
         {
             return (x * rhs.x) + (y * rhs.y) + (z * rhs.z);
         }
@@ -91,8 +75,7 @@ namespace cu
          * @param v The other vector.
          * @return The distance between the vectors squared.
          */
-        constexpr T dst_sqr(
-            const Vec3<T> v) const
+        constexpr T dst_sqr(const Vec3<T> v) const
         {
             const T dx = safe_diff(v.x, x);
             const T dy = safe_diff(v.y, y);
@@ -105,8 +88,7 @@ namespace cu
          * @param v The other vector.
          * @return The distance between the vectors.
          */
-        constexpr T dst(
-            const Vec3<T> v) const
+        constexpr T dst(const Vec3<T> v) const
             requires Float<T>
         {
             return sqrt(dst_sqr(v));
@@ -146,98 +128,83 @@ namespace cu
             requires Float<T>
         {
             *this /= mag();
-        } 
+        }
 
         /**
          * @brief Returns the vector converted to the given type.
          * @return The vector converted to the given type.
          */
-        template<Num U>
-        constexpr Vec3<U> as() const
+        template <Num U> constexpr Vec3<U> as() const
         {
             Vec3<U>{static_cast<U>(x), static_cast<U>(y), static_cast<U>(z)};
         }
 
-        template<typename U>
-        explicit constexpr operator Vec3<U>() const
+        template <typename U> explicit constexpr operator Vec3<U>() const
         {
             return Vec3<U>{static_cast<U>(x), static_cast<U>(y), static_cast<U>(z)};
         }
 
-        constexpr Vec3<T> operator+(
-            const Vec3<T> rhs) const
+        constexpr Vec3<T> operator+(const Vec3<T> rhs) const
         {
             return Vec3{x + rhs.x, y + rhs.y, z + rhs.z};
         }
 
-        constexpr Vec3<T> operator-(
-            const Vec3<T> rhs) const
+        constexpr Vec3<T> operator-(const Vec3<T> rhs) const
         {
             return Vec3{x - rhs.x, y - rhs.y, z - rhs.z};
         }
 
-        constexpr Vec3<T> operator*(
-            const Vec3<T> rhs) const
+        constexpr Vec3<T> operator*(const Vec3<T> rhs) const
         {
             return Vec3{x * rhs.x, y * rhs.y, z * rhs.z};
         }
 
-        constexpr Vec3<T> operator/(
-            const Vec3<T> rhs) const
+        constexpr Vec3<T> operator/(const Vec3<T> rhs) const
         {
             return Vec3{x / rhs.x, y / rhs.y, z / rhs.z};
         }
 
-        constexpr Vec3<T> operator+(
-            const Vec2<T> rhs) const
+        constexpr Vec3<T> operator+(const Vec2<T> rhs) const
         {
             return Vec3{x + rhs.x, y + rhs.y, z};
         }
 
-        constexpr Vec3<T> operator-(
-            const Vec2<T> rhs) const
+        constexpr Vec3<T> operator-(const Vec2<T> rhs) const
         {
             return Vec3{x - rhs.x, y - rhs.y, z};
         }
 
-        constexpr Vec3<T> operator*(
-            const Vec2<T> rhs) const
+        constexpr Vec3<T> operator*(const Vec2<T> rhs) const
         {
             return Vec3{x * rhs.x, y * rhs.y, z};
         }
 
-        constexpr Vec3<T> operator/(
-            const Vec2<T> rhs) const
+        constexpr Vec3<T> operator/(const Vec2<T> rhs) const
         {
             return Vec3{x / rhs.x, y / rhs.y, z};
         }
 
-        constexpr Vec3<T> operator+(
-            const T rhs) const
+        constexpr Vec3<T> operator+(const T rhs) const
         {
             return Vec3{x + rhs, y + rhs, z + rhs};
         }
 
-        constexpr Vec3<T> operator-(
-            const T rhs) const
+        constexpr Vec3<T> operator-(const T rhs) const
         {
             return Vec3{x - rhs, y - rhs, z - rhs};
         }
 
-        constexpr Vec3<T> operator*(
-            const T rhs) const
+        constexpr Vec3<T> operator*(const T rhs) const
         {
             return Vec3{x * rhs, y * rhs, z * rhs};
         }
 
-        constexpr Vec3<T> operator/(
-            const T rhs) const
+        constexpr Vec3<T> operator/(const T rhs) const
         {
             return Vec3{x / rhs, y / rhs, z / rhs};
         }
 
-        constexpr Vec3<T>& operator+=(
-            const Vec3<T> rhs)
+        constexpr Vec3<T>& operator+=(const Vec3<T> rhs)
         {
             x += rhs.x;
             y += rhs.y;
@@ -245,8 +212,7 @@ namespace cu
             return *this;
         }
 
-        constexpr Vec3<T>& operator-=(
-            const Vec3<T> rhs)
+        constexpr Vec3<T>& operator-=(const Vec3<T> rhs)
         {
             x -= rhs.x;
             y -= rhs.y;
@@ -254,8 +220,7 @@ namespace cu
             return *this;
         }
 
-        constexpr Vec3<T>& operator*=(
-            const Vec3<T> rhs)
+        constexpr Vec3<T>& operator*=(const Vec3<T> rhs)
         {
             x *= rhs.x;
             y *= rhs.y;
@@ -263,8 +228,7 @@ namespace cu
             return *this;
         }
 
-        constexpr Vec3<T>& operator/=(
-            const Vec3<T> rhs)
+        constexpr Vec3<T>& operator/=(const Vec3<T> rhs)
         {
             x /= rhs.x;
             y /= rhs.y;
@@ -272,40 +236,35 @@ namespace cu
             return *this;
         }
 
-        constexpr Vec3<T>& operator+=(
-            const Vec2<T> rhs)
+        constexpr Vec3<T>& operator+=(const Vec2<T> rhs)
         {
             x += rhs.x;
             y += rhs.y;
             return *this;
         }
 
-        constexpr Vec3<T>& operator-=(
-            const Vec2<T> rhs)
+        constexpr Vec3<T>& operator-=(const Vec2<T> rhs)
         {
             x -= rhs.x;
             y -= rhs.y;
             return *this;
         }
 
-        constexpr Vec3<T>& operator*=(
-            const Vec2<T> rhs)
+        constexpr Vec3<T>& operator*=(const Vec2<T> rhs)
         {
             x *= rhs.x;
             y *= rhs.y;
             return *this;
         }
 
-        constexpr Vec3<T>& operator/=(
-            const Vec2<T> rhs)
+        constexpr Vec3<T>& operator/=(const Vec2<T> rhs)
         {
             x /= rhs.x;
             y /= rhs.y;
             return *this;
         }
 
-        constexpr Vec3<T>& operator+=(
-            const T rhs)
+        constexpr Vec3<T>& operator+=(const T rhs)
         {
             x += rhs;
             y += rhs;
@@ -313,8 +272,7 @@ namespace cu
             return *this;
         }
 
-        constexpr Vec3<T>& operator-=(
-            const T rhs)
+        constexpr Vec3<T>& operator-=(const T rhs)
         {
             x -= rhs;
             y -= rhs;
@@ -322,8 +280,7 @@ namespace cu
             return *this;
         }
 
-        constexpr Vec3<T>& operator*=(
-            const T rhs)
+        constexpr Vec3<T>& operator*=(const T rhs)
         {
             x *= rhs;
             y *= rhs;
@@ -331,8 +288,7 @@ namespace cu
             return *this;
         }
 
-        constexpr Vec3<T>& operator/=(
-            const T rhs)
+        constexpr Vec3<T>& operator/=(const T rhs)
         {
             x /= rhs;
             y /= rhs;
@@ -346,4 +302,4 @@ namespace cu
     using Vec3I = Vec3<int32_t>;
 
     using Vec3U = Vec3<uint32_t>;
-}
+} // namespace cu

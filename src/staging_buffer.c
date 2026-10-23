@@ -19,12 +19,8 @@ CuResult cu_staging_buffer_create(
     CuResult result = CU_SUCCESS;
 
     cu_try_catch(create_buffer(
-        &pStagingBuffer->_buffer,
-        &pStagingBuffer->_allocation,
-        &pStagingBuffer->_pData,
-        z,
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        mode,
+        &pStagingBuffer->_buffer, &pStagingBuffer->_allocation, &pStagingBuffer->_pData, z,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT, mode,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
 
     return CU_SUCCESS;
@@ -34,9 +30,7 @@ FAIL:
     return result;
 }
 
-void cu_staging_buffer_destroy(
-    CuStagingBuffer* const pStagingBuffer,
-    const CuAllocationMode mode)
+void cu_staging_buffer_destroy(CuStagingBuffer* const pStagingBuffer, const CuAllocationMode mode)
 {
     mode_free(&pStagingBuffer->_allocation, mode);
     vkDestroyBuffer(gContext._device, pStagingBuffer->_buffer, nullptr);

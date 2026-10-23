@@ -18,12 +18,8 @@ CuResult cu_static_buffer_create(
     CuResult result = CU_SUCCESS;
 
     cu_try_catch(create_buffer(
-        &pStaticBuffer->_buffer,
-        &pStaticBuffer->_allocation,
-        nullptr,
-        z,
-        usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-        mode,
+        &pStaticBuffer->_buffer, &pStaticBuffer->_allocation, nullptr, z,
+        usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, mode,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
     pStaticBuffer->_address = get_buffer_device_address(pStaticBuffer->_buffer);
 
@@ -34,9 +30,7 @@ FAIL:
     return result;
 }
 
-void cu_static_buffer_destroy(
-    CuStaticBuffer* const pStaticBuffer,
-    const CuAllocationMode mode)
+void cu_static_buffer_destroy(CuStaticBuffer* const pStaticBuffer, const CuAllocationMode mode)
 {
     mode_free(&pStaticBuffer->_allocation, mode);
     vkDestroyBuffer(gContext._device, pStaticBuffer->_buffer, nullptr);

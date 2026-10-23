@@ -46,9 +46,7 @@ CuResult cu_dynamic_buffer_create(
  * @param [in, out] pDynamicBuffer A pointer to the dynamic buffer.
  * @param mode The allication mode.
  */
-void cu_dynamic_buffer_destroy(
-    CuDynamicBuffer* pDynamicBuffer,
-    CuAllocationMode mode);
+void cu_dynamic_buffer_destroy(CuDynamicBuffer* pDynamicBuffer, CuAllocationMode mode);
 
 /**
  * @brief Retrieves the data frame's data pointer and device address.

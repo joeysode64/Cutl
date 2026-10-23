@@ -2,17 +2,14 @@
 
 #include <string.h>
 
-namespace cu
-{
+namespace cu {
     /** @brief A wrapper for a Cutl C structure. */
-    template<typename T>
-    class Wrapper : protected T {
+    template <typename T> class Wrapper : protected T {
     public:
         /** @brief Creates the value initialized to zero. */
         constexpr Wrapper()
             : T{}
         {
-
         }
 
         /**
@@ -33,4 +30,4 @@ namespace cu
             return *this;
         }
     };
-}
+} // namespace cu

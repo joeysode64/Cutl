@@ -16,8 +16,7 @@ void cu_cmd_bind_graphics_pipeline(
     const CuGraphicsPipeline graphicsPipeline)
 {
     vkCmdBindPipeline(
-        deref(commandBuffer), VK_PIPELINE_BIND_POINT_GRAPHICS, (VkPipeline)graphicsPipeline
-    );
+        deref(commandBuffer), VK_PIPELINE_BIND_POINT_GRAPHICS, (VkPipeline)graphicsPipeline);
 }
 
 void cu_cmd_draw(
@@ -35,8 +34,7 @@ void cu_cmd_bind_compute_pipeline(
     const CuComputePipeline computePipeline)
 {
     vkCmdBindPipeline(
-        deref(commandBuffer), VK_PIPELINE_BIND_POINT_COMPUTE, (VkPipeline)computePipeline
-    );
+        deref(commandBuffer), VK_PIPELINE_BIND_POINT_COMPUTE, (VkPipeline)computePipeline);
 }
 
 void cu_cmd_dispatch(
@@ -56,8 +54,7 @@ void cu_cmd_write_push_constants(
     const size_t o)
 {
     vkCmdPushConstants(
-        deref(commandBuffer), (VkPipelineLayout)pipelineLayout, VK_SHADER_STAGE_ALL, o, z, p
-    );
+        deref(commandBuffer), (VkPipelineLayout)pipelineLayout, VK_SHADER_STAGE_ALL, o, z, p);
 }
 
 void cu_cmd_buffer_copy(
@@ -138,12 +135,13 @@ void cu_cmd_image_fill(
     const CuRGBA color)
 {
     const VkClearColorValue clearColor = {
-        .float32 = {
-            (float)color.r / 255.0F,
-            (float)color.g / 255.0F,
-            (float)color.b / 255.0F,
-            (float)color.a / 255.0F,
-        },
+        .float32 =
+            {
+                (float)color.r / 255.0F,
+                (float)color.g / 255.0F,
+                (float)color.b / 255.0F,
+                (float)color.a / 255.0F,
+            },
     };
     const VkImageSubresourceRange subresourceRange = {
         .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -153,13 +151,8 @@ void cu_cmd_image_fill(
         .layerCount = 1,
     };
     vkCmdClearColorImage(
-        deref(commandBuffer),
-        pImage->_image,
-        (VkImageLayout)layout,
-        &clearColor,
-        1,
-        &subresourceRange
-    );
+        deref(commandBuffer), pImage->_image, (VkImageLayout)layout, &clearColor, 1,
+        &subresourceRange);
 }
 
 void cu_cmd_image_copy_from_buffer(
@@ -177,14 +170,15 @@ void cu_cmd_image_copy_from_buffer(
         .bufferOffset = oSrc,
         .bufferRowLength = 0,
         .bufferImageHeight = 0,
-        .imageSubresource = {
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            .mipLevel = 0,
-            .baseArrayLayer = 0,
-            .layerCount = 1,
-        },
-        .imageOffset = { 0, 0, 0 },
-        .imageExtent = { w, h, 1 },
+        .imageSubresource =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .mipLevel = 0,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            },
+        .imageOffset = {0, 0, 0},
+        .imageExtent = {w, h, 1},
     };
     const VkCopyBufferToImageInfo2 copyInfo = {
         .sType = VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2,
@@ -198,9 +192,7 @@ void cu_cmd_image_copy_from_buffer(
     vkCmdCopyBufferToImage2(deref(commandBuffer), &copyInfo);
 }
 
-void cu_cmd_bind_descriptors(
-    const CuCmdBuffer commandBuffer,
-    const CuPipelineLayout pipelineLayout)
+void cu_cmd_bind_descriptors(const CuCmdBuffer commandBuffer, const CuPipelineLayout pipelineLayout)
 {
     const VkPipelineBindPoint bindPoints[] = {
         VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -208,14 +200,7 @@ void cu_cmd_bind_descriptors(
     };
     for (size_t i = 0; i < sizeof(bindPoints) / sizeof(bindPoints[0]); i++) {
         vkCmdBindDescriptorSets(
-            deref(commandBuffer),
-            bindPoints[i],
-            (VkPipelineLayout)pipelineLayout,
-            0,
-            1,
-            &gContext._descriptorSet,
-            0,
-            nullptr
-        );
+            deref(commandBuffer), bindPoints[i], (VkPipelineLayout)pipelineLayout, 0, 1,
+            &gContext._descriptorSet, 0, nullptr);
     }
 }

@@ -26,7 +26,4 @@ uint32_t find_memory_types(
  * @param [out] pPhysicalDeviceInfo A pointer to the physical device info.
  * @param instance The Vulkan intance handle.
  */
-CuResult choose_physical_device(
-    PhysicalDeviceInfo* pPhysicalDeviceInfo,
-    VkInstance instance);
-
+CuResult choose_physical_device(PhysicalDeviceInfo* pPhysicalDeviceInfo, VkInstance instance);

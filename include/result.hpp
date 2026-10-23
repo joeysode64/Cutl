@@ -4,8 +4,7 @@
 
 #include <stdint.h>
 
-namespace cu
-{
+namespace cu {
     /** @brief A result type. */
     enum class ResultType : uint32_t {
         Success = 0, /**< A success. The result's `.v` is irrelevant. */
@@ -27,7 +26,8 @@ namespace cu
 
         ArenaTooSmall, /**< Tried to allocate too large of data to an arena. */
 
-        ArenaFull, /**< Tried to allocate to an arena that didn't have enough room left. */
+        ArenaFull, /**< Tried to allocate to an arena that didn't have enough room
+                      left. */
     };
 
     /** @brief A Cutl result. */
@@ -36,23 +36,18 @@ namespace cu
         ResultType t; /**< The result type. */
 
         int32_t v; /**< The result value. */
-    
+
     public:
         /** @brief Creates a result with the given result type and value. */
-        constexpr Result(
-            const ResultType t,
-            const int32_t v)
+        constexpr Result(const ResultType t, const int32_t v)
             : t{t}, v{v}
         {
-
         }
 
         /** @brief Creates a result from the C-style result. */
-        constexpr Result(
-            const CuResult r)
+        constexpr Result(const CuResult r)
             : t{r.t}, v{r.v}
         {
-
         }
 
         /**
@@ -88,13 +83,10 @@ namespace cu
          */
         constexpr operator CuResult()
         {
-            return CuResult{
-                .t = static_cast<CuResultType>(t),
-                .v = v
-            };
+            return CuResult{.t = static_cast<CuResultType>(t), .v = v};
         }
     };
 
     /** @brief A successful result. */
     constexpr Result SUCCESS{ResultType::Success, 0};
-}
+} // namespace cu

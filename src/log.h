@@ -21,9 +21,9 @@
 #define ANSI_RESET "\x1b[0m"
 
 #if defined(CU_DEBUGGING)
-    #define cu_log(fmt, ...) fprintf(stderr, fmt "\n" __VA_OPT__(,) __VA_ARGS__)
+#define cu_log(fmt, ...) fprintf(stderr, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
 #else
-    #define cu_log(fmt, ...)
+#define cu_log(fmt, ...)
 #endif
 
 /**
@@ -48,7 +48,7 @@
  * @brief Logs a failed operation.
  * @param r The result.
  */
-#define cu_log_fail(r) \
+#define cu_log_fail(r)                                                                             \
     cu_log(ANSI_RED "Error:" ANSI_RESET " `%s` failed (%u:%i)", __func__, (r).t, (r).v)
 
 /**
@@ -56,7 +56,7 @@
  * @param e The expression.
  * @param v The value it returned.
  */
-#define cu_log_expect(e, v) \
+#define cu_log_expect(e, v)                                                                        \
     cu_log(ANSI_RED "Error:" ANSI_RESET " `" #e "` returned an unexpected value: %i", (v))
 
 /**

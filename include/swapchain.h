@@ -68,9 +68,7 @@ CuResult cu_swapchain_images_create(
  * @param [in, out] pSwapchainImages A pointer to the swapchain images.
  * @param nSwapchainImages The number of swapchain images.
  */
-void cu_swapchain_images_destroy(
-    CuSwapchainImage* pSwapchainImages,
-    uint32_t nSwapchainImages);
+void cu_swapchain_images_destroy(CuSwapchainImage* pSwapchainImages, uint32_t nSwapchainImages);
 
 #ifdef __cplusplus
 }

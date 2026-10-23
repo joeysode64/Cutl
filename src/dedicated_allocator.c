@@ -18,10 +18,8 @@ CuResult dedicated_allocator_allocate(
 {
     (void)_pAllocator;
 
-    const uint32_t mMemoryTypes = find_memory_types(
-        &gContext._memoryInfo,
-        mProperties,
-        pRequirements->memoryTypeBits);
+    const uint32_t mMemoryTypes =
+        find_memory_types(&gContext._memoryInfo, mProperties, pRequirements->memoryTypeBits);
     const uint32_t iMemoryType = __builtin_ctz(mMemoryTypes);
 
     VkDeviceMemory memory = VK_NULL_HANDLE;
@@ -33,13 +31,11 @@ CuResult dedicated_allocator_allocate(
 
     pAllocation->_memory = memory;
     pAllocation->_offset = 0;
-    
+
     return CU_SUCCESS;
 }
 
-void dedicated_allocator_free(
-    CuAllocation* const pAllocation,
-    CuAllocator* const _pAllocator)
+void dedicated_allocator_free(CuAllocation* const pAllocation, CuAllocator* const _pAllocator)
 {
     (void)_pAllocator;
 

@@ -23,14 +23,13 @@ CuResult cu_pipeline_layout_create(
         .setLayoutCount = 1,
         .pSetLayouts = &gContext._descriptorSetLayout,
         .pushConstantRangeCount = pCreateInfo->pushConstantSize > 0 ? 1 : 0,
-        .pPushConstantRanges = & pushConstantRange,
+        .pPushConstantRanges = &pushConstantRange,
     };
     return cu_vk_result(vkCreatePipelineLayout(
         gContext._device, &createInfo, nullptr, (VkPipelineLayout*)pPipelineLayout));
 }
 
-void cu_pipeline_layout_destroy(
-    const CuPipelineLayout pipelineLayout)
+void cu_pipeline_layout_destroy(const CuPipelineLayout pipelineLayout)
 {
     vkDestroyPipelineLayout(gContext._device, (VkPipelineLayout)pipelineLayout, nullptr);
 }
@@ -52,15 +51,16 @@ CuResult cu_compute_pipeline_create(
         .sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .stage = {
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            .pNext = &shaderModuleCreateInfo,
-            .flags = 0,
-            .stage = VK_SHADER_STAGE_COMPUTE_BIT,
-            .module = VK_NULL_HANDLE,
-            .pName = "main",
-            .pSpecializationInfo = nullptr,
-        },
+        .stage =
+            {
+                .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+                .pNext = &shaderModuleCreateInfo,
+                .flags = 0,
+                .stage = VK_SHADER_STAGE_COMPUTE_BIT,
+                .module = VK_NULL_HANDLE,
+                .pName = "main",
+                .pSpecializationInfo = nullptr,
+            },
         .layout = (VkPipelineLayout)pipelineLayout,
         .basePipelineHandle = VK_NULL_HANDLE,
         .basePipelineIndex = 0,
@@ -69,8 +69,7 @@ CuResult cu_compute_pipeline_create(
         gContext._device, VK_NULL_HANDLE, 1, &createInfo, nullptr, (VkPipeline*)pComputePipeline));
 }
 
-void cu_compute_pipeline_destroy(
-    CuComputePipeline computePipeline)
+void cu_compute_pipeline_destroy(CuComputePipeline computePipeline)
 {
     vkDestroyPipeline(gContext._device, (VkPipeline)computePipeline, nullptr);
 }
@@ -140,14 +139,16 @@ CuResult cu_graphics_pipeline_create(
         .maxDepth = 0.0F,
     };
     const VkRect2D scissor = {
-        .offset = {
-            .x = 0,
-            .y = 0,
-        },
-        .extent = {
-            .width = 0,
-            .height = 0,
-        },
+        .offset =
+            {
+                .x = 0,
+                .y = 0,
+            },
+        .extent =
+            {
+                .width = 0,
+                .height = 0,
+            },
     };
     const VkPipelineViewportStateCreateInfo viewportStateCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
@@ -198,8 +199,9 @@ CuResult cu_graphics_pipeline_create(
         .minDepthBounds = 0.0F,
         .maxDepthBounds = 1.0F,
     };
-    const VkColorComponentFlags colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
-        VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    const VkColorComponentFlags colorWriteMask =
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+        VK_COLOR_COMPONENT_A_BIT;
     const VkPipelineColorBlendAttachmentState colorBlendAttachmentState = {
         .blendEnable = VK_TRUE,
         .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
@@ -265,8 +267,7 @@ CuResult cu_graphics_pipeline_create(
         gContext._device, VK_NULL_HANDLE, 1, &createInfo, NULL, (VkPipeline*)pGrahicsPipeline));
 }
 
-void cu_graphics_pipeline_destroy(
-    const CuGraphicsPipeline graphicsPipeline)
+void cu_graphics_pipeline_destroy(const CuGraphicsPipeline graphicsPipeline)
 {
     vkDestroyPipeline(gContext._device, (VkPipeline)graphicsPipeline, nullptr);
 }

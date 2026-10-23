@@ -3,14 +3,12 @@
 #include "num.hpp"
 #include "vec2.hpp"
 
-namespace cu
-{
+namespace cu {
     /**
      * @brief A rectangle.
      * @note A rectangle with a negative width or height is considered invalid.
      */
-    template<Num T>
-    struct Rect {
+    template <Num T> struct Rect {
         T x; /**< The rectangle's left bound. */
 
         T y; /**< The rectangle's bottom bound. */
@@ -25,13 +23,9 @@ namespace cu
          * @param y The y position.
          * @param s The side length.
          */
-        constexpr Rect(
-            const T x,
-            const T y,
-            const T s)
+        constexpr Rect(const T x, const T y, const T s)
             : x{x}, y{y}, w{s}, h{s}
         {
-
         }
 
         /**
@@ -41,14 +35,9 @@ namespace cu
          * @param w The width.
          * @param h The height.
          */
-        constexpr Rect(
-            const T x,
-            const T y,
-            const T w,
-            const T h)
+        constexpr Rect(const T x, const T y, const T w, const T h)
             : x{x}, y{y}, w{w}, h{h}
         {
-
         }
 
         /**
@@ -106,4 +95,4 @@ namespace cu
             return dimensions().mag();
         }
     };
-}
+} // namespace cu

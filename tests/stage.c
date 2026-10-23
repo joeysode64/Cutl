@@ -14,9 +14,7 @@ typedef struct {
     vec4 color;
 } Vertex;
 
-static float rand_f(
-    float a,
-    float b)
+static float rand_f(float a, float b)
 {
     return a + ((b - a) * ((float)rand() / (float)RAND_MAX));
 }
@@ -63,14 +61,15 @@ int main()
         .nVert = vert.n,
         .pFrag = frag.data,
         .nFrag = frag.n,
-        .pFormats = (VkFormat[]){ cu_renderer_get_format(&renderer) },
+        .pFormats = (VkFormat[]){cu_renderer_get_format(&renderer)},
         .nFormats = 1,
     };
-    query(cu_graphics_pipeline_create(&graphicsPipeline, &graphicsPipelineCreateInfo, pipelineLayout));
+    query(cu_graphics_pipeline_create(
+        &graphicsPipeline, &graphicsPipelineCreateInfo, pipelineLayout));
 
     // Generate triangles.
     Vertex vertices[N_VERTICES] = {};
-    Vertex prev[3] = { rand_v(), rand_v(), rand_v() };
+    Vertex prev[3] = {rand_v(), rand_v(), rand_v()};
     for (size_t i = 0; i < N_TRIANGLES; i++) {
         vertices[(3 * i) + 0] = prev[0];
         vertices[(3 * i) + 1] = prev[1];
@@ -82,7 +81,8 @@ int main()
 
     CuStaticBuffer vertexBuffer = {};
     query(cu_static_buffer_create(
-        &vertexBuffer, sizeof(vertices), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, CU_DEDICATED_ALLOCATOR_MODE));
+        &vertexBuffer, sizeof(vertices), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+        CU_DEDICATED_ALLOCATOR_MODE));
 
     CuStagingBuffer stagingBuffer = {};
     query(cu_staging_buffer_create(&stagingBuffer, sizeof(vertices), CU_DEDICATED_ALLOCATOR_MODE));
@@ -93,12 +93,7 @@ int main()
     query(cu_task_create(&task));
     query(cu_task_begin(&task));
     cu_cmd_buffer_copy(
-        &task,
-        cu_buffer_get(&vertexBuffer),
-        0,
-        cu_buffer_get(&stagingBuffer),
-        0,
-        sizeof(vertices));
+        &task, cu_buffer_get(&vertexBuffer), 0, cu_buffer_get(&stagingBuffer), 0, sizeof(vertices));
     query(cu_task_submit(&task));
     cu_task_await(&task, UINT64_MAX);
     cu_task_destroy(&task);

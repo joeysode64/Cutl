@@ -24,7 +24,8 @@ extern "C" {
  * @return The version as a `uint32_t` Vulkan-style version.
  * @note This does not use the version's tweak value.
  */
-static inline uint32_t cu_version_vk_version(const CuVersion* pVersion) {
+static inline uint32_t cu_version_vk_version(const CuVersion* pVersion)
+{
     return VK_MAKE_API_VERSION(0, pVersion->major, pVersion->minor, pVersion->patch);
 }
 

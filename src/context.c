@@ -25,7 +25,8 @@ static PFN_vkCreateDebugUtilsMessengerEXT fCreateDebugMessenger = nullptr;
 static PFN_vkDestroyDebugUtilsMessengerEXT fDestroyDebugMessenger = nullptr;
 
 /** @brief Prints a warning if the context is not termminated at exit. */
-static void context_unterminated_warn() {
+static void context_unterminated_warn()
+{
     if (cu_context_is_initialized()) {
         cu_log_warning("The context was not terminated before program exit");
     }
@@ -82,17 +83,16 @@ static VkResult create_debug_messenger()
         .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
         .pNext = nullptr,
         .flags = 0,
-        .messageSeverity =
-            VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT |
-            VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT,
-        .messageType =
-            VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-            VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-            VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+        .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT |
+                           VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT,
+        .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                       VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                       VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
         .pfnUserCallback = &debug_messenger_callback,
         .pUserData = nullptr,
     };
-    return fCreateDebugMessenger(gContext._instance, &createInfo, nullptr, &gContext._debugMessenger);
+    return fCreateDebugMessenger(
+        gContext._instance, &createInfo, nullptr, &gContext._debugMessenger);
 }
 #endif
 
@@ -104,9 +104,7 @@ static const char* const INSTANCE_EXTENSIONS[] = {
     "VK_KHR_portability_enumeration",
     "VK_EXT_metal_surface",
 #elif ON_LINUX
-    "VK_KHR_xcb_surface",
-    "VK_KHR_xlib_surface",
-    "VK_KHR_wayland_surface",
+    "VK_KHR_xcb_surface", "VK_KHR_xlib_surface",     "VK_KHR_wayland_surface",
 #elif ON_WINDOWS
     "VK_KHR_win32_surface",
 #endif
@@ -124,7 +122,8 @@ constexpr size_t N_INSTANCE_EXTENSIONS = arr_len(INSTANCE_EXTENSIONS);
  * @param appVersion The application version.
  * @return The result of creating the instance.
  */
-static VkResult create_instance(const char* const appName, const uint32_t appVersion) {
+static VkResult create_instance(const char* const appName, const uint32_t appVersion)
+{
     const VkApplicationInfo appInfo = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pNext = nullptr,
@@ -137,19 +136,19 @@ static VkResult create_instance(const char* const appName, const uint32_t appVer
     const VkInstanceCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pNext = nullptr,
-    #if ON_APPLE
+#if ON_APPLE
         .flags = VK_INSTANCE_CREATE_ENUMERATION_PORTABILITY_BIT_KHR,
-    #else
-	.flags = 0,
+#else
+        .flags = 0,
         .pApplicationInfo = &appInfo,
-    #endif
-    #if defined(CU_DEBUGGING)
+#endif
+#if defined(CU_DEBUGGING)
         .enabledLayerCount = 1,
-        .ppEnabledLayerNames = (const char*[]){ "VK_LAYER_KHRONOS_validation" },
-    #else
+        .ppEnabledLayerNames = (const char*[]){"VK_LAYER_KHRONOS_validation"},
+#else
         .enabledLayerCount = 0,
         .ppEnabledLayerNames = nullptr,
-    #endif
+#endif
         .enabledExtensionCount = N_INSTANCE_EXTENSIONS,
         .ppEnabledExtensionNames = INSTANCE_EXTENSIONS,
     };
@@ -162,7 +161,7 @@ static VkResult create_instance(const char* const appName, const uint32_t appVer
  */
 static VkResult create_device()
 {
-    const float queuePriorities[] = { 1.0F };
+    const float queuePriorities[] = {1.0F};
     const VkDeviceQueueCreateInfo queueCreateInfos[] = {
         {
             .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
@@ -216,11 +215,7 @@ static VkResult create_device()
         .enabledExtensionCount = N_DEVICE_EXTENSIONS,
         .ppEnabledExtensionNames = DEVICE_EXTENSIONS,
     };
-    return vkCreateDevice(
-        gContext._physicalDevice,
-        &createInfo,
-        nullptr,
-        &gContext._device);
+    return vkCreateDevice(gContext._physicalDevice, &createInfo, nullptr, &gContext._device);
 }
 
 /**
@@ -273,7 +268,8 @@ static VkResult create_descriptor_pool(
         .poolSizeCount = nPoolSizes,
         .pPoolSizes = poolSizes,
     };
-    return vkCreateDescriptorPool(gContext._device, &createInfo, nullptr, &gContext._descriptorPool);
+    return vkCreateDescriptorPool(
+        gContext._device, &createInfo, nullptr, &gContext._descriptorPool);
 }
 
 /**
@@ -312,12 +308,14 @@ static VkResult create_descriptor_set_layout(
         },
     };
     constexpr uint32_t nBindings = arr_len(bindings);
-    constexpr VkDescriptorBindingFlags flags = 
+    constexpr VkDescriptorBindingFlags flags =
         VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
         VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT |
         VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
     const VkDescriptorBindingFlags bindingFlags[nBindings] = {
-        flags, flags, flags,
+        flags,
+        flags,
+        flags,
     };
     const VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
@@ -352,19 +350,18 @@ static VkResult allocate_descriptor_set()
     return vkAllocateDescriptorSets(gContext._device, &allocateInfo, &gContext._descriptorSet);
 }
 
-CuContext gContext = { ._instance = VK_NULL_HANDLE };
+CuContext gContext = {._instance = VK_NULL_HANDLE};
 
 CuContext* cu_context_get()
 {
     return &gContext;
 }
 
-CuResult cu_context_init(
-    const CuContextCreateInfo* pCreateInfo)
+CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo)
 {
-    #if defined(CU_DEBUGGING)
-        atexit(&context_unterminated_warn);
-    #endif
+#if defined(CU_DEBUGGING)
+    atexit(&context_unterminated_warn);
+#endif
 
     CuResult result = CU_SUCCESS;
 
@@ -373,14 +370,13 @@ CuResult cu_context_init(
     cu_try_catch_vk(create_instance(pCreateInfo->appName, pCreateInfo->appVersion));
     cu_log_create(gContext._instance);
 
-    #if defined(CU_DEBUGGING)
-        cu_try_catch_vk(create_debug_messenger());
-        cu_log_create(gContext._debugMessenger);
-    #endif
+#if defined(CU_DEBUGGING)
+    cu_try_catch_vk(create_debug_messenger());
+    cu_log_create(gContext._debugMessenger);
+#endif
 
     PhysicalDeviceInfo physicalDeviceInfo = {};
-    cu_try_catch(choose_physical_device(
-        &physicalDeviceInfo, gContext._instance));
+    cu_try_catch(choose_physical_device(&physicalDeviceInfo, gContext._instance));
     gContext._physicalDevice = physicalDeviceInfo.handle;
     gContext._memoryInfo = physicalDeviceInfo.memoryInfo;
     gContext._iQueueFamily = physicalDeviceInfo.iQueueFamily;
@@ -391,23 +387,16 @@ CuResult cu_context_init(
     cu_try_catch_vk(create_command_pool());
     cu_log_create(gContext._commandPool);
 
-    vkGetDeviceQueue(
-        gContext._device,
-        gContext._iQueueFamily,
-        0,
-        &gContext._queue
-    );
+    vkGetDeviceQueue(gContext._device, gContext._iQueueFamily, 0, &gContext._queue);
     cu_log_create(gContext._queue);
 
     cu_try_catch_vk(create_descriptor_pool(
-        pCreateInfo->nSampledImageDescriptors,
-        pCreateInfo->nSamplerDescriptors,
+        pCreateInfo->nSampledImageDescriptors, pCreateInfo->nSamplerDescriptors,
         pCreateInfo->nStorageImageDescriptors));
     cu_log_create(gContext._descriptorPool);
 
     cu_try_catch_vk(create_descriptor_set_layout(
-        pCreateInfo->nSampledImageDescriptors,
-        pCreateInfo->nSamplerDescriptors,
+        pCreateInfo->nSampledImageDescriptors, pCreateInfo->nSamplerDescriptors,
         pCreateInfo->nStorageImageDescriptors));
     cu_log_create(gContext._descriptorSetLayout);
 
@@ -446,7 +435,7 @@ void cu_context_terminate()
         cu_log_destroy(gContext._instance);
     }
 
-    gContext = (CuContext){ ._instance = VK_NULL_HANDLE };
+    gContext = (CuContext){._instance = VK_NULL_HANDLE};
 }
 
 void cu_context_wait_for_idle()
@@ -454,9 +443,7 @@ void cu_context_wait_for_idle()
     vkDeviceWaitIdle(gContext._device);
 }
 
-void cu_context_bind_sampled_image(
-    CuImage* const pImage,
-    const uint32_t i)
+void cu_context_bind_sampled_image(CuImage* const pImage, const uint32_t i)
 {
     const VkDescriptorImageInfo imageInfo = {
         .sampler = VK_NULL_HANDLE,
@@ -478,9 +465,7 @@ void cu_context_bind_sampled_image(
     vkUpdateDescriptorSets(gContext._device, 1, &write, 0, nullptr);
 }
 
-void cu_context_bind_sampler(
-    CuSampler* const pSampler,
-    const uint32_t i)
+void cu_context_bind_sampler(CuSampler* const pSampler, const uint32_t i)
 {
     const VkDescriptorImageInfo imageInfo = {
         .sampler = pSampler->_sampler,
@@ -502,9 +487,7 @@ void cu_context_bind_sampler(
     vkUpdateDescriptorSets(gContext._device, 1, &write, 0, nullptr);
 }
 
-void cu_context_bind_storage_image(
-    CuImage* const pImage,
-    const uint32_t i)
+void cu_context_bind_storage_image(CuImage* const pImage, const uint32_t i)
 {
     const VkDescriptorImageInfo imageInfo = {
         .sampler = VK_NULL_HANDLE,

@@ -11,7 +11,8 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-/** @brief Queries the Vulkan result and returns it as a `CuResult` if it's not `VK_SUCCESS`. */
+/** @brief Queries the Vulkan result and returns it as a `CuResult` if it's not
+ * `VK_SUCCESS`. */
 #define vk_try(e)                                                                                  \
     do {                                                                                           \
         const VkResult _result = (e);                                                              \
@@ -19,7 +20,7 @@
             cu_log_expect(e, _result);                                                             \
             return _result;                                                                        \
         }                                                                                          \
-    } while(false)
+    } while (false)
 
 /** @brief Queries the Vulkan result and returns it if it's not `VK_SUCCESS`. */
 #define cu_try_vk(e)                                                                               \
@@ -29,11 +30,11 @@
             cu_log_expect(e, _result);                                                             \
             return cu_vk_error(_result);                                                           \
         }                                                                                          \
-    } while(false)
+    } while (false)
 
 /**
- * @brief Queries the result and stores it in the local `VkResult result` variable. If it is not
- * `VK_SUCCESS`, jumps to `FAIL`.
+ * @brief Queries the result and stores it in the local `VkResult result`
+ * variable. If it is not `VK_SUCCESS`, jumps to `FAIL`.
  */
 #define vk_try_catch(e)                                                                            \
     result = (e);                                                                                  \
@@ -43,8 +44,8 @@
     }
 
 /**
- * @brief Queries the Vulkan result and stores it in the local `CuResult result` variable. If it is
- * not a success value, jumps to `FAIL`.
+ * @brief Queries the Vulkan result and stores it in the local `CuResult result`
+ * variable. If it is not a success value, jumps to `FAIL`.
  */
 #define cu_try_catch_vk(e)                                                                         \
     do {                                                                                           \
@@ -54,10 +55,11 @@
             cu_log_expect(e, _result);                                                             \
             goto FAIL;                                                                             \
         }                                                                                          \
-    } while(false)
+    } while (false)
 
 /**
- * @brief Tries to allocate to the elements and returns `VK_ERROR_OUT_OF_HOST_MEMORY` if it fails.
+ * @brief Tries to allocate to the elements and returns
+ * `VK_ERROR_OUT_OF_HOST_MEMORY` if it fails.
  */
 #define vk_allocate_n(p, n)                                                                        \
     p = (typeof(*(p))*)calloc(n, sizeof(*(p)));                                                    \
@@ -66,7 +68,8 @@
     }
 
 /**
- * @brief Tries to allocate to the pointer and returns `VK_ERROR_OUT_OF_HOST_MEMORY` if it fails.
+ * @brief Tries to allocate to the pointer and returns
+ * `VK_ERROR_OUT_OF_HOST_MEMORY` if it fails.
  */
 #define vk_allocate(p) allocate_n(p, 1)
 
@@ -108,10 +111,7 @@ CuResult create_image(
     VkImageUsageFlags usage);
 
 /** @brief Creates an image view. */
-CuResult create_image_view(
-    VkImageView* pImageView,
-    VkImage image,
-    VkFormat format);
+CuResult create_image_view(VkImageView* pImageView, VkImage image, VkFormat format);
 
 /**
  * @brief Allocates the command buffers.
@@ -119,15 +119,10 @@ CuResult create_image_view(
  * @param nCommandBuffers The number of command buffers.
  * @return The result of allocating the command buffers.
  */
-CuResult allocate_command_buffers(
-    VkCommandBuffer* pCommandBuffers,
-    size_t nCommandBuffers);
+CuResult allocate_command_buffers(VkCommandBuffer* pCommandBuffers, size_t nCommandBuffers);
 
 /** @brief Creates a semaphore. */
-CuResult create_semaphore(
-    VkSemaphore* pSemaphore,
-    VkSemaphoreType type,
-    uint64_t x);
+CuResult create_semaphore(VkSemaphore* pSemaphore, VkSemaphoreType type, uint64_t x);
 
 /**
  * @brief Allocates the memory.
@@ -137,11 +132,7 @@ CuResult create_semaphore(
  * @param i The index of the memory type.
  * @return The result of allocationg the memory.
  */
-CuResult allocate_memory(
-    VkDeviceMemory* pMemory,
-    VkDevice device,
-    uint64_t size,
-    uint32_t i);
+CuResult allocate_memory(VkDeviceMemory* pMemory, VkDevice device, uint64_t size, uint32_t i);
 
 /**
  * @brief Creates the buffer and its allication.
@@ -168,15 +159,10 @@ CuResult create_buffer(
  * @param buffer The buffer to get the device address of.
  * @return The buffer's device address.
  */
-VkDeviceAddress get_buffer_device_address(
-    VkBuffer buffer);
+VkDeviceAddress get_buffer_device_address(VkBuffer buffer);
 
 /** @brief Creates N frames. */
-CuResult create_frames(
-    CuFrame* pFrames,
-    size_t nFrames);
+CuResult create_frames(CuFrame* pFrames, size_t nFrames);
 
 /** @brief Destroys N frames. */
-void destroy_frames(
-    CuFrame* pFrames,
-    size_t nFrames);
+void destroy_frames(CuFrame* pFrames, size_t nFrames);

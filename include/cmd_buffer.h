@@ -23,9 +23,7 @@ extern "C" {
  * @param [in, out] commandBuffer The command buffer.
  * @param graphicsPipeline The graphics pipeline.
  */
-void cu_cmd_bind_graphics_pipeline(
-    CuCmdBuffer commandBuffer,
-    CuGraphicsPipeline graphicsPipeline);
+void cu_cmd_bind_graphics_pipeline(CuCmdBuffer commandBuffer, CuGraphicsPipeline graphicsPipeline);
 
 /**
  * @brief Runs a draw call.
@@ -47,9 +45,7 @@ void cu_cmd_draw(
  * @param [in, out] commandBuffer The command buffer.
  * @param computePipeline The graphics pipeline.
  */
-void cu_cmd_bind_compute_pipeline(
-    CuCmdBuffer commandBuffer,
-    CuComputePipeline computePipeline);
+void cu_cmd_bind_compute_pipeline(CuCmdBuffer commandBuffer, CuComputePipeline computePipeline);
 
 /**
  * @brief Dispatches compute workgroups.
@@ -58,11 +54,7 @@ void cu_cmd_bind_compute_pipeline(
  * @param y The number of local workgroups in Y.
  * @param z The number of local workgroups in Z.
  */
-void cu_cmd_dispatch(
-    CuCmdBuffer commandBuffer,
-    uint32_t x,
-    uint32_t y,
-    uint32_t z);
+void cu_cmd_dispatch(CuCmdBuffer commandBuffer, uint32_t x, uint32_t y, uint32_t z);
 
 /**
  * @brief Sets the push constants at the given range.
@@ -153,11 +145,10 @@ void cu_cmd_image_copy_from_buffer(
  * @brief Binds the context's image and sampler descriptors for use in shaders.
  * @param [in, out] commandBuffer The command buffer.
  * @param pipelineLayout The pipeline layout.
- * @note Sampled images are at binding 0, samplers at 1 and storage images at 2 of set 0.
+ * @note Sampled images are at binding 0, samplers at 1 and storage images at 2
+ * of set 0.
  */
-void cu_cmd_bind_descriptors(
-    CuCmdBuffer commandBuffer,
-    CuPipelineLayout pipelineLayout);
+void cu_cmd_bind_descriptors(CuCmdBuffer commandBuffer, CuPipelineLayout pipelineLayout);
 
 #ifdef __cplusplus
 }

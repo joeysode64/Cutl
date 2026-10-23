@@ -28,8 +28,8 @@ typedef struct CuContext_T {
 
     VkPhysicalDevice _physicalDevice; /**< The physical device handle. */
 
-    uint32_t _iQueueFamily; /**< The index of the main queue family. This queue supports graphics,
-        transfer, compute, and presentation. */
+    uint32_t _iQueueFamily; /**< The index of the main queue family. This queue
+        supports graphics, transfer, compute, and presentation. */
 
     CuPhysicalDeviceMemoryInfo _memoryInfo; /**< The physical device memory info. */
 
@@ -52,13 +52,16 @@ typedef struct CuContextCreateInfo_T {
 
     uint32_t appVersion; /**< The application version. Default is v0.0.0. */
 
-    /** @brief The number of sampled image descriptors. Default is 16 (spec minimum). */
+    /** @brief The number of sampled image descriptors. Default is 16 (spec
+     * minimum). */
     uint32_t nSampledImageDescriptors;
 
-    /** @brief The number of descriptor samplers to. Default is 16 (spec minimum). */
+    /** @brief The number of descriptor samplers to. Default is 16 (spec minimum).
+     */
     uint32_t nSamplerDescriptors;
 
-    /** @brief the number of storage image descriptors. Default is 4 (spec minimum). */
+    /** @brief the number of storage image descriptors. Default is 4 (spec
+     * minimum). */
     uint32_t nStorageImageDescriptors;
 } CuContextCreateInfo;
 
@@ -86,12 +89,12 @@ CuContext* cu_context_get();
  * @param pCreateInfo A pointer to the create info.
  * @return The result of creating the context.
  */
-CuResult cu_context_init(
-    const CuContextCreateInfo* pCreateInfo);
+CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo);
 
 /**
  * @brief Terminates the context.
- * @warning All of the Cutl GPU library relies on the context. Call this only after cleanup.
+ * @warning All of the Cutl GPU library relies on the context. Call this only
+ * after cleanup.
  */
 void cu_context_terminate();
 
@@ -104,9 +107,7 @@ void cu_context_wait_for_idle();
  * @param i The index of the descriptor to bind to.
  * @return The result of binding the image.
  */
-void cu_context_bind_sampled_image(
-    CuImage* pImage,
-    uint32_t i);
+void cu_context_bind_sampled_image(CuImage* pImage, uint32_t i);
 
 /**
  * @brief Binds the sampler to the given sampler descriptor.
@@ -114,9 +115,7 @@ void cu_context_bind_sampled_image(
  * @param i The index of the descriptor to bind to.
  * @return The result of binding the sampler.
  */
-void cu_context_bind_sampler(
-    CuSampler* pSampler,
-    uint32_t i);
+void cu_context_bind_sampler(CuSampler* pSampler, uint32_t i);
 
 /**
  * @brief Binds the image to the given storage image descriptor.
@@ -124,12 +123,11 @@ void cu_context_bind_sampler(
  * @param i The index of the descriptor to bind to.
  * @return The result of binding the image.
  */
-void cu_context_bind_storage_image(
-    CuImage* pImage,
-    uint32_t i);
+void cu_context_bind_storage_image(CuImage* pImage, uint32_t i);
 
 /**
- * @brief Returns whether the context is initialized at all and should be terminated.
+ * @brief Returns whether the context is initialized at all and should be
+ * terminated.
  * @return Whether the context is initialized at all.
  */
 static inline bool cu_context_is_initialized()

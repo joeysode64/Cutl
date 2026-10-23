@@ -7,19 +7,19 @@
 #include <stdlib.h>
 
 #if defined(__APPLE__)
-    #define ON_APPLE true
-    #define ON_LINUX false
-    #define ON_WINDOWS false
+#define ON_APPLE true
+#define ON_LINUX false
+#define ON_WINDOWS false
 #elif defined(__linux__)
-    #define ON_APPLE false
-    #define ON_LINUX true
-    #define ON_WINDOWS false
+#define ON_APPLE false
+#define ON_LINUX true
+#define ON_WINDOWS false
 #elif defined(_WIN32)
-    #define ON_APPLE false
-    #define ON_LINUX false
-    #define ON_WINDOWS true
+#define ON_APPLE false
+#define ON_LINUX false
+#define ON_WINDOWS true
 #else
-    #error "Unsupported OS"
+#error "Unsupported OS"
 #endif
 
 /**
@@ -27,23 +27,24 @@
  * @param e The `CuError`.
  * @return A `CuResult` Cutl error with the given `CuError`.
  */
-#define cu_error(e) ((CuResult){ .t = CU_RESULT_TYPE_ERROR, .v = (e) })
+#define cu_error(e) ((CuResult){.t = CU_RESULT_TYPE_ERROR, .v = (e)})
 
 /**
  * @brief Returns a `CuResult` C standard error from `errno`.
  * @return A `CuResult` C standard error from `errno`.
  */
-#define cu_std_error() ((CuResult){ .t = CU_RESULT_TYPE_STD, .v = errno })
+#define cu_std_error() ((CuResult){.t = CU_RESULT_TYPE_STD, .v = errno})
 
 /**
  * @brief Returns a `CuResult` Vulkan error with the given `VkResult`.
  * @param r The `VkResult`.
  * @return A `CuResult` Vulkan error with the given `VkResult`.
  */
-#define cu_vk_error(r) ((CuResult){ .t = CU_RESULT_TYPE_VULKAN, .v = (r) })
+#define cu_vk_error(r) ((CuResult){.t = CU_RESULT_TYPE_VULKAN, .v = (r)})
 
 /**
- * @brief Returns a `CuResult` with the given `VkResult`, properly matching success values.
+ * @brief Returns a `CuResult` with the given `VkResult`, properly matching
+ * success values.
  * @param r The `VkResult`.
  * @return The `VkResult`'s `CuResult` equivalent.
  */
@@ -53,7 +54,7 @@
  * @brief Returns a `CuResult` GLFW error with `glfwGetError`.
  * @return The `CuResult` from `glfwGetError`.
  */
-#define cu_glfw_error() ((CuResult){ .t = CU_REUSLT_TYPE_GLFW, .v = glfwGetError(nullptr) })
+#define cu_glfw_error() ((CuResult){.t = CU_REUSLT_TYPE_GLFW, .v = glfwGetError(nullptr)})
 
 /** @return The smaller of the two values. */
 #define min(a, b) ((a) <= (b) ? (a) : (b))
@@ -70,29 +71,34 @@
 /** @brief Returns whether the two values have any matching 1-bits. */
 #define ones_overlap(a, b) (((a) & (b)) != 0)
 
-/** @brief Returns whether the first value contains all the bits of the second value. */
+/** @brief Returns whether the first value contains all the bits of the second
+ * value. */
 #define ones_match(a, b) (((a) & (b)) == (b))
 
 /**
- * @brief Rounds the value up to the nearest multiple of the alignment, which must be a power of two.
+ * @brief Rounds the value up to the nearest multiple of the alignment, which
+ * must be a power of two.
  */
 #define align_up(v, a) (((v) + (a) - 1) & ~((a) - 1))
 
-/** @brief Tries to allocate the size and returns `CU_ERROR_BAD_ALLOC` if it fails. */
+/** @brief Tries to allocate the size and returns `CU_ERROR_BAD_ALLOC` if it
+ * fails. */
 #define allocate_z(p, z)                                                                           \
     p = (typeof(*p)*)calloc(z, 1);                                                                 \
     if (p == nullptr) {                                                                            \
         return cu_error(CU_ERROR_BAD_ALLOC);                                                       \
     }
 
-/** @brief Tries to allocate to the elements and returns `CU_ERROR_BAD_ALLOC` if it fails. */
+/** @brief Tries to allocate to the elements and returns `CU_ERROR_BAD_ALLOC` if
+ * it fails. */
 #define allocate_n(p, n)                                                                           \
     p = (typeof(*p)*)calloc(n, sizeof(*p));                                                        \
     if (p == nullptr) {                                                                            \
         return cu_error(CU_ERROR_BAD_ALLOC);                                                       \
     }
 
-/** @brief Tries to allocate to the pointer and returns `CU_ERROR_BAD_ALLOC` if it fails. */
+/** @brief Tries to allocate to the pointer and returns `CU_ERROR_BAD_ALLOC` if
+ * it fails. */
 #define allocate(p) allocate_n(p, 1)
 
 /** @brief Queries the Cutl result and returns it if it's not `CU_SUCCESS`. */
@@ -103,11 +109,11 @@
             cu_log_expect(e, _result.v);                                                           \
             return _result;                                                                        \
         }                                                                                          \
-    } while(false)
+    } while (false)
 
 /**
- * @brief Queries the result and stores it in the local `CuResult result` variable. If it is not
- * `CU_SUCCESS`, jumps to `FAIL`.
+ * @brief Queries the result and stores it in the local `CuResult result`
+ * variable. If it is not `CU_SUCCESS`, jumps to `FAIL`.
  */
 #define cu_try_catch(e)                                                                            \
     result = (e);                                                                                  \
@@ -116,15 +122,16 @@
         goto FAIL;                                                                                 \
     }
 
-/** @brief Asserts the given expression is true, and if it's not, returns the given value. */
+/** @brief Asserts the given expression is true, and if it's not, returns the
+ * given value. */
 #define cu_assert(e, r)                                                                            \
     if (!(e)) {                                                                                    \
         return (r);                                                                                \
     }
 
 /**
- * @brief Asserts the given expression is true, and if it's not, sets the local `CuResult result`
- * to the error and jumps to `FAIL`.
+ * @brief Asserts the given expression is true, and if it's not, sets the local
+ * `CuResult result` to the error and jumps to `FAIL`.
  */
 #define cu_assert_catch(e, r)                                                                      \
     if (!(e)) {                                                                                    \
@@ -136,8 +143,7 @@
 #define AUTO_FREE __attribute__((cleanup(auto_free_)))
 
 /** @brief The `AUTO_FREE` callback. */
-static inline void auto_free_(
-    void* pp)
+static inline void auto_free_(void* pp)
 {
     void* const p = *(void**)pp;
     free(p);

@@ -5,8 +5,7 @@
 
 #include <stdint.h>
 
-namespace cu
-{
+namespace cu {
     /** @brief The Cutl version major. */
     constexpr uint16_t VERSION_MAJOR = CU_VERSION_MAJOR;
 
@@ -26,4 +25,4 @@ namespace cu
         VERSION_PATCH,
         VERSION_TWEAK,
     };
-}
+} // namespace cu

@@ -6,19 +6,17 @@
 
 #define PNG_PATH "tests/assets/emotion.png"
 
-/** @return The scale that fits the image inside the window while keeping its aspect ratio. */
-static vec2 get_scale(
-    const CuWindow* pWindow,
-    uint32_t w,
-    uint32_t h)
+/** @return The scale that fits the image inside the window while keeping its
+ * aspect ratio. */
+static vec2 get_scale(const CuWindow* pWindow, uint32_t w, uint32_t h)
 {
     const float imageAspect = (float)w / (float)h;
     const float windowAspect =
         (float)cu_window_get_width(pWindow) / (float)cu_window_get_height(pWindow);
     if (imageAspect > windowAspect) {
-        return (vec2){ .x = 1.0F, .y = windowAspect / imageAspect };
+        return (vec2){.x = 1.0F, .y = windowAspect / imageAspect};
     } else {
-        return (vec2){ .x = imageAspect / windowAspect, .y = 1.0F };
+        return (vec2){.x = imageAspect / windowAspect, .y = 1.0F};
     }
 }
 
@@ -43,12 +41,8 @@ int main()
 
     CuImage image = {};
     query(cu_image_create(
-        &image,
-        w,
-        h,
-        VK_FORMAT_R8G8B8A8_SRGB,
-        VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-        CU_DEDICATED_ALLOCATOR_MODE));
+        &image, w, h, VK_FORMAT_R8G8B8A8_SRGB,
+        VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, CU_DEDICATED_ALLOCATOR_MODE));
     cu_context_bind_sampled_image(&image, 0);
 
     CuSampler sampler = {};
@@ -65,31 +59,16 @@ int main()
     query(cu_task_create(&task));
     query(cu_task_begin(&task));
     cu_cmd_image_barrier(
-        &task,
-        &image,
-        VK_PIPELINE_STAGE_2_NONE,
-        VK_ACCESS_2_NONE,
-        VK_PIPELINE_STAGE_2_COPY_BIT,
-        VK_ACCESS_2_TRANSFER_WRITE_BIT,
-        VK_IMAGE_LAYOUT_UNDEFINED,
+        &task, &image, VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE, VK_PIPELINE_STAGE_2_COPY_BIT,
+        VK_ACCESS_2_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     cu_cmd_image_copy_from_buffer(
-        &task,
-        &image,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        w,
-        h,
-        cu_buffer_get(&stagingBuffer),
+        &task, &image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, w, h, cu_buffer_get(&stagingBuffer),
         0);
     cu_cmd_image_barrier(
-        &task,
-        &image,
-        VK_PIPELINE_STAGE_2_COPY_BIT,
-        VK_ACCESS_2_TRANSFER_WRITE_BIT,
-        VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
-        VK_ACCESS_2_SHADER_READ_BIT,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        &task, &image, VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     query(cu_task_submit(&task));
     cu_task_await(&task, UINT64_MAX);
     cu_task_destroy(&task);
@@ -111,10 +90,11 @@ int main()
         .nVert = vert.n,
         .pFrag = frag.data,
         .nFrag = frag.n,
-        .pFormats = (VkFormat[]){ cu_renderer_get_format(&renderer) },
+        .pFormats = (VkFormat[]){cu_renderer_get_format(&renderer)},
         .nFormats = 1,
     };
-    query(cu_graphics_pipeline_create(&graphicsPipeline, &graphicsPipelineCreateInfo, pipelineLayout));
+    query(cu_graphics_pipeline_create(
+        &graphicsPipeline, &graphicsPipelineCreateInfo, pipelineLayout));
     cu_spirv_destroy(&vert);
     cu_spirv_destroy(&frag);
 

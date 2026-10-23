@@ -4,11 +4,9 @@
 
 #include <stdint.h>
 
-namespace cu
-{
+namespace cu {
     /** @brief A 2-dimensional vector. */
-    template<Num T>
-    struct Vec2 {
+    template <Num T> struct Vec2 {
         T x; /**< The x factor. */
 
         T y; /**< The y factor. */
@@ -17,18 +15,15 @@ namespace cu
         constexpr Vec2()
             : x{}, y{}
         {
-
         }
 
         /**
          * @brief Creates a vector with the given x and y value.
          * @param xy The x and y value.
          */
-        constexpr Vec2(
-            const T xy)
+        constexpr Vec2(const T xy)
             : x{xy}, y{xy}
         {
-
         }
 
         /**
@@ -36,12 +31,9 @@ namespace cu
          * @param x The x value.
          * @param y The y value.
          */
-        constexpr Vec2(
-            const T x,
-            const T y)
+        constexpr Vec2(const T x, const T y)
             : x{x}, y{y}
         {
-
         }
 
         /**
@@ -49,8 +41,7 @@ namespace cu
          * @param rhs The other vector.
          * @return The cross product of the two vectors.
          */
-        constexpr T dot(
-            const Vec2<T> rhs) const
+        constexpr T dot(const Vec2<T> rhs) const
         {
             return (x * rhs.x) + (y * rhs.y);
         }
@@ -60,8 +51,7 @@ namespace cu
          * @param v The other vector.
          * @return The distance between the vectors squared.
          */
-        constexpr T dst_sqr(
-            const Vec2<T> v) const
+        constexpr T dst_sqr(const Vec2<T> v) const
         {
             const T dx = safe_diff(v.x, x);
             const T dy = safe_diff(v.y, y);
@@ -73,8 +63,7 @@ namespace cu
          * @param v The other vector.
          * @return The distance between the vectors.
          */
-        constexpr T dst(
-            const Vec2<T> v) const
+        constexpr T dst(const Vec2<T> v) const
             requires Float<T>
         {
             return sqrt(dst_sqr(v));
@@ -114,130 +103,112 @@ namespace cu
             requires Float<T>
         {
             *this /= mag();
-        } 
+        }
 
         /**
          * @brief Returns the vector converted to the given type.
          * @return The vector converted to the given type.
          */
-        template<Num U>
-        constexpr Vec2<U> as() const
+        template <Num U> constexpr Vec2<U> as() const
         {
             Vec2<U>{static_cast<U>(x), static_cast<U>(y)};
         }
-
 
         constexpr Vec2<T> operator~() const
         {
             return Vec2{y, x};
         }
 
-        constexpr Vec2<T> operator+(
-            const Vec2<T> rhs) const
+        constexpr Vec2<T> operator+(const Vec2<T> rhs) const
         {
             return Vec2{x + rhs.x, y + rhs.y};
         }
 
-        constexpr Vec2<T> operator-(
-            const Vec2<T> rhs) const
+        constexpr Vec2<T> operator-(const Vec2<T> rhs) const
         {
             return Vec2{x - rhs.x, y - rhs.y};
         }
 
-        constexpr Vec2<T> operator*(
-            const Vec2<T> rhs) const
+        constexpr Vec2<T> operator*(const Vec2<T> rhs) const
         {
             return Vec2{x * rhs.x, y * rhs.y};
         }
 
-        constexpr Vec2<T> operator/(
-            const Vec2<T> rhs) const
+        constexpr Vec2<T> operator/(const Vec2<T> rhs) const
         {
             return Vec2{x / rhs.x, y / rhs.y};
         }
 
-        constexpr Vec2<T> operator+(
-            const T rhs) const
+        constexpr Vec2<T> operator+(const T rhs) const
         {
             return Vec2{x + rhs, y + rhs};
         }
 
-        constexpr Vec2<T> operator-(
-            const T rhs) const
+        constexpr Vec2<T> operator-(const T rhs) const
         {
             return Vec2{x - rhs, y - rhs};
         }
 
-        constexpr Vec2<T> operator*(
-            const T rhs) const
+        constexpr Vec2<T> operator*(const T rhs) const
         {
             return Vec2{x * rhs, y * rhs};
         }
 
-        constexpr Vec2<T> operator/(
-            const T rhs) const
+        constexpr Vec2<T> operator/(const T rhs) const
         {
             return Vec2{x / rhs, y / rhs};
         }
 
-        constexpr Vec2<T>& operator+=(
-            const Vec2<T> rhs)
+        constexpr Vec2<T>& operator+=(const Vec2<T> rhs)
         {
             x += rhs.x;
             y += rhs.y;
             return *this;
         }
 
-        constexpr Vec2<T>& operator-=(
-            const Vec2<T> rhs)
+        constexpr Vec2<T>& operator-=(const Vec2<T> rhs)
         {
             x -= rhs.x;
             y -= rhs.y;
             return *this;
         }
 
-        constexpr Vec2<T>& operator*=(
-            const Vec2<T> rhs)
+        constexpr Vec2<T>& operator*=(const Vec2<T> rhs)
         {
             x *= rhs.x;
             y *= rhs.y;
             return *this;
         }
 
-        constexpr Vec2<T>& operator/=(
-            const Vec2<T> rhs)
+        constexpr Vec2<T>& operator/=(const Vec2<T> rhs)
         {
             x /= rhs.x;
             y /= rhs.y;
             return *this;
         }
 
-        constexpr Vec2<T>& operator+=(
-            const T rhs)
+        constexpr Vec2<T>& operator+=(const T rhs)
         {
             x += rhs;
             y += rhs;
             return *this;
         }
 
-        constexpr Vec2<T>& operator-=(
-            const T rhs)
+        constexpr Vec2<T>& operator-=(const T rhs)
         {
             x -= rhs;
             y -= rhs;
             return *this;
         }
 
-        constexpr Vec2<T>& operator*=(
-            const T rhs)
+        constexpr Vec2<T>& operator*=(const T rhs)
         {
             x *= rhs;
             y *= rhs;
             return *this;
         }
 
-        constexpr Vec2<T>& operator/=(
-            const T rhs)
+        constexpr Vec2<T>& operator/=(const T rhs)
         {
             x /= rhs;
             y /= rhs;
@@ -250,4 +221,4 @@ namespace cu
     using Vec2I = Vec2<int32_t>;
 
     using Vec2U = Vec2<uint32_t>;
-}
+} // namespace cu

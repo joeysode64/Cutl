@@ -37,12 +37,8 @@ int main()
 
     CuImage image = {};
     query(cu_image_create(
-        &image,
-        W,
-        H,
-        VK_FORMAT_R8G8B8A8_UNORM,
-        VK_IMAGE_USAGE_SAMPLED_BIT |
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+        &image, W, H, VK_FORMAT_R8G8B8A8_UNORM,
+        VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
         CU_DEDICATED_ALLOCATOR_MODE));
     cu_context_bind_sampled_image(&image, 0);
@@ -55,24 +51,14 @@ int main()
     query(cu_task_create(&task));
     query(cu_task_begin(&task));
     cu_cmd_image_barrier(
-        &task,
-        &image,
-        VK_PIPELINE_STAGE_2_NONE,
-        VK_ACCESS_2_NONE,
-        VK_PIPELINE_STAGE_2_CLEAR_BIT,
-        VK_ACCESS_2_TRANSFER_WRITE_BIT,
-        VK_IMAGE_LAYOUT_UNDEFINED,
+        &task, &image, VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE, VK_PIPELINE_STAGE_2_CLEAR_BIT,
+        VK_ACCESS_2_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     cu_cmd_image_fill(&task, &image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, CU_RGBA_BLACK);
     cu_cmd_image_barrier(
-        &task,
-        &image,
-        VK_PIPELINE_STAGE_2_CLEAR_BIT,
-        VK_ACCESS_2_TRANSFER_WRITE_BIT,
-        VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
-        VK_ACCESS_2_SHADER_READ_BIT,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        &task, &image, VK_PIPELINE_STAGE_2_CLEAR_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     query(cu_task_submit(&task));
     cu_task_await(&task, UINT64_MAX);
     cu_task_destroy(&task);
@@ -93,7 +79,7 @@ int main()
         .nVert = triangleVert.n,
         .pFrag = triangleFrag.data,
         .nFrag = triangleFrag.n,
-        .pFormats = (VkFormat[]){ VK_FORMAT_R8G8B8A8_UNORM },
+        .pFormats = (VkFormat[]){VK_FORMAT_R8G8B8A8_UNORM},
         .nFormats = 1,
     };
     query(cu_graphics_pipeline_create(
@@ -103,8 +89,8 @@ int main()
 
     // The pipeline that draws the image to the screen.
     CuPipelineLayout screenPipelineLayout = {};
-    query(cu_pipeline_layout_create(
-        &screenPipelineLayout, &CU_DEFAULT_PIPELINE_LAYOUT_CREATE_INFO));
+    query(
+        cu_pipeline_layout_create(&screenPipelineLayout, &CU_DEFAULT_PIPELINE_LAYOUT_CREATE_INFO));
     CuSpirV screenVert = {};
     query(cu_spirv_read_from_file(&screenVert, "tests/shaders/img_tex.vert.spv"));
     CuSpirV screenFrag = {};
@@ -115,7 +101,7 @@ int main()
         .nVert = screenVert.n,
         .pFrag = screenFrag.data,
         .nFrag = screenFrag.n,
-        .pFormats = (VkFormat[]){ cu_renderer_get_format(&renderer) },
+        .pFormats = (VkFormat[]){cu_renderer_get_format(&renderer)},
         .nFormats = 1,
     };
     query(cu_graphics_pipeline_create(
@@ -125,11 +111,8 @@ int main()
 
     CuDynamicBuffer vertexBuffer = {};
     query(cu_dynamic_buffer_create(
-        &vertexBuffer,
-        CU_DEFAULT_RENDERER_CREATE_INFO.maxFramesInFlight,
-        3 * sizeof(vec2),
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-        CU_DEDICATED_ALLOCATOR_MODE));
+        &vertexBuffer, CU_DEFAULT_RENDERER_CREATE_INFO.maxFramesInFlight, 3 * sizeof(vec2),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, CU_DEDICATED_ALLOCATOR_MODE));
     float angle = 0.0F;
 
     while (!cu_window_should_close(&window)) {
@@ -141,9 +124,9 @@ int main()
             &vertexBuffer, &pData, &address, cu_renderer_get_frame_index(&renderer));
 
         const vec2 vertices[3] = {
-            { -1.0F, -1.0F },
-            { 1.0F, -1.0F },
-            { cosf(angle), sinf(angle) },
+            {-1.0F, -1.0F},
+            {1.0F, -1.0F},
+            {cosf(angle), sinf(angle)},
         };
         memcpy(pData, vertices, sizeof(vertices));
         const TrianglePushConstants pushConstants = {
@@ -159,14 +142,9 @@ int main()
         }
 
         cu_cmd_image_barrier(
-            pFrame,
-            &image,
-            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
-            VK_ACCESS_2_SHADER_READ_BIT,
-            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+            pFrame, &image, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         cu_frame_begin_image_render(pFrame, &image, W, H);
         cu_cmd_bind_graphics_pipeline(pFrame, trianglePipeline);
         cu_cmd_write_push_constants(

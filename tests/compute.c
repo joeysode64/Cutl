@@ -24,10 +24,7 @@ int main()
 
     CuDynamicBuffer buffer = {};
     query(cu_dynamic_buffer_create(
-        &buffer,
-        1,
-        N * sizeof(float),
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+        &buffer, 1, N * sizeof(float), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
         CU_DEDICATED_ALLOCATOR_MODE));
 
     void* pData = nullptr;
@@ -53,11 +50,7 @@ int main()
     for (int i = 0; i < N; i++) {
         const float expected = (float)i * 2.0F;
         expect(
-            values[i] == expected,
-            " At index %i: expected %f, found %f\n",
-            i,
-            expected,
-            values[i]);
+            values[i] == expected, " At index %i: expected %f, found %f\n", i, expected, values[i]);
     }
 
     cu_context_wait_for_idle();

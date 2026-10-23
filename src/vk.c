@@ -10,13 +10,15 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-CuResult create_surface(VkSurfaceKHR* pSurface, GLFWwindow* window) {
+CuResult create_surface(VkSurfaceKHR* pSurface, GLFWwindow* window)
+{
     return cu_vk_result(glfwCreateWindowSurface(gContext._instance, window, nullptr, pSurface));
 }
 
-CuResult create_headless_surface(VkSurfaceKHR* pSurface) {
+CuResult create_headless_surface(VkSurfaceKHR* pSurface)
+{
     auto const fCreateHeadlessSurface = (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(
-            gContext._instance, "vkCreateHeadlessSurfaceEXT");
+        gContext._instance, "vkCreateHeadlessSurfaceEXT");
     if (fCreateHeadlessSurface == nullptr) {
         return cu_vk_error(VK_ERROR_EXTENSION_NOT_PRESENT);
     }
@@ -26,8 +28,7 @@ CuResult create_headless_surface(VkSurfaceKHR* pSurface) {
         .pNext = nullptr,
         .flags = 0,
     };
-    return cu_vk_result(fCreateHeadlessSurface(
-        gContext._instance, &createInfo, nullptr, pSurface));
+    return cu_vk_result(fCreateHeadlessSurface(gContext._instance, &createInfo, nullptr, pSurface));
 }
 
 CuResult create_image(
@@ -43,11 +44,12 @@ CuResult create_image(
         .flags = 0,
         .imageType = VK_IMAGE_TYPE_2D,
         .format = format,
-        .extent = {
-            .width = w,
-            .height = h,
-            .depth = 1,
-        },
+        .extent =
+            {
+                .width = w,
+                .height = h,
+                .depth = 1,
+            },
         .mipLevels = 1,
         .arrayLayers = 1,
         .samples = 1,
@@ -173,18 +175,10 @@ CuResult create_buffer(
     VkMemoryRequirements memoryRequirements = {};
     vkGetBufferMemoryRequirements(gContext._device, buffer, &memoryRequirements);
 
-    cu_try_catch(mode_allocate(
-        pAllocation,
-        ppData,
-        mode,
-        &memoryRequirements,
-        mProperties));
-    
-    cu_try_catch_vk(vkBindBufferMemory(
-        gContext._device,
-        buffer,
-        pAllocation->_memory,
-        pAllocation->_offset));
+    cu_try_catch(mode_allocate(pAllocation, ppData, mode, &memoryRequirements, mProperties));
+
+    cu_try_catch_vk(
+        vkBindBufferMemory(gContext._device, buffer, pAllocation->_memory, pAllocation->_offset));
 
     *pBuffer = buffer;
 
@@ -196,8 +190,7 @@ FAIL:
     return result;
 }
 
-VkDeviceAddress get_buffer_device_address(
-    const VkBuffer buffer)
+VkDeviceAddress get_buffer_device_address(const VkBuffer buffer)
 {
     const VkBufferDeviceAddressInfo info = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
@@ -207,9 +200,7 @@ VkDeviceAddress get_buffer_device_address(
     return vkGetBufferDeviceAddress(gContext._device, &info);
 }
 
-CuResult create_frames(
-    CuFrame* const pFrames,
-    const size_t nFrames)
+CuResult create_frames(CuFrame* const pFrames, const size_t nFrames)
 {
     CuResult result = CU_SUCCESS;
 
@@ -219,8 +210,7 @@ CuResult create_frames(
     for (size_t i = 0; i < nFrames; i++) {
         CuFrame* const pFrame = &pFrames[i];
 
-        cu_try_catch(create_semaphore(
-            &pFrame->_imageAvailable, VK_SEMAPHORE_TYPE_BINARY, 0));
+        cu_try_catch(create_semaphore(&pFrame->_imageAvailable, VK_SEMAPHORE_TYPE_BINARY, 0));
         pFrame->_commandBuffer = commandBuffers[i];
     }
 
@@ -231,9 +221,7 @@ FAIL:
     return result;
 }
 
-void destroy_frames(
-    CuFrame* const pFrames,
-    const size_t nFrames)
+void destroy_frames(CuFrame* const pFrames, const size_t nFrames)
 {
     VkCommandBuffer commandBuffers[nFrames];
 

@@ -7,8 +7,7 @@
 
 #include <vulkan/vulkan.h>
 
-namespace cu
-{
+namespace cu {
     /** @ref CuRenderer */
     class Renderer : public Wrapper<CuRenderer> {
     public:
@@ -24,7 +23,6 @@ namespace cu
             constexpr Builder()
                 : Renderer::CreateInfo{Renderer::DEFAULT_CREATE_INFO}
             {
-
             }
 
             /**
@@ -34,17 +32,18 @@ namespace cu
             constexpr Builder(const Renderer::CreateInfo& createInfo)
                 : Renderer::CreateInfo{createInfo}
             {
-
             }
 
             /** @ref CuRendererCreateInfo::maxFramesInFlight */
-            constexpr Builder& max_frames_in_flight(const uint32_t n) {
+            constexpr Builder& max_frames_in_flight(const uint32_t n)
+            {
                 maxFramesInFlight = n;
                 return *this;
             }
 
             /** @ref CuRendererCreateInfo::minSwapchainImages */
-            constexpr Builder& min_swapchain_images(const uint32_t n) {
+            constexpr Builder& min_swapchain_images(const uint32_t n)
+            {
                 minSwapchainImages = n;
                 return *this;
             }
@@ -54,7 +53,8 @@ namespace cu
              * @param [out] renderer The renderer.
              * @return The result of creating the renderer.
              */
-            inline Result build(Renderer& renderer) const {
+            inline Result build(Renderer& renderer) const
+            {
                 return renderer.init(*this);
             }
 
@@ -64,7 +64,8 @@ namespace cu
              * @param window The target window.
              * @return The result of creating the renderer.
              */
-            inline Result build(Renderer& renderer, const Window& window) const {
+            inline Result build(Renderer& renderer, const Window& window) const
+            {
                 return renderer.init(window, *this);
             }
         };
@@ -79,34 +80,28 @@ namespace cu
         constexpr Renderer()
             : Wrapper{}
         {
-
         }
 
         /** @ref cu_renderer_create() */
-        inline Result init(
-            const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
+        inline Result init(const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
             return cu_renderer_create(this, &createInfo, nullptr);
         }
 
         /** @ref cu_renderer_create() */
-        inline Result init(
-            const Window& window,
-            const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
+        inline Result init(const Window& window, const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
             return cu_renderer_create(this, &createInfo, &window.get());
         }
 
         /** @ref cu_renderer_begin_frame() */
-        inline Result begin_frame(
-            CuFrame*& pFrame)
+        inline Result begin_frame(CuFrame*& pFrame)
         {
             return cu_renderer_begin_frame(this, &pFrame);
         }
 
         /** @ref cu_renderer_submit_frame() */
-        inline Result submit_frame(
-            CuFrame* pFrame)
+        inline Result submit_frame(CuFrame* pFrame)
         {
             return cu_renderer_submit_frame(this, pFrame);
         }
@@ -123,4 +118,4 @@ namespace cu
             return cu_renderer_get_frame_index(this);
         }
     };
-}
+} // namespace cu

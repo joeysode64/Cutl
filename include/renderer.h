@@ -16,7 +16,8 @@ typedef struct CuRenderer_T CuRenderer;
 struct CuRenderer_T {
     const CuWindow* _pWindow; /**< A pointer to the target window. */
 
-    uint32_t _minSwapchainImages; /**< The minimum number of swapchain images to create. */
+    uint32_t _minSwapchainImages; /**< The minimum number of swapchain images to
+                                     create. */
 
     struct CuSwapchainImage_T* _pSwapchainImages; /**< A pointer to the swapchain images. */
 
@@ -43,9 +44,11 @@ struct CuRenderer_T {
 
 /** @brief Create info for a renderer. */
 typedef struct CuRendererCreateInfo_T {
-    size_t maxFramesInFlight; /**< The maximum number of frames in flight. Default is 3. */
+    size_t maxFramesInFlight; /**< The maximum number of frames in flight. Default
+                                 is 3. */
 
-    size_t minSwapchainImages; /**< The minimum number of swapchain images. Default is 3. */
+    size_t minSwapchainImages; /**< The minimum number of swapchain images.
+                                  Default is 3. */
 } CuRendererCreateInfo;
 
 /** @brief The default renderer create info. */
@@ -75,19 +78,17 @@ CuResult cu_renderer_create(
  * @param [in, out] pRenderer A pointer to the renderer.
  * @note Passing a null pointer is a safe no-op.
  */
-void cu_renderer_destroy(
-    CuRenderer* pRenderer);
+void cu_renderer_destroy(CuRenderer* pRenderer);
 
 /**
  * @brief Begins the next frame.
  * @param [in, out] pRenderer A pointerer to the renderer.
  * @param [out] ppFrame A double pointer to the frame.
  * @return The result of beginning the frame.
- * @note If the swapchain has to be recreated, the frame is set to null and must be skipped.
+ * @note If the swapchain has to be recreated, the frame is set to null and must
+ * be skipped.
  */
-CuResult cu_renderer_begin_frame(
-    CuRenderer* pRenderer,
-    CuFrame** ppFrame);
+CuResult cu_renderer_begin_frame(CuRenderer* pRenderer, CuFrame** ppFrame);
 
 /**
  * @brief Submits the frame.
@@ -96,17 +97,14 @@ CuResult cu_renderer_begin_frame(
  * @return The result of submitting the frame.
  * @warning The frame becoems unusable as left.
  */
-CuResult cu_renderer_submit_frame(
-    CuRenderer* pRenderer,
-    CuFrame* pFrame);
+CuResult cu_renderer_submit_frame(CuRenderer* pRenderer, CuFrame* pFrame);
 
 /**
  * @brief Returns the renderer's swapchain's extent.
  * @param [in] pRenderer A pointer to the renderer.
  * @return The renderer's swapchain's extent..
  */
-inline static VkExtent2D cu_renderer_get_extent(
-    const CuRenderer* pRenderer)
+inline static VkExtent2D cu_renderer_get_extent(const CuRenderer* pRenderer)
 {
     return pRenderer->_swapchainExtent;
 }
@@ -116,8 +114,7 @@ inline static VkExtent2D cu_renderer_get_extent(
  * @param [in] pRenderer A pointer to the renderer.
  * @return The renderer's target image format.
  */
-inline static VkFormat cu_renderer_get_format(
-    const CuRenderer* pRenderer)
+inline static VkFormat cu_renderer_get_format(const CuRenderer* pRenderer)
 {
     return pRenderer->_swapchainFormat;
 }
@@ -127,8 +124,7 @@ inline static VkFormat cu_renderer_get_format(
  * @param [in] pRenderer A pointer to the renderer.
  * @return The renderer's current frame index.
  */
-inline static uint32_t cu_renderer_get_frame_index(
-    const CuRenderer *pRenderer)
+inline static uint32_t cu_renderer_get_frame_index(const CuRenderer* pRenderer)
 {
     return (uint32_t)pRenderer->_frameCounter % pRenderer->_nFramesInFlight;
 }

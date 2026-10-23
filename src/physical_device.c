@@ -9,7 +9,8 @@
 #include <string.h>
 #include <vulkan/vulkan.h>
 
-/** @brief Returns a bitmask of the memory types that contain all the memory properties. */
+/** @brief Returns a bitmask of the memory types that contain all the memory
+ * properties. */
 static uint32_t get_memory_types(
     const CuPhysicalDeviceMemoryInfo* const pMemoryInfo,
     const VkMemoryPropertyFlags flags)
@@ -31,7 +32,8 @@ static uint32_t get_memory_types(
 }
 
 /** @brief Returns whether the physical device supports all the extensions. */
-static bool does_physical_device_support_extensions(VkPhysicalDevice physicalDevice) {
+static bool does_physical_device_support_extensions(VkPhysicalDevice physicalDevice)
+{
     Enumerator(VkExtensionProperties) extensions ENUMERATOR_AUTO_FREE = {};
     enumerate(extensions, false, vkEnumerateDeviceExtensionProperties, physicalDevice, nullptr);
     for (uint32_t i = 0; i < N_DEVICE_EXTENSIONS; i++) {
@@ -41,7 +43,7 @@ static bool does_physical_device_support_extensions(VkPhysicalDevice physicalDev
                 found = true;
                 break;
             }
-        } 
+        }
         if (!found) {
             return false;
         }
@@ -50,9 +52,9 @@ static bool does_physical_device_support_extensions(VkPhysicalDevice physicalDev
     return true;
 }
 
-/** @brief Returns whether the physical device supports all the required features. */
-static bool does_physical_device_support_features(
-    VkPhysicalDevice physicalDevice)
+/** @brief Returns whether the physical device supports all the required
+ * features. */
+static bool does_physical_device_support_features(VkPhysicalDevice physicalDevice)
 {
     VkPhysicalDeviceVulkan14Features features1_4 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
@@ -76,28 +78,27 @@ static bool does_physical_device_support_features(
     };
     vkGetPhysicalDeviceFeatures2(physicalDevice, &features1_0);
     return features1_2.shaderSampledImageArrayNonUniformIndexing == VK_TRUE &&
-        features1_2.descriptorBindingSampledImageUpdateAfterBind == VK_TRUE &&
-        features1_2.descriptorBindingStorageImageUpdateAfterBind == VK_TRUE &&
-        features1_2.descriptorBindingUpdateUnusedWhilePending == VK_TRUE &&
-        features1_2.descriptorBindingPartiallyBound == VK_TRUE &&
-        features1_2.runtimeDescriptorArray == VK_TRUE &&
-        features1_2.timelineSemaphore == VK_TRUE &&
-        features1_2.bufferDeviceAddress == VK_TRUE &&
-        features1_3.synchronization2 == VK_TRUE &&
-        features1_3.dynamicRendering == VK_TRUE &&
-        features1_4.maintenance5 == VK_TRUE;
+           features1_2.descriptorBindingSampledImageUpdateAfterBind == VK_TRUE &&
+           features1_2.descriptorBindingStorageImageUpdateAfterBind == VK_TRUE &&
+           features1_2.descriptorBindingUpdateUnusedWhilePending == VK_TRUE &&
+           features1_2.descriptorBindingPartiallyBound == VK_TRUE &&
+           features1_2.runtimeDescriptorArray == VK_TRUE &&
+           features1_2.timelineSemaphore == VK_TRUE && features1_2.bufferDeviceAddress == VK_TRUE &&
+           features1_3.synchronization2 == VK_TRUE && features1_3.dynamicRendering == VK_TRUE &&
+           features1_4.maintenance5 == VK_TRUE;
 }
 
 /** @brief Returns whether the physical device is suitable. */
 static bool is_physical_device_suitable(const VkPhysicalDevice physicalDevice)
 {
     return does_physical_device_support_extensions(physicalDevice) &&
-        does_physical_device_support_features(physicalDevice);
+           does_physical_device_support_features(physicalDevice);
 }
 
-/** @brief Returns whether the queue family at the index supports presentation. */
+/** @brief Returns whether the queue family at the index supports presentation.
+ */
 static bool queue_family_supports_presentation(
-    const uint32_t i, 
+    const uint32_t i,
     const VkInstance instance,
     const VkPhysicalDevice physicalDevice)
 {
@@ -139,8 +140,7 @@ static bool choose_queue_family(
 }
 
 /** @brief Returns a score for the physical device. A higher value is better. */
-static uint32_t grade_physical_device(
-    VkPhysicalDevice physicalDevice)
+static uint32_t grade_physical_device(VkPhysicalDevice physicalDevice)
 {
     uint32_t score = 0;
     VkPhysicalDeviceProperties properties = {};
@@ -157,8 +157,7 @@ static uint32_t grade_physical_device(
 }
 
 /** @brief Returns the physical device's memory type info. */
-static CuPhysicalDeviceMemoryInfo get_physical_device_memory_info(
-    VkPhysicalDevice physicalDevice)
+static CuPhysicalDeviceMemoryInfo get_physical_device_memory_info(VkPhysicalDevice physicalDevice)
 {
     VkPhysicalDeviceMemoryProperties memoryProperties = {};
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
@@ -236,8 +235,8 @@ CuResult choose_physical_device(
     }
 
     if (found) {
-        cu_log_note("Chose device %p with queue family #%u",
-            (void*)pPhysicalDeviceInfo->handle,
+        cu_log_note(
+            "Chose device %p with queue family #%u", (void*)pPhysicalDeviceInfo->handle,
             pPhysicalDeviceInfo->iQueueFamily);
         return CU_SUCCESS;
     } else {

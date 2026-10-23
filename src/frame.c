@@ -7,16 +7,15 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-void cu_frame_begin_render(
-    CuFrame* const pFrame,
-    CuRenderer* const pRenderer)
+void cu_frame_begin_render(CuFrame* const pFrame, CuRenderer* const pRenderer)
 {
     // Set the viewport and scissor.
     const VkRect2D area = {
-        .offset = {
-            .x = 0,
-            .y = 0,
-        },
+        .offset =
+            {
+                .x = 0,
+                .y = 0,
+            },
         .extent = pRenderer->_swapchainExtent,
     };
     const VkViewport viewport = {
@@ -106,14 +105,16 @@ void cu_frame_begin_image_render(
 {
     // Set the viewport and scissor.
     const VkRect2D area = {
-        .offset = {
-            .x = 0,
-            .y = 0,
-        },
-        .extent = {
-            .width = w,
-            .height = h,
-        },
+        .offset =
+            {
+                .x = 0,
+                .y = 0,
+            },
+        .extent =
+            {
+                .width = w,
+                .height = h,
+            },
     };
     const VkViewport viewport = {
         .x = 0.0F,
@@ -164,19 +165,13 @@ void cu_frame_end_image_render(
 
     // Convert the image for its next use.
     cu_cmd_image_barrier(
-        pFrame,
-        pImage,
-        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-        VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+        pFrame, pImage, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
         VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        newLayout);
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, newLayout);
 }
 
-void cu_frame_end_render(
-    CuFrame* const pFrame,
-    CuRenderer* const pRenderer)
+void cu_frame_end_render(CuFrame* const pFrame, CuRenderer* const pRenderer)
 {
     // End the render.
     vkCmdEndRendering(pFrame->_commandBuffer);

@@ -9,7 +9,11 @@
 #include <vulkan/vulkan.h>
 
 /** @brief A type for Vulkan enumeration functions. */
-#define Enumerator(t) struct { uint32_t n; t* p; }
+#define Enumerator(t)                                                                              \
+    struct {                                                                                       \
+        uint32_t n;                                                                                \
+        t* p;                                                                                      \
+    }
 
 /**
  * @brief Enumerate a Vulkan enumeration function.
@@ -57,8 +61,7 @@
 #define ENUMERATOR_AUTO_FREE __attribute__((cleanup(enumerator_auto_free_)))
 
 /** @brief The `AUTO_FREE` callback. */
-static inline void enumerator_auto_free_(
-    void* pEnumerator)
+static inline void enumerator_auto_free_(void* pEnumerator)
 {
     Enumerator(void)* e = pEnumerator;
     free(e->p);

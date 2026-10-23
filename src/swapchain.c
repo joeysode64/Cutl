@@ -31,18 +31,16 @@ static VkExtent2D get_extent(
     const VkExtent2D preferred)
 {
     const bool isExtentDefined = (pCapabilities->currentExtent.width != UINT32_MAX) ||
-        (pCapabilities->currentExtent.height != UINT32_MAX);
+                                 (pCapabilities->currentExtent.height != UINT32_MAX);
     if (isExtentDefined) {
         return pCapabilities->currentExtent;
     } else {
         return (VkExtent2D){
             .width = clamp(
-                preferred.width,
-                pCapabilities->minImageExtent.width,
+                preferred.width, pCapabilities->minImageExtent.width,
                 pCapabilities->maxImageExtent.width),
             .height = clamp(
-                preferred.height,
-                pCapabilities->minImageExtent.height,
+                preferred.height, pCapabilities->minImageExtent.height,
                 pCapabilities->maxImageExtent.height),
         };
     }
@@ -53,21 +51,22 @@ static VkExtent2D get_extent(
  * @param [out] pSurfaceFormat A pointer to the surface format.
  * @param surface The surface handle.
  * @return The result of choosing a surface format.
- * @note Chooses The first 32-bit format with a non-linear SRGB color space, or the first surface
- * format if none are found.
+ * @note Chooses The first 32-bit format with a non-linear SRGB color space, or
+ * the first surface format if none are found.
  */
 static CuResult choose_surface_format(
     VkSurfaceFormatKHR* const pSurfaceFormat,
     const VkSurfaceKHR surface)
 {
     Enumerator(VkSurfaceFormatKHR) surfaceFormats ENUMERATOR_AUTO_FREE = {};
-    enumerate_vk(surfaceFormats, vkGetPhysicalDeviceSurfaceFormatsKHR, gContext._physicalDevice, surface);
+    enumerate_vk(
+        surfaceFormats, vkGetPhysicalDeviceSurfaceFormatsKHR, gContext._physicalDevice, surface);
 
     *pSurfaceFormat = surfaceFormats.p[0];
     for (uint32_t i = 0; i < surfaceFormats.n; i++) {
         const VkSurfaceFormatKHR surfaceFormat = surfaceFormats.p[i];
         const bool hasGoodFormat = (surfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB) ||
-            (surfaceFormat.format == VK_FORMAT_R8G8B8A8_SRGB);
+                                   (surfaceFormat.format == VK_FORMAT_R8G8B8A8_SRGB);
         const bool hasGoodColorSpace =
             surfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
         if (hasGoodFormat && hasGoodColorSpace) {
@@ -76,8 +75,9 @@ static CuResult choose_surface_format(
         }
     }
 
-    cu_log_note("Chose surface format with format: 0x%X, and color space: 0x%X",
-        pSurfaceFormat->format, pSurfaceFormat->colorSpace);
+    cu_log_note(
+        "Chose surface format with format: 0x%X, and color space: 0x%X", pSurfaceFormat->format,
+        pSurfaceFormat->colorSpace);
     return CU_SUCCESS;
 }
 
@@ -93,7 +93,8 @@ static CuResult choose_present_mode(
     const VkSurfaceKHR surface)
 {
     Enumerator(VkPresentModeKHR) presentModes ENUMERATOR_AUTO_FREE = {};
-    enumerate_vk(presentModes, vkGetPhysicalDeviceSurfacePresentModesKHR, gContext._physicalDevice, surface);
+    enumerate_vk(
+        presentModes, vkGetPhysicalDeviceSurfacePresentModesKHR, gContext._physicalDevice, surface);
 
     *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
     for (uint32_t i = 0; i < presentModes.n; i++) {
@@ -115,20 +116,18 @@ CuResult cu_vk_create_swapchain(
     const VkSwapchainKHR oldSwapchain)
 {
     VkSurfaceCapabilitiesKHR capabilities = {};
-    cu_try_vk(
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gContext._physicalDevice, surface, &capabilities));
+    cu_try_vk(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+        gContext._physicalDevice, surface, &capabilities));
     VkSurfaceFormatKHR surfaceFormat = {};
     cu_try(choose_surface_format(&surfaceFormat, surface));
     VkPresentModeKHR presentMode = 0;
     cu_try(choose_present_mode(&presentMode, surface));
     const VkExtent2D preferred = (pWindow != nullptr)
-        ? (VkExtent2D){ .width = pWindow->_w, .height = pWindow->_h }
-        : PREFERRED_HEADLESS_EXTENT;
+                                     ? (VkExtent2D){.width = pWindow->_w, .height = pWindow->_h}
+                                     : PREFERRED_HEADLESS_EXTENT;
     const VkExtent2D extent = get_extent(&capabilities, preferred);
-    const uint32_t nSwapchainImages = clamp(
-        minSwapchainImages,
-        capabilities.minImageCount,
-        capabilities.maxImageCount);
+    const uint32_t nSwapchainImages =
+        clamp(minSwapchainImages, capabilities.minImageCount, capabilities.maxImageCount);
     const VkSwapchainCreateInfoKHR createInfo = {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         .pNext = nullptr,
@@ -149,14 +148,15 @@ CuResult cu_vk_create_swapchain(
         .clipped = VK_TRUE,
         .oldSwapchain = oldSwapchain,
     };
-    cu_try_vk(vkCreateSwapchainKHR(
-        gContext._device, &createInfo, nullptr, &pSwapchainInfo->_handle));
+    cu_try_vk(
+        vkCreateSwapchainKHR(gContext._device, &createInfo, nullptr, &pSwapchainInfo->_handle));
     cu_log_create(pSwapchainInfo->_handle);
 
     cu_try_vk(vkGetSwapchainImagesKHR(
         gContext._device, pSwapchainInfo->_handle, &pSwapchainInfo->_nImages, nullptr));
-    cu_log_note("Swapchain %p was created with %u swapchain images",
-        (void*)pSwapchainInfo->_handle, pSwapchainInfo->_nImages);
+    cu_log_note(
+        "Swapchain %p was created with %u swapchain images", (void*)pSwapchainInfo->_handle,
+        pSwapchainInfo->_nImages);
 
     pSwapchainInfo->_format = surfaceFormat.format;
     pSwapchainInfo->_extent = extent;
@@ -171,16 +171,13 @@ CuResult cu_swapchain_images_create(
     const VkFormat format)
 {
     VkImage images[nSwapchainImages];
-    cu_try_vk(vkGetSwapchainImagesKHR(
-        gContext._device, swapchain, &nSwapchainImages, images));
+    cu_try_vk(vkGetSwapchainImagesKHR(gContext._device, swapchain, &nSwapchainImages, images));
 
     for (uint32_t i = 0; i < nSwapchainImages; i++) {
         CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
 
-        cu_try(create_image_view(
-            &pSwapchainImage->_imageView, images[i], format));
-        cu_try(create_semaphore(
-            &pSwapchainImage->_renderFinished, VK_SEMAPHORE_TYPE_BINARY, 0));
+        cu_try(create_image_view(&pSwapchainImage->_imageView, images[i], format));
+        cu_try(create_semaphore(&pSwapchainImage->_renderFinished, VK_SEMAPHORE_TYPE_BINARY, 0));
         pSwapchainImage->_image = images[i];
     }
 

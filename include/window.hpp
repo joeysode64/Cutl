@@ -4,8 +4,7 @@
 #include "window.h"
 #include "wrapper.hpp"
 
-namespace cu
-{
+namespace cu {
     /** @ref CuWindow */
     class Window : public Wrapper<CuWindow> {
     public:
@@ -19,14 +18,10 @@ namespace cu
         constexpr Window()
             : Wrapper{}
         {
-
         }
 
         /** @ref cu_window_create() */
-        inline Result init(
-            const uint32_t w,
-            const uint32_t h,
-            const char* const title)
+        inline Result init(const uint32_t w, const uint32_t h, const char* const title)
         {
             return cu_window_create(this, w, h, title);
         }
@@ -55,4 +50,4 @@ namespace cu
             return cu_window_should_close(this);
         }
     };
-}
+} // namespace cu

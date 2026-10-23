@@ -33,18 +33,16 @@ int main()
         .nVert = vert.n,
         .pFrag = frag.data,
         .nFrag = frag.n,
-        .pFormats = (VkFormat[]){ cu_renderer_get_format(&renderer) },
+        .pFormats = (VkFormat[]){cu_renderer_get_format(&renderer)},
         .nFormats = 1,
     };
-    query(cu_graphics_pipeline_create(&graphicsPipeline, &graphicsPipelineCreateInfo, pipelineLayout));
+    query(cu_graphics_pipeline_create(
+        &graphicsPipeline, &graphicsPipelineCreateInfo, pipelineLayout));
 
     CuDynamicBuffer vertexBuffer = {};
     query(cu_dynamic_buffer_create(
-        &vertexBuffer,
-        CU_DEFAULT_RENDERER_CREATE_INFO.maxFramesInFlight,
-        3 * sizeof(vec2),
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-        CU_DEDICATED_ALLOCATOR_MODE));
+        &vertexBuffer, CU_DEFAULT_RENDERER_CREATE_INFO.maxFramesInFlight, 3 * sizeof(vec2),
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, CU_DEDICATED_ALLOCATOR_MODE));
     float angle = 0.0F;
 
     while (!cu_window_should_close(&window)) {
@@ -56,9 +54,9 @@ int main()
             &vertexBuffer, &pData, &address, cu_renderer_get_frame_index(&renderer));
 
         const vec2 vertices[3] = {
-            { -1.0F, -1.0F },
-            { 1.0F, -1.0F },
-            { cosf(angle), sinf(angle) },
+            {-1.0F, -1.0F},
+            {1.0F, -1.0F},
+            {cosf(angle), sinf(angle)},
         };
         memcpy(pData, vertices, sizeof(vertices));
         angle += 0.02F;

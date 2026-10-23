@@ -26,19 +26,14 @@ extern "C" {
  * @param mode The allocation mode.
  * @return The result of creating the staging buffer.
  */
-CuResult cu_staging_buffer_create(
-    CuStagingBuffer* pStagingBuffer,
-    size_t z,
-    CuAllocationMode mode);
+CuResult cu_staging_buffer_create(CuStagingBuffer* pStagingBuffer, size_t z, CuAllocationMode mode);
 
 /**
  * @brief Destroys the staging buffer.
  * @param [in, out] pStagingBuffer A pointer to the staging buffer.
  * @param mode The allocation mode.
  */
-void cu_staging_buffer_destroy(
-    CuStagingBuffer* pStagingBuffer,
-    CuAllocationMode mode);
+void cu_staging_buffer_destroy(CuStagingBuffer* pStagingBuffer, CuAllocationMode mode);
 
 /**
  * @brief Copies data into the staging buffer.
@@ -47,11 +42,7 @@ void cu_staging_buffer_destroy(
  * @param z The size of the data to copy.
  * @param o The offset to write the data to.
  */
-void cu_staging_buffer_copy(
-    CuStagingBuffer* pStagingBuffer,
-    const void* p,
-    size_t z,
-    size_t o);
+void cu_staging_buffer_copy(CuStagingBuffer* pStagingBuffer, const void* p, size_t z, size_t o);
 
 #ifdef __cplusplus
 }

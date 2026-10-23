@@ -5,8 +5,8 @@
 #include "result.h"
 #include "vk.h"
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <vulkan/vulkan.h>
 
 CuResult cu_dynamic_buffer_create(
@@ -19,12 +19,8 @@ CuResult cu_dynamic_buffer_create(
     CuResult result = CU_SUCCESS;
 
     cu_try_catch(create_buffer(
-        &pDynamicBuffer->_buffer,
-        &pDynamicBuffer->_allocation,
-        &pDynamicBuffer->_p,
-        n * z,
-        usage | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-        mode,
+        &pDynamicBuffer->_buffer, &pDynamicBuffer->_allocation, &pDynamicBuffer->_p, n * z,
+        usage | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, mode,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
     pDynamicBuffer->_address = get_buffer_device_address(pDynamicBuffer->_buffer);
     pDynamicBuffer->_n = n;
@@ -37,9 +33,7 @@ FAIL:
     return result;
 }
 
-void cu_dynamic_buffer_destroy(
-    CuDynamicBuffer* const pDynamicBuffer,
-    const CuAllocationMode mode)
+void cu_dynamic_buffer_destroy(CuDynamicBuffer* const pDynamicBuffer, const CuAllocationMode mode)
 {
     vkDestroyBuffer(gContext._device, pDynamicBuffer->_buffer, nullptr);
     mode_free(&pDynamicBuffer->_allocation, mode);

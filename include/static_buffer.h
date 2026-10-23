@@ -23,8 +23,9 @@ extern "C" {
  * @brief Creates a static buffer.
  * @param [out] pStaticBuffer A pointer to the static buffer.
  * @param z The size of the buffer.
- * @param usage A bitmap of the buffer usage flags. The flags `VK_BUFFER_USAGE_TRANSFER_DST_BIT`
- *     and `VK_BUFFER_USAGE_DEVICE_ADDRESS_BIT` are set automatically.
+ * @param usage A bitmap of the buffer usage flags. The flags
+ * `VK_BUFFER_USAGE_TRANSFER_DST_BIT` and `VK_BUFFER_USAGE_DEVICE_ADDRESS_BIT`
+ * are set automatically.
  * @param mode The allocation mode.
  */
 CuResult cu_static_buffer_create(
@@ -38,9 +39,7 @@ CuResult cu_static_buffer_create(
  * @param [in, out] pStaticBuffer A pointer to the static buffer.
  * @param mode The allocation mode.
  */
-void cu_static_buffer_destroy(
-    CuStaticBuffer* pStaticBuffer,
-    CuAllocationMode mode);
+void cu_static_buffer_destroy(CuStaticBuffer* pStaticBuffer, CuAllocationMode mode);
 
 #ifdef __cplusplus
 }

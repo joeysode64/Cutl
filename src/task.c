@@ -15,8 +15,7 @@
  * @param [out] pFence The fence to create.
  * @return The result of creating the fence.
  */
-static CuResult create_fence(
-    VkFence* const pFence)
+static CuResult create_fence(VkFence* const pFence)
 {
     const VkFenceCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
@@ -26,8 +25,7 @@ static CuResult create_fence(
     return cu_vk_result(vkCreateFence(gContext._device, &createInfo, nullptr, pFence));
 }
 
-CuResult cu_task_create(
-    CuTask* const pTask)
+CuResult cu_task_create(CuTask* const pTask)
 {
     CuResult result = CU_SUCCESS;
 
@@ -45,8 +43,7 @@ FAIL:
     return result;
 }
 
-void cu_task_destroy(
-    CuTask* const pTask)
+void cu_task_destroy(CuTask* const pTask)
 {
     cu_task_await(pTask, UINT64_MAX);
     vkDestroyFence(gContext._device, pTask->_taskFinished, nullptr);
@@ -55,8 +52,7 @@ void cu_task_destroy(
     cu_log_destroy(pTask->_commandBuffer);
 }
 
-CuResult cu_task_begin(
-    CuTask* const pTask)
+CuResult cu_task_begin(CuTask* const pTask)
 {
     const VkCommandBufferBeginInfo beginInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -69,8 +65,7 @@ CuResult cu_task_begin(
     return CU_SUCCESS;
 }
 
-CuResult cu_task_submit(
-    CuTask* const pTask)
+CuResult cu_task_submit(CuTask* const pTask)
 {
     cu_try_vk(vkEndCommandBuffer(pTask->_commandBuffer));
 
@@ -92,15 +87,12 @@ CuResult cu_task_submit(
     return CU_SUCCESS;
 }
 
-bool cu_task_is_running(
-    CuTask* const pTask)
+bool cu_task_is_running(CuTask* const pTask)
 {
     return vkGetFenceStatus(gContext._device, pTask->_taskFinished) == VK_NOT_READY;
 }
 
-void cu_task_await(
-    CuTask* const pTask,
-    const uint64_t timeout)
+void cu_task_await(CuTask* const pTask, const uint64_t timeout)
 {
     vkWaitForFences(gContext._device, 1, &pTask->_taskFinished, VK_TRUE, timeout);
 }
