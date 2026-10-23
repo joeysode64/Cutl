@@ -4,6 +4,7 @@
 #include "result.hpp"
 #include "version.hpp"
 
+#include <cstdint>
 #include <stdint.h>
 
 namespace cu {
@@ -50,6 +51,28 @@ namespace cu {
             constexpr Builder(const Context::CreateInfo& createInfo)
                 : Context::CreateInfo{createInfo}
             {
+            }
+
+            /**
+             * @ref CuContextCreateInfo::nInstanceExtensions
+             * @ref CuContextCreateInfo::pInstanceExtensions
+             */
+            constexpr Builder& instance_extensions(const char* const* const p, const uint32_t n)
+            {
+                nInstanceExtensions = n;
+                pInstanceExtensions = p;
+                return *this;
+            }
+
+            /**
+             * @ref CuContextCreateInfo::nDeviceExtensions
+             * @ref CuContextCreateInfo::pDeviceExtensions
+             */
+            constexpr Builder& device_extensions(const char* const* const p, const uint32_t n)
+            {
+                nDeviceExtensions = n;
+                pDeviceExtensions = p;
+                return *this;
             }
 
             /** @ref CuContextCreateInfo::appName */

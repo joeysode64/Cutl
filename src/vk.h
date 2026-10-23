@@ -76,6 +76,26 @@
 /** @brief The timeout time. */
 constexpr uint64_t TIMEOUT_NANOS = 2'000'000'000;
 
+/** @brief The instance extensions. */
+static const char* const INSTANCE_EXTENSIONS[] = {
+    "VK_KHR_surface",
+    "VK_EXT_headless_surface",
+#if ON_APPLE
+    "VK_KHR_portability_enumeration",
+    "VK_EXT_metal_surface",
+#elif ON_LINUX
+    "VK_KHR_xcb_surface", "VK_KHR_xlib_surface",     "VK_KHR_wayland_surface",
+#elif ON_WINDOWS
+    "VK_KHR_win32_surface",
+#endif
+#if defined(CU_DEBUGGING)
+    "VK_EXT_debug_utils",
+#endif
+};
+
+/** @brief The number of instance extensions. */
+constexpr uint32_t N_INSTANCE_EXTENSIONS = arr_len(INSTANCE_EXTENSIONS);
+
 /** @brief The device extensions. */
 static const char* const DEVICE_EXTENSIONS[] = {
     "VK_KHR_swapchain",
@@ -85,7 +105,7 @@ static const char* const DEVICE_EXTENSIONS[] = {
 };
 
 /**@ brief The number of device extensions. */
-constexpr size_t N_DEVICE_EXTENSIONS = arr_len(DEVICE_EXTENSIONS);
+constexpr uint32_t N_DEVICE_EXTENSIONS = arr_len(DEVICE_EXTENSIONS);
 
 /**
  * @brief Creates the surface.

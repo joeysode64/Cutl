@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <vulkan/vulkan.h>
 
 #if defined(CU_DEBUGGING)
@@ -96,43 +97,41 @@ static VkResult create_debug_messenger()
 }
 #endif
 
-/** @brief The instance extensions. */
-static const char* const INSTANCE_EXTENSIONS[] = {
-    "VK_KHR_surface",
-    "VK_EXT_headless_surface",
-#if ON_APPLE
-    "VK_KHR_portability_enumeration",
-    "VK_EXT_metal_surface",
-#elif ON_LINUX
-    "VK_KHR_xcb_surface", "VK_KHR_xlib_surface",     "VK_KHR_wayland_surface",
-#elif ON_WINDOWS
-    "VK_KHR_win32_surface",
-#endif
-#if defined(CU_DEBUGGING)
-    "VK_EXT_debug_utils",
-#endif
-};
+static const char** get_instance_extensions(
+    uint32_t* pnExtensions,
+    const char* const* const pExtensions,
+    const uint32_t nExtensions)
+{
+    const char** const p = calloc(N_INSTANCE_EXTENSIONS + nExtensions, sizeof(*p));
 
-/** @brief The number of instance extensions. */
-constexpr size_t N_INSTANCE_EXTENSIONS = arr_len(INSTANCE_EXTENSIONS);
+    memcpy(p, INSTANCE_EXTENSIONS, N_INSTANCE_EXTENSIONS * sizeof(*p));
+    if (pExtensions != nullptr) {
+        memcpy(p + N_INSTANCE_EXTENSIONS, pExtensions, nExtensions * sizeof(*p));
+    }
+
+    *pnExtensions = N_INSTANCE_EXTENSIONS + nExtensions;
+    return p;
+}
 
 /**
  * @brief Creates the global context's Vulkan instance.
- * @param appName The application name.
- * @param appVersion The application version.
+ * @param pCreateInfo A pointer to the context's create info.
  * @return The result of creating the instance.
  */
-static VkResult create_instance(const char* const appName, const uint32_t appVersion)
+static VkResult create_instance(const CuContextCreateInfo* const pCreateInfo)
 {
     const VkApplicationInfo appInfo = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pNext = nullptr,
-        .pApplicationName = appName,
-        .applicationVersion = appVersion,
+        .pApplicationName = pCreateInfo->appName,
+        .applicationVersion = pCreateInfo->appVersion,
         .pEngineName = "Cutl",
         .engineVersion = cu_version_vk_version(&CU_VERSION),
         .apiVersion = VK_API_VERSION_1_4,
     };
+    uint32_t nExtensions = 0;
+    const char* const* pExtenisons AUTO_FREE = get_instance_extensions(
+        &nExtensions, pCreateInfo->pInstanceExtensions, pCreateInfo->nInstanceExtensions);
     const VkInstanceCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pNext = nullptr,
@@ -140,8 +139,8 @@ static VkResult create_instance(const char* const appName, const uint32_t appVer
         .flags = VK_INSTANCE_CREATE_ENUMERATION_PORTABILITY_BIT_KHR,
 #else
         .flags = 0,
-        .pApplicationInfo = &appInfo,
 #endif
+        .pApplicationInfo = &appInfo,
 #if defined(CU_DEBUGGING)
         .enabledLayerCount = 1,
         .ppEnabledLayerNames = (const char*[]){"VK_LAYER_KHRONOS_validation"},
@@ -149,17 +148,34 @@ static VkResult create_instance(const char* const appName, const uint32_t appVer
         .enabledLayerCount = 0,
         .ppEnabledLayerNames = nullptr,
 #endif
-        .enabledExtensionCount = N_INSTANCE_EXTENSIONS,
-        .ppEnabledExtensionNames = INSTANCE_EXTENSIONS,
+        .enabledExtensionCount = nExtensions,
+        .ppEnabledExtensionNames = pExtenisons,
     };
     return vkCreateInstance(&createInfo, nullptr, &gContext._instance);
 }
 
+static const char** get_device_extensions(
+    uint32_t* pnExtensions,
+    const char* const* const pExtensions,
+    const uint32_t nExtensions)
+{
+    const char** const p = calloc(N_INSTANCE_EXTENSIONS + nExtensions, sizeof(*p));
+
+    memcpy(p, DEVICE_EXTENSIONS, N_DEVICE_EXTENSIONS * sizeof(*p));
+    if (pExtensions != nullptr) {
+        memcpy(p + N_DEVICE_EXTENSIONS, pExtensions, nExtensions * sizeof(*p));
+    }
+
+    *pnExtensions = N_DEVICE_EXTENSIONS + nExtensions;
+    return p;
+}
+
 /**
- * @brief Creates the global context's cu_logical device.
+ * @brief Creates the global context's logical device.
+ * @param pCreateInfo A pointer to the context create info.
  * @return The result of creating the device.
  */
-static VkResult create_device()
+static VkResult create_device(const CuContextCreateInfo* const pCreateInfo)
 {
     const float queuePriorities[] = {1.0F};
     const VkDeviceQueueCreateInfo queueCreateInfos[] = {
@@ -204,6 +220,9 @@ static VkResult create_device()
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
         .pNext = (void*)&features1_1,
     };
+    uint32_t nExtensions = 0;
+    const char* const* pExtensions AUTO_FREE = get_device_extensions(
+        &nExtensions, pCreateInfo->pDeviceExtensions, pCreateInfo->nDeviceExtensions);
     const VkDeviceCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .pNext = &features1_0,
@@ -212,8 +231,8 @@ static VkResult create_device()
         .pQueueCreateInfos = queueCreateInfos,
         .enabledLayerCount = 0,
         .ppEnabledLayerNames = nullptr,
-        .enabledExtensionCount = N_DEVICE_EXTENSIONS,
-        .ppEnabledExtensionNames = DEVICE_EXTENSIONS,
+        .enabledExtensionCount = nExtensions,
+        .ppEnabledExtensionNames = pExtensions,
     };
     return vkCreateDevice(gContext._physicalDevice, &createInfo, nullptr, &gContext._device);
 }
@@ -367,7 +386,7 @@ CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo)
 
     cu_assert_catch(glfwInit() == GLFW_TRUE, cu_glfw_error());
 
-    cu_try_catch_vk(create_instance(pCreateInfo->appName, pCreateInfo->appVersion));
+    cu_try_catch_vk(create_instance(pCreateInfo));
     cu_log_create(gContext._instance);
 
 #if defined(CU_DEBUGGING)
@@ -381,7 +400,7 @@ CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo)
     gContext._memoryInfo = physicalDeviceInfo.memoryInfo;
     gContext._iQueueFamily = physicalDeviceInfo.iQueueFamily;
 
-    cu_try_catch_vk(create_device());
+    cu_try_catch_vk(create_device(pCreateInfo));
     cu_log_create(gContext._device);
 
     cu_try_catch_vk(create_command_pool());

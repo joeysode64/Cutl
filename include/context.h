@@ -46,27 +46,41 @@ typedef struct CuContext_T {
     VkDescriptorSet _descriptorSet; /**< The descriptor set handle. */
 } CuContext;
 
-/** @brief Create info for the context. */
+/**
+ * @brief Create info for the context.
+ * @note For extensions, Cutl's defaults are always used. See them in `src/vk.h`.
+ */
 typedef struct CuContextCreateInfo_T {
+    uint32_t nInstanceExtensions; /**< The number of instance extensions to use. Default is 0. */
+
+    const char* const*
+        pInstanceExtensions; /**< A pointer to the instance extensions to use. Default is null. */
+
+    uint32_t nDeviceExtensions; /**< The number of instance device to use. Default is 0. */
+
+    const char* const*
+        pDeviceExtensions; /**< A pointer to the device extensions to use. Default is null. */
+
     const char* appName; /**< The application name. Can be null. Default is null. */
 
     uint32_t appVersion; /**< The application version. Default is v0.0.0. */
 
-    /** @brief The number of sampled image descriptors. Default is 16 (spec
-     * minimum). */
-    uint32_t nSampledImageDescriptors;
+    uint32_t nSampledImageDescriptors; /**< The number of sampled image descriptors. Default is 16
+                                          (spec minimum). */
 
-    /** @brief The number of descriptor samplers to. Default is 16 (spec minimum).
-     */
-    uint32_t nSamplerDescriptors;
+    uint32_t nSamplerDescriptors; /**< The number of sampler descriptor slots. Default is 16 (spec
+                                     minimum). */
 
-    /** @brief the number of storage image descriptors. Default is 4 (spec
-     * minimum). */
-    uint32_t nStorageImageDescriptors;
+    uint32_t nStorageImageDescriptors; /**< The number of storage image descriptor slogs. Default is
+                                          4 (spec minimum). */
 } CuContextCreateInfo;
 
 /** @brief The default context create info. */
 constexpr CuContextCreateInfo CU_DEFAULT_CONTEXT_CREATE_INFO = {
+    .nInstanceExtensions = 0,
+    .pInstanceExtensions = 0,
+    .nDeviceExtensions = 0,
+    .pDeviceExtensions = 0,
     .appName = nullptr,
     .appVersion = 0,
     .nSampledImageDescriptors = 16,
