@@ -53,13 +53,13 @@ typedef struct CuContext_T {
 typedef struct CuContextCreateInfo_T {
     uint32_t nInstanceExtensions; /**< The number of instance extensions to use. Default is 0. */
 
-    const char* const*
-        pInstanceExtensions; /**< A pointer to the instance extensions to use. Default is null. */
+    const char* const* pInstanceExtensions; /**< A pointer to the instance extensions to use.
+                                               Default is null. */
 
     uint32_t nDeviceExtensions; /**< The number of instance device to use. Default is 0. */
 
-    const char* const*
-        pDeviceExtensions; /**< A pointer to the device extensions to use. Default is null. */
+    const char* const* pDeviceExtensions; /**< A pointer to the device extensions to use. Default is
+                                             null. */
 
     const char* appName; /**< The application name. Can be null. Default is null. */
 

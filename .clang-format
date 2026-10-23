@@ -5,6 +5,8 @@ ContinuationIndentWidth: 4
 AccessModifierOffset: -4
 ColumnLimit: 100
 
+PenaltyBreakComment: 0
+
 NamespaceIndentation: All
 FixNamespaceComments: false
 
