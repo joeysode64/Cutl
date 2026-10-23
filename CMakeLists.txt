@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(
     Cutl
-    VERSION 0.24.0.1
+    VERSION 0.24.0.2
     LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 23)
@@ -13,106 +13,63 @@ find_package(PNG 1.6 REQUIRED)
 
 # Build library.
 
-file(
-    GLOB SOURCES
-    ${CMAKE_SOURCE_DIR}/src/*.c)
-add_library(
-    cutl
-    ${SOURCES})
+file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.c)
+add_library(cutl ${SOURCES})
 
-target_compile_options(
-    cutl
-    PRIVATE -Wall -Wextra -Wpedantic -Werror)
+target_compile_options(cutl PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
 option(CUTL_DEBUGGING "Debugging" OFF)
-if (CUTL_DEBUGGING)
-    target_compile_definitions(
-        cutl
-        PRIVATE CU_DEBUGGING)
-    target_compile_options(
-        cutl
-        PRIVATE -g)
+if(CUTL_DEBUGGING)
+    target_compile_definitions(cutl PRIVATE CU_DEBUGGING)
+    target_compile_options(cutl PRIVATE -g)
 endif()
 
-target_link_libraries(
-    cutl
-    PUBLIC glfw Vulkan::Vulkan PNG::PNG)
+target_link_libraries(cutl PUBLIC glfw Vulkan::Vulkan PNG::PNG)
 
-configure_file(
-    ${CMAKE_SOURCE_DIR}/include/info.h.in
-    ${CMAKE_BINARY_DIR}/generated/info.h
-    @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/include/info.h.in ${CMAKE_BINARY_DIR}/generated/info.h @ONLY)
 
-target_include_directories(
-    cutl
-    PUBLIC ${CMAKE_BINARY_DIR}/generated)
-target_include_directories(
-    cutl
-    PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(cutl PUBLIC ${CMAKE_BINARY_DIR}/generated)
+target_include_directories(cutl PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 # Compile tests.
 
-file(
-    GLOB TEST_SOURCES
-    ${CMAKE_SOURCE_DIR}/tests/*.c
-    ${CMAKE_SOURCE_DIR}/tests/*.cc)
+file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/tests/*.c ${CMAKE_SOURCE_DIR}/tests/*.cc)
 
 foreach(test_file ${TEST_SOURCES})
-    get_filename_component(
-        test_name
-        ${test_file} NAME_WE)
+    get_filename_component(test_name ${test_file} NAME_WE)
 
-    add_executable(
-        ${test_name}
-        ${test_file})
+    add_executable(${test_name} ${test_file})
 
-    target_compile_options(
-        ${test_name}
-        PRIVATE -Wall -Wextra -Wpedantic -Werror -g)
+    target_compile_options(${test_name} PRIVATE -Wall -Wextra -Wpedantic -Werror -g)
 
-    target_link_libraries(
-        ${test_name}
-        PRIVATE cutl)
+    target_link_libraries(${test_name} PRIVATE cutl)
 
-    target_include_directories(
-        ${test_name} 
-        PRIVATE ${CMAKE_SOURCE_DIR}/include)
+    target_include_directories(${test_name} PRIVATE ${CMAKE_SOURCE_DIR}/include)
 endforeach()
 
 # Compile test shaders.
 
-file(
-    GLOB TEST_SHADERS
-    ${CMAKE_SOURCE_DIR}/tests/ssrc/*)
+file(GLOB TEST_SHADERS ${CMAKE_SOURCE_DIR}/tests/ssrc/*)
 
 foreach(shader_file ${TEST_SHADERS})
-    get_filename_component(
-        shader_name
-        ${shader_file} NAME)
-    set(
-        shader_output 
-        ${CMAKE_SOURCE_DIR}/tests/shaders/${shader_name}.spv)
-    
+    get_filename_component(shader_name ${shader_file} NAME)
+    set(shader_output ${CMAKE_SOURCE_DIR}/tests/shaders/${shader_name}.spv)
+
     add_custom_command(
         OUTPUT ${shader_output}
         COMMAND glslc ${shader_file} -o ${shader_output}
         DEPENDS ${shader_file}
         COMMENT "Compiling shader `${shader_name}`")
-    
+
     list(APPEND COMPILED_SHADERS ${shader_output})
 endforeach()
 
 if(COMPILED_SHADERS)
-    add_custom_target(
-        test_shaders
-        ALL DEPENDS ${COMPILED_SHADERS})
+    add_custom_target(test_shaders ALL DEPENDS ${COMPILED_SHADERS})
 
     foreach(test_file ${TEST_SOURCES})
-        get_filename_component(
-            test_name
-            ${test_file} NAME_WE)
-        add_dependencies(
-            ${test_name} test_shaders)
+        get_filename_component(test_name ${test_file} NAME_WE)
+        add_dependencies(${test_name} test_shaders)
     endforeach()
 endif()
 
