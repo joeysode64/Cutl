@@ -1,8 +1,8 @@
 #include "context.h"
 
+#include "debug.h"
 #include "g_context.h"
 #include "info.h"
-#include "log.h"
 #include "physical_device.h"
 #include "result.h"
 #include "util.h"
@@ -16,7 +16,7 @@
 #include <string.h>
 #include <vulkan/vulkan.h>
 
-#if defined(CU_DEBUGGING)
+#if CU_DEBUGGING
 #include <stdlib.h>
 
 /** @brief The callback for creating a debug messenger. */
@@ -29,7 +29,7 @@ static PFN_vkDestroyDebugUtilsMessengerEXT fDestroyDebugMessenger = nullptr;
 static void context_unterminated_warn()
 {
     if (cu_context_is_initialized()) {
-        cu_log_warning("The context was not terminated before program exit");
+        dbg_log_warning("The context was not terminated before program exit");
     }
 }
 
@@ -141,7 +141,7 @@ static VkResult create_instance(const CuContextCreateInfo* const pCreateInfo)
         .flags = 0,
 #endif
         .pApplicationInfo = &appInfo,
-#if defined(CU_DEBUGGING)
+#if CU_DEBUGGING
         .enabledLayerCount = 1,
         .ppEnabledLayerNames = (const char*[]){"VK_LAYER_KHRONOS_validation"},
 #else
@@ -378,7 +378,7 @@ CuContext* cu_context_get()
 
 CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo)
 {
-#if defined(CU_DEBUGGING)
+#if CU_DEBUGGING
     atexit(&context_unterminated_warn);
 #endif
 
@@ -387,11 +387,11 @@ CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo)
     cu_assert_catch(glfwInit() == GLFW_TRUE, cu_glfw_error());
 
     cu_try_catch_vk(create_instance(pCreateInfo));
-    cu_log_create(gContext._instance);
+    dbg_log_create(gContext._instance);
 
-#if defined(CU_DEBUGGING)
+#if CU_DEBUGGING
     cu_try_catch_vk(create_debug_messenger());
-    cu_log_create(gContext._debugMessenger);
+    dbg_log_create(gContext._debugMessenger);
 #endif
 
     PhysicalDeviceInfo physicalDeviceInfo = {};
@@ -401,31 +401,31 @@ CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo)
     gContext._iQueueFamily = physicalDeviceInfo.iQueueFamily;
 
     cu_try_catch_vk(create_device(pCreateInfo));
-    cu_log_create(gContext._device);
+    dbg_log_create(gContext._device);
 
     cu_try_catch_vk(create_command_pool());
-    cu_log_create(gContext._commandPool);
+    dbg_log_create(gContext._commandPool);
 
     vkGetDeviceQueue(gContext._device, gContext._iQueueFamily, 0, &gContext._queue);
-    cu_log_create(gContext._queue);
+    dbg_log_create(gContext._queue);
 
     cu_try_catch_vk(create_descriptor_pool(
         pCreateInfo->nSampledImageDescriptors, pCreateInfo->nSamplerDescriptors,
         pCreateInfo->nStorageImageDescriptors));
-    cu_log_create(gContext._descriptorPool);
+    dbg_log_create(gContext._descriptorPool);
 
     cu_try_catch_vk(create_descriptor_set_layout(
         pCreateInfo->nSampledImageDescriptors, pCreateInfo->nSamplerDescriptors,
         pCreateInfo->nStorageImageDescriptors));
-    cu_log_create(gContext._descriptorSetLayout);
+    dbg_log_create(gContext._descriptorSetLayout);
 
     cu_try_catch_vk(allocate_descriptor_set());
-    cu_log_create(gContext._descriptorSet);
+    dbg_log_create(gContext._descriptorSet);
 
     return CU_SUCCESS;
 
 FAIL:
-    cu_log_fail(result);
+    dbg_log_fail(result);
     cu_context_terminate();
     return result;
 }
@@ -437,21 +437,21 @@ void cu_context_terminate()
     if (gContext._device != VK_NULL_HANDLE) {
         vkDeviceWaitIdle(gContext._device);
         vkDestroyDescriptorSetLayout(gContext._device, gContext._descriptorSetLayout, nullptr);
-        cu_log_destroy(gContext._descriptorSetLayout);
+        dbg_log_destroy(gContext._descriptorSetLayout);
         vkDestroyDescriptorPool(gContext._device, gContext._descriptorPool, nullptr);
-        cu_log_destroy(gContext._descriptorPool);
+        dbg_log_destroy(gContext._descriptorPool);
         vkDestroyCommandPool(gContext._device, gContext._commandPool, nullptr);
-        cu_log_destroy(gContext._commandPool);
+        dbg_log_destroy(gContext._commandPool);
         vkDestroyDevice(gContext._device, nullptr);
     }
 
     if (gContext._instance != VK_NULL_HANDLE) {
         if (gContext._debugMessenger != VK_NULL_HANDLE) {
             fDestroyDebugMessenger(gContext._instance, gContext._debugMessenger, nullptr);
-            cu_log_destroy(gContext._debugMessenger);
+            dbg_log_destroy(gContext._debugMessenger);
         }
         vkDestroyInstance(gContext._instance, nullptr);
-        cu_log_destroy(gContext._instance);
+        dbg_log_destroy(gContext._instance);
     }
 
     gContext = (CuContext){._instance = VK_NULL_HANDLE};

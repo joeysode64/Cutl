@@ -1,8 +1,8 @@
 #include "renderer.h"
 
+#include "debug.h"
 #include "frame.h"
 #include "g_context.h"
-#include "log.h"
 #include "result.h"
 #include "swapchain.h"
 #include "util.h"
@@ -20,17 +20,17 @@
  */
 static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer)
 {
-    cu_log_note("Recreating the swapchain %p", (void*)pRenderer->_swapchain);
+    dbg_log_note("Recreating the swapchain %p", (void*)pRenderer->_swapchain);
 
     CuSwapchainInfo swapchainInfo = {};
     cu_try(cu_vk_create_swapchain(
         &swapchainInfo, pRenderer->_minSwapchainImages, pRenderer->_pWindow, pRenderer->_surface,
         pRenderer->_swapchain));
-    cu_log_create(swapchainInfo._handle);
+    dbg_log_create(swapchainInfo._handle);
 
     vkQueueWaitIdle(gContext._queue);
     vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
-    cu_log_destroy(pRenderer->_swapchain);
+    dbg_log_destroy(pRenderer->_swapchain);
     cu_swapchain_images_destroy(pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
 
     if (swapchainInfo._nImages != pRenderer->_nSwapchainImages) {
@@ -62,7 +62,7 @@ CuResult cu_renderer_create(
     } else {
         cu_try_catch(create_headless_surface(&pRenderer->_surface));
     }
-    cu_log_create(pRenderer->_surface);
+    dbg_log_create(pRenderer->_surface);
 
     CuSwapchainInfo swapchainInfo = {};
     cu_try_catch(cu_vk_create_swapchain(
@@ -83,7 +83,7 @@ CuResult cu_renderer_create(
     cu_try_catch(create_frames(pRenderer->_pFramesInFlight, pRenderer->_nFramesInFlight));
 
     cu_try_catch(create_semaphore(&pRenderer->_timelineSemaphore, VK_SEMAPHORE_TYPE_TIMELINE, 0));
-    cu_log_create(pRenderer->_timelineSemaphore);
+    dbg_log_create(pRenderer->_timelineSemaphore);
 
     pRenderer->_pWindow = pWindow;
     pRenderer->_minSwapchainImages = pCreateInfo->minSwapchainImages;
@@ -93,7 +93,7 @@ CuResult cu_renderer_create(
     return CU_SUCCESS;
 
 FAIL:
-    cu_log_fail(result);
+    dbg_log_fail(result);
     cu_renderer_destroy(pRenderer);
     return result;
 }
@@ -107,15 +107,15 @@ void cu_renderer_destroy(CuRenderer* const pRenderer)
     vkDeviceWaitIdle(gContext._device);
 
     vkDestroySemaphore(gContext._device, pRenderer->_timelineSemaphore, nullptr);
-    cu_log_destroy(pRenderer->_timelineSemaphore);
+    dbg_log_destroy(pRenderer->_timelineSemaphore);
     destroy_frames(pRenderer->_pFramesInFlight, pRenderer->_nFramesInFlight);
     free(pRenderer->_pFramesInFlight);
     cu_swapchain_images_destroy(pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
     free(pRenderer->_pSwapchainImages);
     vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
-    cu_log_destroy(pRenderer->_swapchain);
+    dbg_log_destroy(pRenderer->_swapchain);
     vkDestroySurfaceKHR(gContext._instance, pRenderer->_surface, nullptr);
-    cu_log_destroy(pRenderer->_surface);
+    dbg_log_destroy(pRenderer->_surface);
 }
 
 CuResult cu_renderer_begin_frame(CuRenderer* const pRenderer, CuFrame** const ppFrame)

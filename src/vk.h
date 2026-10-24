@@ -17,7 +17,7 @@
     do {                                                                                           \
         const VkResult _result = (e);                                                              \
         if (_result != VK_SUCCESS) {                                                               \
-            cu_log_expect(e, _result);                                                             \
+            dbg_log_expect(e, _result);                                                            \
             return _result;                                                                        \
         }                                                                                          \
     } while (false)
@@ -27,7 +27,7 @@
     do {                                                                                           \
         const VkResult _result = (e);                                                              \
         if (_result != VK_SUCCESS) {                                                               \
-            cu_log_expect(e, _result);                                                             \
+            dbg_log_expect(e, _result);                                                            \
             return cu_vk_error(_result);                                                           \
         }                                                                                          \
     } while (false)
@@ -39,7 +39,7 @@
 #define vk_try_catch(e)                                                                            \
     result = (e);                                                                                  \
     if (result != VK_SUCCESS) {                                                                    \
-        cu_log_expect(e, result);                                                                  \
+        dbg_log_expect(e, result);                                                                 \
         goto FAIL;                                                                                 \
     }
 
@@ -52,7 +52,7 @@
         const VkResult _result = (e);                                                              \
         result = cu_vk_result(_result);                                                            \
         if (!cu_is_success(result)) {                                                              \
-            cu_log_expect(e, _result);                                                             \
+            dbg_log_expect(e, _result);                                                            \
             goto FAIL;                                                                             \
         }                                                                                          \
     } while (false)
@@ -88,7 +88,7 @@ static const char* const INSTANCE_EXTENSIONS[] = {
 #elif ON_WINDOWS
     "VK_KHR_win32_surface",
 #endif
-#if defined(CU_DEBUGGING)
+#if CU_DEBUGGING
     "VK_EXT_debug_utils",
 #endif
 };

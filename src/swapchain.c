@@ -1,8 +1,8 @@
 #include "swapchain.h"
 
+#include "debug.h"
 #include "enumerator.h"
 #include "g_context.h"
-#include "log.h"
 #include "result.h"
 #include "util.h"
 #include "vk.h"
@@ -75,7 +75,7 @@ static CuResult choose_surface_format(
         }
     }
 
-    cu_log_note(
+    dbg_log_note(
         "Chose surface format with format: 0x%X, and color space: 0x%X", pSurfaceFormat->format,
         pSurfaceFormat->colorSpace);
     return CU_SUCCESS;
@@ -104,7 +104,7 @@ static CuResult choose_present_mode(
         }
     }
 
-    cu_log_note("Chose present mode 0x%X", *pPresentMode);
+    dbg_log_note("Chose present mode 0x%X", *pPresentMode);
     return CU_SUCCESS;
 }
 
@@ -150,11 +150,11 @@ CuResult cu_vk_create_swapchain(
     };
     cu_try_vk(
         vkCreateSwapchainKHR(gContext._device, &createInfo, nullptr, &pSwapchainInfo->_handle));
-    cu_log_create(pSwapchainInfo->_handle);
+    dbg_log_create(pSwapchainInfo->_handle);
 
     cu_try_vk(vkGetSwapchainImagesKHR(
         gContext._device, pSwapchainInfo->_handle, &pSwapchainInfo->_nImages, nullptr));
-    cu_log_note(
+    dbg_log_note(
         "Swapchain %p was created with %u swapchain images", (void*)pSwapchainInfo->_handle,
         pSwapchainInfo->_nImages);
 

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(
     Cutl
-    VERSION 0.25.0.1
+    VERSION 0.25.0.2
     LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 23)
@@ -20,7 +20,7 @@ target_compile_options(cutl PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
 option(CUTL_DEBUGGING "Debugging" OFF)
 if(CUTL_DEBUGGING)
-    target_compile_definitions(cutl PRIVATE CU_DEBUGGING)
+    target_compile_definitions(cutl PRIVATE CU_DEBUGGING=1)
     target_compile_options(cutl PRIVATE -g)
 endif()
 

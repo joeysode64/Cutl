@@ -1,7 +1,7 @@
 #include "physical_device.h"
 
+#include "debug.h"
 #include "enumerator.h"
-#include "log.h"
 #include "result.h"
 #include "util.h"
 
@@ -204,25 +204,25 @@ CuResult choose_physical_device(
     for (uint32_t i = 0; i < physicalDevices.n; i++) {
         const VkPhysicalDevice contestant = physicalDevices.p[i];
 
-#if defined(CU_DEBUGGING)
+#if CU_DEBUGGING
         VkPhysicalDeviceProperties properties = {};
         vkGetPhysicalDeviceProperties(contestant, &properties);
-        cu_log_note("Querying device %p (%s):", (void*)contestant, properties.deviceName);
+        dbg_log_note("Querying device %p (%s):", (void*)contestant, properties.deviceName);
 #endif
 
         if (!is_physical_device_suitable(contestant)) {
-            cu_log_note("Device not suitable");
+            dbg_log_note("Device not suitable");
             continue;
         }
 
         uint32_t iQueueFamily = 0;
         if (!choose_queue_family(&iQueueFamily, instance, contestant)) {
-            cu_log_note("Device has no suitable queue family");
+            dbg_log_note("Device has no suitable queue family");
             continue;
         }
 
         const uint32_t newScore = grade_physical_device(contestant);
-        cu_log_note("Device was scored %u", newScore);
+        dbg_log_note("Device was scored %u", newScore);
         if (!found || newScore > bestScore) {
             *pPhysicalDeviceInfo = (PhysicalDeviceInfo){
                 .handle = contestant,
@@ -235,12 +235,12 @@ CuResult choose_physical_device(
     }
 
     if (found) {
-        cu_log_note(
+        dbg_log_note(
             "Chose device %p with queue family #%u", (void*)pPhysicalDeviceInfo->handle,
             pPhysicalDeviceInfo->iQueueFamily);
         return CU_SUCCESS;
     } else {
-        cu_log_note("No suitable devies found");
+        dbg_log_note("No suitable devies found");
         return cu_error(CU_ERROR_NO_VALID_DEVICE);
     }
 }

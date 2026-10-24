@@ -1,6 +1,6 @@
 #pragma once
 
-#include "log.h"
+#include "debug.h"
 #include "result.h"
 
 #include <errno.h>
@@ -106,7 +106,7 @@
     do {                                                                                           \
         const CuResult _result = (e);                                                              \
         if (!cu_is_success(_result)) {                                                             \
-            cu_log_expect(e, _result.v);                                                           \
+            dbg_log_expect(e, _result.v);                                                          \
             return _result;                                                                        \
         }                                                                                          \
     } while (false)
@@ -118,7 +118,7 @@
 #define cu_try_catch(e)                                                                            \
     result = (e);                                                                                  \
     if (!cu_is_success(result)) {                                                                  \
-        cu_log_expect(e, result.v);                                                                \
+        dbg_log_expect(e, result.v);                                                               \
         goto FAIL;                                                                                 \
     }
 

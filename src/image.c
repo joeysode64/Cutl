@@ -1,8 +1,8 @@
 #include "image.h"
 
 #include "allocation.h"
+#include "debug.h"
 #include "g_context.h"
-#include "log.h"
 #include "result.h"
 #include "util.h"
 #include "vk.h"
@@ -22,7 +22,7 @@ CuResult cu_image_create(
     CuResult result = CU_SUCCESS;
 
     cu_try_catch(create_image(&pImage->_image, w, h, (VkFormat)format, (VkImageUsageFlags)usage));
-    cu_log_create(pImage->_image);
+    dbg_log_create(pImage->_image);
 
     VkMemoryRequirements memoryRequirements = {};
     vkGetImageMemoryRequirements(gContext._device, pImage->_image, &memoryRequirements);
@@ -35,12 +35,12 @@ CuResult cu_image_create(
         pImage->_allocation._offset));
 
     cu_try_catch(create_image_view(&pImage->_imageView, pImage->_image, (VkFormat)format));
-    cu_log_create(pImage->_imageView);
+    dbg_log_create(pImage->_imageView);
 
     return CU_SUCCESS;
 
 FAIL:
-    cu_log_fail(result);
+    dbg_log_fail(result);
     cu_image_destroy(pImage, mode);
     return result;
 }
@@ -116,7 +116,7 @@ CuResult cu_png_load(
     return CU_SUCCESS;
 
 FAIL:
-    cu_log_fail(result);
+    dbg_log_fail(result);
     png_image_free(&image);
     return result;
 }
