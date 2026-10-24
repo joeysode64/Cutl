@@ -446,10 +446,12 @@ void cu_context_terminate()
     }
 
     if (gContext._instance != VK_NULL_HANDLE) {
+#if CU_DEBUGGING
         if (gContext._debugMessenger != VK_NULL_HANDLE) {
             fDestroyDebugMessenger(gContext._instance, gContext._debugMessenger, nullptr);
             dbg_log_destroy(gContext._debugMessenger);
         }
+#endif
         vkDestroyInstance(gContext._instance, nullptr);
         dbg_log_destroy(gContext._instance);
     }
