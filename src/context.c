@@ -16,8 +16,8 @@
 #include <vulkan/vulkan.h>
 
 #if CU_DEBUGGING
-#include <stdio.h>
-#include <stdlib.h>
+    #include <stdio.h>
+    #include <stdlib.h>
 
 /** @brief The callback for creating a debug messenger. */
 static PFN_vkCreateDebugUtilsMessengerEXT fCreateDebugMessenger = nullptr;

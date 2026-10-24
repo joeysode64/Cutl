@@ -21,12 +21,12 @@
 #define ANSI_RESET "\x1b[0m"
 
 #if CU_DEBUGGING
-#define dbg_log(fmt, ...) fprintf(stderr, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+    #define dbg_log(fmt, ...) fprintf(stderr, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
 #else
-#if CU_DEBUGGING
-#define CU_DEBUGGING 0
-#endif
-#define dbg_log(fmt, ...)
+    #if CU_DEBUGGING
+        #define CU_DEBUGGING 0
+    #endif
+    #define dbg_log(fmt, ...)
 #endif
 
 /**

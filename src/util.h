@@ -7,19 +7,19 @@
 #include <stdlib.h>
 
 #if defined(__APPLE__)
-#define ON_APPLE true
-#define ON_LINUX false
-#define ON_WINDOWS false
+    #define ON_APPLE true
+    #define ON_LINUX false
+    #define ON_WINDOWS false
 #elif defined(__linux__)
-#define ON_APPLE false
-#define ON_LINUX true
-#define ON_WINDOWS false
+    #define ON_APPLE false
+    #define ON_LINUX true
+    #define ON_WINDOWS false
 #elif defined(_WIN32)
-#define ON_APPLE false
-#define ON_LINUX false
-#define ON_WINDOWS true
+    #define ON_APPLE false
+    #define ON_LINUX false
+    #define ON_WINDOWS true
 #else
-#error "Unsupported OS"
+    #error "Unsupported OS"
 #endif
 
 /**

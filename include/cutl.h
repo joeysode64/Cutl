@@ -21,7 +21,7 @@
 #include "window.h"
 
 #ifdef CU_INCLUDE_MATH
-#include "mdef.h"
+    #include "mdef.h"
 #endif
 
 #define GLFW_INCLUDE_VULKAN
