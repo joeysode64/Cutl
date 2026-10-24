@@ -12,11 +12,11 @@
 #include <GLFW/glfw3.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 #include <vulkan/vulkan.h>
 
 #if CU_DEBUGGING
+#include <stdio.h>
 #include <stdlib.h>
 
 /** @brief The callback for creating a debug messenger. */
