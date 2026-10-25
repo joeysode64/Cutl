@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(
     Cutl
-    VERSION 0.25.2.0
+    VERSION 0.25.3.0
     LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 23)
@@ -75,9 +75,8 @@ endif()
 
 # Generate docs.
 
-option(CUTL_GEN_DOCS "Whether to build docs" OFF)
-if(CUTL_GEN_DOCS)
-    find_package(Doxygen REQUIRED)
+find_package(Doxygen)
+if(Doxygen_FOUND)
     set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/docs)
     set(DOXYGEN_EXTRACT_ALL YES)
     set(DOXYGEN_EXTRACT_PRIVATE YES)
