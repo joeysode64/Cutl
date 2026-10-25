@@ -21,32 +21,6 @@ constexpr VkExtent2D PREFERRED_HEADLESS_EXTENT = {
 };
 
 /**
- * @brief Returns the preferred extent clamped within the surface capabilities.
- * @param pCapabilities A pointer to the capabilities.
- * @param preferred The preferred extent.
- * @return The preferred extent clamped within the surface capabilities.
- */
-static VkExtent2D get_extent(
-    const VkSurfaceCapabilitiesKHR* const pCapabilities,
-    const VkExtent2D preferred)
-{
-    const bool isExtentDefined = (pCapabilities->currentExtent.width != UINT32_MAX) ||
-                                 (pCapabilities->currentExtent.height != UINT32_MAX);
-    if (isExtentDefined) {
-        return pCapabilities->currentExtent;
-    } else {
-        return (VkExtent2D){
-            .width = clamp(
-                preferred.width, pCapabilities->minImageExtent.width,
-                pCapabilities->maxImageExtent.width),
-            .height = clamp(
-                preferred.height, pCapabilities->minImageExtent.height,
-                pCapabilities->maxImageExtent.height),
-        };
-    }
-}
-
-/**
  * @brief Chooses a surface format for the surface.
  * @param [out] pSurfaceFormat A pointer to the surface format.
  * @param surface The surface handle.
@@ -108,6 +82,46 @@ static CuResult choose_present_mode(
     return CU_SUCCESS;
 }
 
+/**
+ * @brief Returns the preferred extent clamped within the surface capabilities.
+ * @param pCapabilities A pointer to the capabilities.
+ * @param preferred The preferred extent.
+ * @return The preferred extent clamped within the surface capabilities.
+ */
+static VkExtent2D get_extent(
+    const VkSurfaceCapabilitiesKHR* const pCapabilities,
+    const VkExtent2D preferred)
+{
+    const bool isExtentDefined = (pCapabilities->currentExtent.width != UINT32_MAX) ||
+                                 (pCapabilities->currentExtent.height != UINT32_MAX);
+    if (isExtentDefined) {
+        return pCapabilities->currentExtent;
+    } else {
+        return (VkExtent2D){
+            .width = clamp(
+                preferred.width, pCapabilities->minImageExtent.width,
+                pCapabilities->maxImageExtent.width),
+            .height = clamp(
+                preferred.height, pCapabilities->minImageExtent.height,
+                pCapabilities->maxImageExtent.height),
+        };
+    }
+}
+
+/**
+ * @brief Returns the number of swapchain images to request.
+ * @param minSwapchainImages The minimum number of swapchain images.
+ * @param pCapabilities A pointer to the surface capabilities.
+ * @return The number of swapchain images to request.
+ */
+static uint32_t get_n_swapchain_images(
+    const uint32_t minSwapchainImages,
+    const VkSurfaceCapabilitiesKHR* pCapabilities)
+{
+    const uint32_t n = max(minSwapchainImages, pCapabilities->minImageCount);
+    return (pCapabilities->maxImageCount == 0) ? n : min(n, pCapabilities->maxImageCount);
+}
+
 CuResult cu_vk_create_swapchain(
     CuSwapchainInfo* const pSwapchainInfo,
     const uint32_t minSwapchainImages,
@@ -126,8 +140,7 @@ CuResult cu_vk_create_swapchain(
                                      ? (VkExtent2D){.width = pWindow->_w, .height = pWindow->_h}
                                      : PREFERRED_HEADLESS_EXTENT;
     const VkExtent2D extent = get_extent(&capabilities, preferred);
-    const uint32_t nSwapchainImages =
-        clamp(minSwapchainImages, capabilities.minImageCount, capabilities.maxImageCount);
+    const uint32_t nSwapchainImages = get_n_swapchain_images(minSwapchainImages, &capabilities);
     const VkSwapchainCreateInfoKHR createInfo = {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         .pNext = nullptr,
