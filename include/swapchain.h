@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 /**
  * @brief A swapchain's information.
@@ -39,6 +40,7 @@ extern "C" {
  * @param minSwapchainImages The minimum number of swapchain images.
  * @param pWindow A pointer to the target window, or null for headless.
  * @param surface The surface handle.
+ * @param preferredPresentMode The preferred present mode.
  * @param oldSwapchain The old swapchain handle, or null for none.
  * @return The result of creating the swapchain.
  */
@@ -47,6 +49,7 @@ CuResult cu_vk_create_swapchain(
     uint32_t minSwapchainImages,
     const CuWindow* pWindow,
     VkSurfaceKHR surface,
+    VkPresentModeKHR preferredPresentMode,
     VkSwapchainKHR oldSwapchain);
 
 /**

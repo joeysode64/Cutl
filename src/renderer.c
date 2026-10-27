@@ -25,7 +25,7 @@ static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer)
     CuSwapchainInfo swapchainInfo = {};
     cu_try(cu_vk_create_swapchain(
         &swapchainInfo, pRenderer->_minSwapchainImages, pRenderer->_pWindow, pRenderer->_surface,
-        pRenderer->_swapchain));
+        pRenderer->_preferredPresentMode, pRenderer->_swapchain));
     dbg_log_create(swapchainInfo._handle);
 
     vkQueueWaitIdle(gContext._queue);
@@ -67,7 +67,7 @@ CuResult cu_renderer_create(
     CuSwapchainInfo swapchainInfo = {};
     cu_try_catch(cu_vk_create_swapchain(
         &swapchainInfo, pCreateInfo->minSwapchainImages, pWindow, pRenderer->_surface,
-        VK_NULL_HANDLE));
+        pCreateInfo->preferredPresentMode, VK_NULL_HANDLE));
     pRenderer->_swapchain = swapchainInfo._handle;
     pRenderer->_swapchainFormat = swapchainInfo._format;
     pRenderer->_swapchainExtent = swapchainInfo._extent;
@@ -87,6 +87,7 @@ CuResult cu_renderer_create(
 
     pRenderer->_pWindow = pWindow;
     pRenderer->_minSwapchainImages = pCreateInfo->minSwapchainImages;
+    pRenderer->_preferredPresentMode = pCreateInfo->preferredPresentMode;
     pRenderer->_frameCounter = (uint64_t)pRenderer->_nFramesInFlight - 1;
     pRenderer->_iSwapchainImage = 0;
 

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 typedef struct CuFrame_T CuFrame;
 
@@ -18,6 +19,8 @@ struct CuRenderer_T {
 
     uint32_t _minSwapchainImages; /**< The minimum number of swapchain images to
                                      create. */
+
+    VkPresentModeKHR _preferredPresentMode; /**< The preferred present mode. */
 
     struct CuSwapchainImage_T* _pSwapchainImages; /**< A pointer to the swapchain images. */
 
@@ -49,12 +52,17 @@ typedef struct CuRendererCreateInfo_T {
 
     size_t minSwapchainImages; /**< The minimum number of swapchain images.
                                   Default is 3. */
+
+    VkPresentModeKHR preferredPresentMode; /**< The preferred present mode. Default is
+                                              `VK_PRESENT_MODE_FIFO_KHR`, which is also the
+                                              fallback. */
 } CuRendererCreateInfo;
 
 /** @brief The default renderer create info. */
 constexpr CuRendererCreateInfo CU_DEFAULT_RENDERER_CREATE_INFO = {
     .maxFramesInFlight = 3,
     .minSwapchainImages = 3,
+    .preferredPresentMode = VK_PRESENT_MODE_FIFO_KHR,
 };
 
 #ifdef __cplusplus

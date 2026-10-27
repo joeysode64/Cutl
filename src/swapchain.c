@@ -7,6 +7,7 @@
 #include "util.h"
 #include "vk.h"
 #include "window.h"
+#include <vulkan/vulkan_core.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -59,12 +60,14 @@ static CuResult choose_surface_format(
  * @brief Chooses the present mode for the surface.
  * @param [out] pPresentMode A pointer to the present mode.
  * @param surface The surface handle.
+ * @param targetPresentMode The target present mode.
  * @return The result of choosing a present mode.
- * @note Chooses mailbox if present, falling back to FIFO.
+ * @note Chooses the target present mode if present, falls back to FIFO.
  */
 static CuResult choose_present_mode(
     VkPresentModeKHR* const pPresentMode,
-    const VkSurfaceKHR surface)
+    const VkSurfaceKHR surface,
+    const VkPresentModeKHR targetPresentMode)
 {
     Enumerator(VkPresentModeKHR) presentModes ENUMERATOR_AUTO_FREE = {};
     enumerate_vk(
@@ -72,8 +75,8 @@ static CuResult choose_present_mode(
 
     *pPresentMode = VK_PRESENT_MODE_FIFO_KHR;
     for (uint32_t i = 0; i < presentModes.n; i++) {
-        if (presentModes.p[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
-            *pPresentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+        if (presentModes.p[i] == targetPresentMode) {
+            *pPresentMode = targetPresentMode;
             break;
         }
     }
@@ -127,6 +130,7 @@ CuResult cu_vk_create_swapchain(
     const uint32_t minSwapchainImages,
     const CuWindow* const pWindow,
     const VkSurfaceKHR surface,
+    const VkPresentModeKHR preferredPresentMode,
     const VkSwapchainKHR oldSwapchain)
 {
     VkSurfaceCapabilitiesKHR capabilities = {};
@@ -135,7 +139,7 @@ CuResult cu_vk_create_swapchain(
     VkSurfaceFormatKHR surfaceFormat = {};
     cu_try(choose_surface_format(&surfaceFormat, surface));
     VkPresentModeKHR presentMode = 0;
-    cu_try(choose_present_mode(&presentMode, surface));
+    cu_try(choose_present_mode(&presentMode, surface, preferredPresentMode));
     const VkExtent2D preferred = (pWindow != nullptr)
                                      ? (VkExtent2D){.width = pWindow->_w, .height = pWindow->_h}
                                      : PREFERRED_HEADLESS_EXTENT;

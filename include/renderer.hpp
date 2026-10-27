@@ -6,6 +6,7 @@
 #include "wrapper.hpp"
 
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 namespace cu {
     /** @ref CuRenderer */
@@ -45,6 +46,13 @@ namespace cu {
             constexpr Builder& min_swapchain_images(const uint32_t n)
             {
                 minSwapchainImages = n;
+                return *this;
+            }
+
+            /** @ref CuRendererCreateInfo::preferredPresentMode */
+            constexpr Builder& preferred_present_mode(const VkPresentModeKHR x)
+            {
+                preferredPresentMode = x;
                 return *this;
             }
 
