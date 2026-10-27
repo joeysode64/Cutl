@@ -7,6 +7,7 @@
 #include "result.h"
 #include "util.h"
 #include "vk.h"
+#include <vulkan/vulkan_core.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -136,7 +137,7 @@ static VkResult create_instance(const CuContextCreateInfo* const pCreateInfo)
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pNext = nullptr,
 #if ON_APPLE
-        .flags = VK_INSTANCE_CREATE_ENUMERATION_PORTABILITY_BIT_KHR,
+        .flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
 #else
         .flags = 0,
 #endif
