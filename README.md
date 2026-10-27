@@ -104,7 +104,7 @@ Before version 1.0:
 - ~~Add image loading/saving (`libpng`)~~
 - ~~Add swapchain recreation~~
 - Add the ability for users to use their own physical device and swapchain format/present mode judge functions
-- Add the ability to include custom extensions
+- ~~Add the ability to include custom extensions~~
 - Add template shaders
 - Finish C++ wrapper
 
