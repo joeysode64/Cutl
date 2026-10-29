@@ -1,7 +1,6 @@
 #pragma once
 
 #include "result.h"
-#include "swapchain.h"
 #include "window.h"
 
 #include <stddef.h>
@@ -12,6 +11,15 @@
 typedef struct CuFrame_T CuFrame;
 
 typedef struct CuRenderer_T CuRenderer;
+
+/** @brief A swapchain image. */
+typedef struct CuSwapchainImage_T {
+    VkImage _image; /**< The image handle. */
+
+    VkImageView _imageView; /**< The image view handle. */
+
+    VkSemaphore _renderFinished; /**< The "render finished" semaphore handle. */
+} CuSwapchainImage;
 
 /** @brief A renderer. */
 struct CuRenderer_T {

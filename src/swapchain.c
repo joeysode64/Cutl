@@ -125,7 +125,7 @@ static uint32_t get_n_swapchain_images(
     return (pCapabilities->maxImageCount == 0) ? n : min(n, pCapabilities->maxImageCount);
 }
 
-CuResult cu_vk_create_swapchain(
+CuResult create_swapchain(
     CuSwapchainInfo* const pSwapchainInfo,
     const uint32_t minSwapchainImages,
     const CuWindow* const pWindow,
@@ -179,36 +179,4 @@ CuResult cu_vk_create_swapchain(
     pSwapchainInfo->_extent = extent;
 
     return CU_SUCCESS;
-}
-
-CuResult cu_swapchain_images_create(
-    CuSwapchainImage* const pSwapchainImages,
-    uint32_t nSwapchainImages,
-    const VkSwapchainKHR swapchain,
-    const VkFormat format)
-{
-    VkImage images[nSwapchainImages];
-    cu_try_vk(vkGetSwapchainImagesKHR(gContext._device, swapchain, &nSwapchainImages, images));
-
-    for (uint32_t i = 0; i < nSwapchainImages; i++) {
-        CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
-
-        cu_try(create_image_view(&pSwapchainImage->_imageView, images[i], format));
-        cu_try(create_semaphore(&pSwapchainImage->_renderFinished, VK_SEMAPHORE_TYPE_BINARY, 0));
-        pSwapchainImage->_image = images[i];
-    }
-
-    return CU_SUCCESS;
-}
-
-void cu_swapchain_images_destroy(
-    CuSwapchainImage* const pSwapchainImages,
-    const uint32_t nSwapchainImages)
-{
-    for (uint32_t i = 0; i < nSwapchainImages; i++) {
-        const CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
-
-        vkDestroyImageView(gContext._device, pSwapchainImage->_imageView, nullptr);
-        vkDestroySemaphore(gContext._device, pSwapchainImage->_renderFinished, nullptr);
-    }
 }
