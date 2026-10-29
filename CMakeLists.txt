@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(
     Cutl
-    VERSION 0.26.0.0
+    VERSION 0.26.0.1
     LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 23)
@@ -11,12 +11,18 @@ find_package(glfw3 REQUIRED)
 find_package(Vulkan REQUIRED)
 find_package(PNG 1.6 REQUIRED)
 
+configure_file(${CMAKE_SOURCE_DIR}/include/info.h.in ${CMAKE_BINARY_DIR}/generated/info.h @ONLY)
+
 # Build library.
 
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.c)
 add_library(cutl ${SOURCES})
-
 target_compile_options(cutl PRIVATE -Wall -Wextra -Wpedantic -Werror)
+target_link_libraries(cutl PUBLIC glfw Vulkan::Vulkan PNG::PNG)
+target_include_directories(cutl PUBLIC ${CMAKE_BINARY_DIR}/generated)
+target_include_directories(cutl PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+# Debugging option.
 
 option(CUTL_DEBUGGING "Debugging" OFF)
 if(CUTL_DEBUGGING)
@@ -24,12 +30,16 @@ if(CUTL_DEBUGGING)
     target_compile_options(cutl PRIVATE -g)
 endif()
 
-target_link_libraries(cutl PUBLIC glfw Vulkan::Vulkan PNG::PNG)
+# Generate docs.
 
-configure_file(${CMAKE_SOURCE_DIR}/include/info.h.in ${CMAKE_BINARY_DIR}/generated/info.h @ONLY)
-
-target_include_directories(cutl PUBLIC ${CMAKE_BINARY_DIR}/generated)
-target_include_directories(cutl PUBLIC ${CMAKE_SOURCE_DIR}/include)
+find_package(Doxygen)
+if(Doxygen_FOUND)
+    set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/docs)
+    set(DOXYGEN_EXTRACT_ALL YES)
+    set(DOXYGEN_EXTRACT_PRIVATE YES)
+    set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
+    doxygen_add_docs(docs include src README.md)
+endif()
 
 # Compile tests.
 
@@ -39,11 +49,8 @@ foreach(test_file ${TEST_SOURCES})
     get_filename_component(test_name ${test_file} NAME_WE)
 
     add_executable(${test_name} ${test_file})
-
     target_compile_options(${test_name} PRIVATE -Wall -Wextra -Wpedantic -Werror -g)
-
     target_link_libraries(${test_name} PRIVATE cutl)
-
     target_include_directories(${test_name} PRIVATE ${CMAKE_SOURCE_DIR}/include)
 endforeach()
 
@@ -71,15 +78,4 @@ if(COMPILED_SHADERS)
         get_filename_component(test_name ${test_file} NAME_WE)
         add_dependencies(${test_name} test_shaders)
     endforeach()
-endif()
-
-# Generate docs.
-
-find_package(Doxygen)
-if(Doxygen_FOUND)
-    set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/docs)
-    set(DOXYGEN_EXTRACT_ALL YES)
-    set(DOXYGEN_EXTRACT_PRIVATE YES)
-    set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
-    doxygen_add_docs(docs include src README.md)
 endif()
