@@ -14,26 +14,24 @@
 #include <vulkan/vulkan.h>
 
 /**
- * @brief Creates the swapchain images.
- * @param [out] pSwapchainImages A pointer to the swapchain images.
- * @param nSwapchainImages The number of swapchain images.
- * @param swapchain The swapchain handle.
- * @param format The swapchain's format.
- * @return The result of creating the swapchain images.
+ * @brief Creates the renderer's swapchain images.
+ * @param [in, out] pRenderer A pointer to the renderer.
+ * @return The result of creating the renderer's swapchain images.
+ * @note Requires the renderer's swapchain info to be set.
  */
-static CuResult renderer_create_swapchain_images(
-    CuSwapchainImage* pSwapchainImages,
-    uint32_t nSwapchainImages,
-    const VkSwapchainKHR swapchain,
-    const VkFormat format)
+static CuResult renderer_create_swapchain_images(CuRenderer* pRenderer)
 {
-    VkImage images[nSwapchainImages];
-    cu_try_vk(vkGetSwapchainImagesKHR(gContext._device, swapchain, &nSwapchainImages, images));
+    allocate_n(pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
 
-    for (uint32_t i = 0; i < nSwapchainImages; i++) {
-        CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
+    VkImage images[pRenderer->_nSwapchainImages];
+    cu_try_vk(vkGetSwapchainImagesKHR(
+        gContext._device, pRenderer->_swapchain, &pRenderer->_nSwapchainImages, images));
 
-        cu_try(create_image_view(&pSwapchainImage->_imageView, images[i], format));
+    for (uint32_t i = 0; i < pRenderer->_nSwapchainImages; i++) {
+        CuSwapchainImage* const pSwapchainImage = &pRenderer->_pSwapchainImages[i];
+
+        cu_try(create_image_view(
+            &pSwapchainImage->_imageView, images[i], pRenderer->_swapchainFormat));
         cu_try(create_semaphore(&pSwapchainImage->_renderFinished, VK_SEMAPHORE_TYPE_BINARY, 0));
         pSwapchainImage->_image = images[i];
     }
@@ -46,16 +44,16 @@ static CuResult renderer_create_swapchain_images(
  * @param [in, out] pSwapchainImages A pointer to the swapchain images.
  * @param nSwapchainImages The number of swapchain images.
  */
-static void renderer_destroy_swapchain_images(
-    CuSwapchainImage* pSwapchainImages,
-    uint32_t nSwapchainImages)
+static void renderer_destroy_swapchain_images(CuRenderer* pRenderer)
 {
-    for (uint32_t i = 0; i < nSwapchainImages; i++) {
-        const CuSwapchainImage* const pSwapchainImage = &pSwapchainImages[i];
+    for (uint32_t i = 0; i < pRenderer->_nSwapchainImages; i++) {
+        const CuSwapchainImage* const pSwapchainImage = &pRenderer->_pSwapchainImages[i];
 
         vkDestroyImageView(gContext._device, pSwapchainImage->_imageView, nullptr);
         vkDestroySemaphore(gContext._device, pSwapchainImage->_renderFinished, nullptr);
     }
+
+    free(pRenderer->_pSwapchainImages);
 }
 
 /**
@@ -76,21 +74,14 @@ static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer)
     vkQueueWaitIdle(gContext._queue);
     vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
     dbg_log_destroy(pRenderer->_swapchain);
-    renderer_destroy_swapchain_images(pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
-
-    if (swapchainInfo._nImages != pRenderer->_nSwapchainImages) {
-        free(pRenderer->_pSwapchainImages);
-        allocate_n(pRenderer->_pSwapchainImages, swapchainInfo._nImages);
-    }
+    renderer_destroy_swapchain_images(pRenderer);
 
     pRenderer->_swapchain = swapchainInfo._handle;
     pRenderer->_swapchainFormat = swapchainInfo._format;
     pRenderer->_swapchainExtent = swapchainInfo._extent;
     pRenderer->_nSwapchainImages = swapchainInfo._nImages;
 
-    cu_try(renderer_create_swapchain_images(
-        pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages, pRenderer->_swapchain,
-        pRenderer->_swapchainFormat));
+    cu_try(renderer_create_swapchain_images(pRenderer));
 
     return CU_SUCCESS;
 }
@@ -117,11 +108,7 @@ CuResult cu_renderer_create(
     pRenderer->_swapchainFormat = swapchainInfo._format;
     pRenderer->_swapchainExtent = swapchainInfo._extent;
     pRenderer->_nSwapchainImages = swapchainInfo._nImages;
-
-    allocate_n(pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
-    cu_try_catch(renderer_create_swapchain_images(
-        pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages, pRenderer->_swapchain,
-        pRenderer->_swapchainFormat));
+    cu_try_catch(renderer_create_swapchain_images(pRenderer));
 
     pRenderer->_nFramesInFlight = pCreateInfo->maxFramesInFlight;
     allocate_n(pRenderer->_pFramesInFlight, pRenderer->_nFramesInFlight);
@@ -156,8 +143,7 @@ void cu_renderer_destroy(CuRenderer* const pRenderer)
     dbg_log_destroy(pRenderer->_timelineSemaphore);
     destroy_frames(pRenderer->_pFramesInFlight, pRenderer->_nFramesInFlight);
     free(pRenderer->_pFramesInFlight);
-    renderer_destroy_swapchain_images(pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
-    free(pRenderer->_pSwapchainImages);
+    renderer_destroy_swapchain_images(pRenderer);
     vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
     dbg_log_destroy(pRenderer->_swapchain);
     vkDestroySurfaceKHR(gContext._instance, pRenderer->_surface, nullptr);
