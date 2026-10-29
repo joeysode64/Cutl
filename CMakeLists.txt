@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(
     Cutl
-    VERSION 0.26.1.1
+    VERSION 0.26.1.2
     LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 23)
@@ -11,9 +11,9 @@ find_package(glfw3 REQUIRED)
 find_package(Vulkan REQUIRED)
 find_package(PNG 1.6 REQUIRED)
 
-configure_file(${CMAKE_SOURCE_DIR}/include/info.h.in ${CMAKE_BINARY_DIR}/generated/info.h @ONLY)
-
 # Build library.
+
+configure_file(${CMAKE_SOURCE_DIR}/include/info.h.in ${CMAKE_BINARY_DIR}/generated/info.h @ONLY)
 
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.c)
 add_library(cutl ${SOURCES})
