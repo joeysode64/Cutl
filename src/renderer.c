@@ -144,7 +144,7 @@ static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer)
 
 CuResult cu_renderer_create(
     CuRenderer* const pRenderer,
-    const CuRendererCreateInfo* pCreateInfo,
+    const CuRendererCreateInfo* const pCreateInfo,
     const CuWindow* const pWindow)
 {
     CuResult result = CU_SUCCESS;

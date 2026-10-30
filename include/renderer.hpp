@@ -114,13 +114,13 @@ namespace cu {
         }
 
         /** @ref cu_renderer_start_rendering() */
-        inline void start_rendering(VkCommandBuffer commandBuffer)
+        inline void start_rendering(const VkCommandBuffer commandBuffer)
         {
             return cu_renderer_start_rendering(this, commandBuffer);
         }
 
         /** @ref cu_renderer_end_rendering() */
-        inline void end_rendering(VkCommandBuffer commandBuffer)
+        inline void end_rendering(const VkCommandBuffer commandBuffer)
         {
             return cu_renderer_end_rendering(this, commandBuffer);
         }

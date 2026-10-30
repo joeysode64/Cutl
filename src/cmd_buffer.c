@@ -52,12 +52,12 @@ void cu_cmd_write_push_constants(
 }
 
 void cu_cmd_buffer_copy(
-    VkCommandBuffer commandBuffer,
-    VkBuffer dst,
-    size_t oDst,
-    VkBuffer src,
-    size_t oSrc,
-    size_t z)
+    const VkCommandBuffer commandBuffer,
+    const VkBuffer dst,
+    const size_t oDst,
+    const VkBuffer src,
+    const size_t oSrc,
+    const size_t z)
 {
     const VkBufferCopy2 region = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_COPY_2,

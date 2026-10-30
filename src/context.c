@@ -376,7 +376,7 @@ CuContext* cu_context_get()
     return &gContext;
 }
 
-CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo)
+CuResult cu_context_init(const CuContextCreateInfo* const pCreateInfo)
 {
 #if CU_DEBUGGING
     atexit(&context_unterminated_warn);

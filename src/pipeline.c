@@ -9,7 +9,7 @@
 
 CuResult cu_pipeline_layout_create(
     CuPipelineLayout* const pPipelineLayout,
-    const CuPipelineLayoutCreateInfo* pCreateInfo)
+    const CuPipelineLayoutCreateInfo* const pCreateInfo)
 {
     const VkPushConstantRange pushConstantRange = {
         .stageFlags = VK_SHADER_STAGE_ALL,
@@ -36,7 +36,7 @@ void cu_pipeline_layout_destroy(const CuPipelineLayout pipelineLayout)
 
 CuResult cu_compute_pipeline_create(
     CuGraphicsPipeline* const pComputePipeline,
-    CuPipelineLayout pipelineLayout,
+    const CuPipelineLayout pipelineLayout,
     const uint32_t* const pCode,
     const size_t n)
 {

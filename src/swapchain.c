@@ -118,7 +118,7 @@ static VkExtent2D get_extent(
  */
 static uint32_t get_n_swapchain_images(
     const uint32_t minSwapchainImages,
-    const VkSurfaceCapabilitiesKHR* pCapabilities)
+    const VkSurfaceCapabilitiesKHR* const pCapabilities)
 {
     const uint32_t n = max(minSwapchainImages, pCapabilities->minImageCount);
     return (pCapabilities->maxImageCount == 0) ? n : min(n, pCapabilities->maxImageCount);

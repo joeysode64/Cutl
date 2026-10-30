@@ -18,7 +18,7 @@
  * @param z The size of the allocation.
  * @return Whetehr the allocation will fit in the arena slot.
  */
-static bool does_arena_slot_have_room(const CuArena* pArena, size_t i, size_t z)
+static bool does_arena_slot_have_room(const CuArena* pArena, const size_t i, const size_t z)
 {
     const CuArenaSlot* const pSlot = &pArena->_slots[i];
     return (pSlot->_memory == VK_NULL_HANDLE) || (pSlot->_used + z < pArena->_size);
@@ -30,7 +30,7 @@ static bool does_arena_slot_have_room(const CuArena* pArena, size_t i, size_t z)
  * @param i The index of the arena slot and memory type.
  * @return The result of the allocation.
  */
-static CuResult allocate_slot(CuArena* pArena, size_t i)
+static CuResult allocate_slot(CuArena*const  pArena, const size_t i)
 {
     CuArenaSlot* const pSlot = &pArena->_slots[i];
 

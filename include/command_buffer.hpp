@@ -13,8 +13,8 @@ namespace cu {
      * @param graphicsPipeline The graphics pipeline.
      */
     inline void cmd_bind_graphics_pipeline(
-        VkCommandBuffer commandBuffer,
-        CuGraphicsPipeline graphicsPipeline)
+        const VkCommandBuffer commandBuffer,
+        const CuGraphicsPipeline graphicsPipeline)
     {
         cu_cmd_bind_graphics_pipeline(commandBuffer, graphicsPipeline);
     }
@@ -28,11 +28,11 @@ namespace cu {
      * @param iFirstInstance The index of the first instance.
      */
     inline void cmd_draw(
-        VkCommandBuffer commandBuffer,
-        uint32_t nVertices,
-        uint32_t iFirstVertex,
-        uint32_t nInstances,
-        uint32_t iFirstInstance)
+        const VkCommandBuffer commandBuffer,
+        const uint32_t nVertices,
+        const uint32_t iFirstVertex,
+        const uint32_t nInstances,
+        const uint32_t iFirstInstance)
     {
         cu_cmd_draw(commandBuffer, nVertices, iFirstVertex, nInstances, iFirstInstance);
     }
@@ -43,8 +43,8 @@ namespace cu {
      * @param computePipeline The graphics pipeline.
      */
     inline void cmd_bind_compute_pipeline(
-        VkCommandBuffer commandBuffer,
-        CuComputePipeline computePipeline)
+        const VkCommandBuffer commandBuffer,
+        const CuComputePipeline computePipeline)
     {
         cu_cmd_bind_compute_pipeline(commandBuffer, computePipeline);
     }
@@ -56,7 +56,7 @@ namespace cu {
      * @param y The number of local workgroups in Y.
      * @param z The number of local workgroups in Z.
      */
-    inline void cmd_dispatch(VkCommandBuffer commandBuffer, uint32_t x, uint32_t y, uint32_t z)
+    inline void cmd_dispatch(const VkCommandBuffer commandBuffer, const uint32_t x, const uint32_t y, const uint32_t z)
     {
         cu_cmd_dispatch(commandBuffer, x, y, z);
     }
@@ -70,11 +70,11 @@ namespace cu {
      * @param o The offset to write the push constants to.
      */
     inline void cmd_write_push_constants(
-        VkCommandBuffer commandBuffer,
-        CuPipelineLayout pipelineLayout,
-        const void* p,
-        size_t z,
-        size_t o)
+        const VkCommandBuffer commandBuffer,
+        const CuPipelineLayout pipelineLayout,
+        const void*const  p,
+        const size_t z,
+        const size_t o)
     {
         cu_cmd_write_push_constants(commandBuffer, pipelineLayout, p, z, o);
     }
@@ -89,12 +89,12 @@ namespace cu {
      * @param z The size of the data to copy.
      */
     inline void cmd_buffer_copy(
-        VkCommandBuffer commandBuffer,
-        VkBuffer dst,
-        size_t oDst,
-        VkBuffer src,
-        size_t oSrc,
-        size_t z)
+        const VkCommandBuffer commandBuffer,
+        const VkBuffer dst,
+        const size_t oDst,
+        const VkBuffer src,
+        const size_t oSrc,
+        const size_t z)
     {
         cu_cmd_buffer_copy(commandBuffer, dst, oDst, src, oSrc, z);
     }
@@ -111,14 +111,14 @@ namespace cu {
      * @param newLayout The layout to transition the image to.
      */
     inline void cmd_image_barrier(
-        VkCommandBuffer commandBuffer,
-        VkImage image,
-        VkPipelineStageFlags2 srcStageMask,
-        VkAccessFlags2 srcAccessMask,
-        VkPipelineStageFlags2 dstStageMask,
-        VkAccessFlags2 dstAccessMask,
-        VkImageLayout oldLayout,
-        VkImageLayout newLayout)
+        const VkCommandBuffer commandBuffer,
+        const VkImage image,
+        const VkPipelineStageFlags2 srcStageMask,
+        const VkAccessFlags2 srcAccessMask,
+        const VkPipelineStageFlags2 dstStageMask,
+        const VkAccessFlags2 dstAccessMask,
+        const VkImageLayout oldLayout,
+        const VkImageLayout newLayout)
     {
         cu_cmd_image_barrier(
             commandBuffer, image, srcStageMask, srcAccessMask, dstStageMask, dstAccessMask,
@@ -133,10 +133,10 @@ namespace cu {
      * @param color The color to fill the image with.
      */
     inline void cmd_image_fill(
-        VkCommandBuffer commandBuffer,
-        VkImage image,
-        VkImageLayout layout,
-        CuRGBA color)
+        const VkCommandBuffer commandBuffer,
+        const VkImage image,
+        const VkImageLayout layout,
+        const CuRGBA color)
     {
         cu_cmd_image_fill(commandBuffer, image, layout, color);
     }
@@ -152,13 +152,13 @@ namespace cu {
      * @param oSrc The read offset.
      */
     inline void cmd_image_copy_from_buffer(
-        VkCommandBuffer commandBuffer,
-        VkImage image,
-        VkImageLayout layout,
-        uint32_t w,
-        uint32_t h,
-        VkBuffer src,
-        size_t oSrc)
+        const VkCommandBuffer commandBuffer,
+        const VkImage image,
+        const VkImageLayout layout,
+        const uint32_t w,
+        const uint32_t h,
+        const VkBuffer src,
+        const size_t oSrc)
     {
         cu_cmd_image_copy_from_buffer(commandBuffer, image, layout, w, h, src, oSrc);
     }
@@ -170,7 +170,7 @@ namespace cu {
      * @note Sampled images are at binding 0, samplers at 1 and storage images at 2
      * of set 0.
      */
-    inline void cmd_bind_descriptors(VkCommandBuffer commandBuffer, CuPipelineLayout pipelineLayout)
+    inline void cmd_bind_descriptors(const VkCommandBuffer commandBuffer, const CuPipelineLayout pipelineLayout)
     {
         cu_cmd_bind_descriptors(commandBuffer, pipelineLayout);
     }

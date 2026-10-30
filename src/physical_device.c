@@ -32,7 +32,7 @@ static uint32_t get_memory_types(
 }
 
 /** @brief Returns whether the physical device supports all the extensions. */
-static bool does_physical_device_support_extensions(VkPhysicalDevice physicalDevice)
+static bool does_physical_device_support_extensions(const VkPhysicalDevice physicalDevice)
 {
     Enumerator(VkExtensionProperties) extensions ENUMERATOR_AUTO_FREE = {};
     enumerate(extensions, false, vkEnumerateDeviceExtensionProperties, physicalDevice, nullptr);
@@ -54,7 +54,7 @@ static bool does_physical_device_support_extensions(VkPhysicalDevice physicalDev
 
 /** @brief Returns whether the physical device supports all the required
  * features. */
-static bool does_physical_device_support_features(VkPhysicalDevice physicalDevice)
+static bool does_physical_device_support_features(const VkPhysicalDevice physicalDevice)
 {
     VkPhysicalDeviceVulkan14Features features1_4 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
@@ -140,7 +140,7 @@ static bool choose_queue_family(
 }
 
 /** @brief Returns a score for the physical device. A higher value is better. */
-static uint32_t grade_physical_device(VkPhysicalDevice physicalDevice)
+static uint32_t grade_physical_device(const VkPhysicalDevice physicalDevice)
 {
     uint32_t score = 0;
     VkPhysicalDeviceProperties properties = {};
@@ -157,7 +157,7 @@ static uint32_t grade_physical_device(VkPhysicalDevice physicalDevice)
 }
 
 /** @brief Returns the physical device's memory type info. */
-static CuPhysicalDeviceMemoryInfo get_physical_device_memory_info(VkPhysicalDevice physicalDevice)
+static CuPhysicalDeviceMemoryInfo get_physical_device_memory_info(const VkPhysicalDevice physicalDevice)
 {
     VkPhysicalDeviceMemoryProperties memoryProperties = {};
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);

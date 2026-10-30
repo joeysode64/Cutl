@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string.h>
-
 namespace cu {
     /** @brief A wrapper for a Cutl C structure. */
     template <typename T> class Wrapper : protected T {
