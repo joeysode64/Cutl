@@ -195,7 +195,13 @@ void cu_cmd_bind_descriptors(
     };
     for (size_t i = 0; i < sizeof(bindPoints) / sizeof(bindPoints[0]); i++) {
         vkCmdBindDescriptorSets(
-            commandBuffer, bindPoints[i], (VkPipelineLayout)pipelineLayout, 0, 1,
-            &gContext._descriptorSet, 0, nullptr);
+            commandBuffer,
+            bindPoints[i],
+            (VkPipelineLayout)pipelineLayout,
+            0,
+            1,
+            &gContext._descriptorSet,
+            0,
+            nullptr);
     }
 }

@@ -50,7 +50,8 @@ static CuResult choose_surface_format(
     }
 
     dbg_log_note(
-        "Chose surface format with format: 0x%X, and color space: 0x%X", pSurfaceFormat->format,
+        "Chose surface format with format: 0x%X, and color space: 0x%X",
+        pSurfaceFormat->format,
         pSurfaceFormat->colorSpace);
     return CU_SUCCESS;
 }
@@ -101,10 +102,12 @@ static VkExtent2D get_extent(
     } else {
         return (VkExtent2D){
             .width = clamp(
-                preferred.width, pCapabilities->minImageExtent.width,
+                preferred.width,
+                pCapabilities->minImageExtent.width,
                 pCapabilities->maxImageExtent.width),
             .height = clamp(
-                preferred.height, pCapabilities->minImageExtent.height,
+                preferred.height,
+                pCapabilities->minImageExtent.height,
                 pCapabilities->maxImageExtent.height),
         };
     }
@@ -171,7 +174,8 @@ CuResult create_swapchain(
     cu_try_vk(vkGetSwapchainImagesKHR(
         gContext._device, pSwapchainInfo->_handle, &pSwapchainInfo->_nImages, nullptr));
     dbg_log_note(
-        "Swapchain %p was created with %u swapchain images", (void*)pSwapchainInfo->_handle,
+        "Swapchain %p was created with %u swapchain images",
+        (void*)pSwapchainInfo->_handle,
         pSwapchainInfo->_nImages);
 
     pSwapchainInfo->_format = surfaceFormat.format;

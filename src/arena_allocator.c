@@ -30,7 +30,7 @@ static bool does_arena_slot_have_room(const CuArena* pArena, const size_t i, con
  * @param i The index of the arena slot and memory type.
  * @return The result of the allocation.
  */
-static CuResult allocate_slot(CuArena*const  pArena, const size_t i)
+static CuResult allocate_slot(CuArena* const pArena, const size_t i)
 {
     CuArenaSlot* const pSlot = &pArena->_slots[i];
 
@@ -123,7 +123,11 @@ CuResult arena_allocate(
 
         if (does_arena_slot_have_room(pArena, i, pRequirements->size)) {
             return allocate_to_slot(
-                pAllocation, ppData, (CuArena*)pAllocator, i, pRequirements->size,
+                pAllocation,
+                ppData,
+                (CuArena*)pAllocator,
+                i,
+                pRequirements->size,
                 pRequirements->alignment);
         }
     }

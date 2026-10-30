@@ -157,7 +157,8 @@ static uint32_t grade_physical_device(const VkPhysicalDevice physicalDevice)
 }
 
 /** @brief Returns the physical device's memory type info. */
-static CuPhysicalDeviceMemoryInfo get_physical_device_memory_info(const VkPhysicalDevice physicalDevice)
+static CuPhysicalDeviceMemoryInfo get_physical_device_memory_info(
+    const VkPhysicalDevice physicalDevice)
 {
     VkPhysicalDeviceMemoryProperties memoryProperties = {};
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
@@ -236,7 +237,8 @@ CuResult choose_physical_device(
 
     if (found) {
         dbg_log_note(
-            "Chose device %p with queue family #%u", (void*)pPhysicalDeviceInfo->handle,
+            "Chose device %p with queue family #%u",
+            (void*)pPhysicalDeviceInfo->handle,
             pPhysicalDeviceInfo->iQueueFamily);
         return CU_SUCCESS;
     } else {

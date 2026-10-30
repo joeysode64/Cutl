@@ -123,8 +123,12 @@ static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer)
 
     CuSwapchainInfo swapchainInfo = {};
     cu_try(create_swapchain(
-        &swapchainInfo, pRenderer->_minSwapchainImages, pRenderer->_pWindow, pRenderer->_surface,
-        pRenderer->_preferredPresentMode, pRenderer->_swapchain));
+        &swapchainInfo,
+        pRenderer->_minSwapchainImages,
+        pRenderer->_pWindow,
+        pRenderer->_surface,
+        pRenderer->_preferredPresentMode,
+        pRenderer->_swapchain));
     dbg_log_create(swapchainInfo._handle);
 
     vkQueueWaitIdle(gContext._queue);
@@ -158,8 +162,12 @@ CuResult cu_renderer_create(
 
     CuSwapchainInfo swapchainInfo = {};
     cu_try_catch(create_swapchain(
-        &swapchainInfo, pCreateInfo->minSwapchainImages, pWindow, pRenderer->_surface,
-        pCreateInfo->preferredPresentMode, VK_NULL_HANDLE));
+        &swapchainInfo,
+        pCreateInfo->minSwapchainImages,
+        pWindow,
+        pRenderer->_surface,
+        pCreateInfo->preferredPresentMode,
+        VK_NULL_HANDLE));
     pRenderer->_swapchain = swapchainInfo._handle;
     pRenderer->_swapchainFormat = swapchainInfo._format;
     pRenderer->_swapchainExtent = swapchainInfo._extent;
@@ -222,8 +230,12 @@ CuResult cu_renderer_begin_frame(CuRenderer* const pRenderer, VkCommandBuffer* c
 
     // Get the next target swapchain image's index.
     const VkResult acquireResult = vkAcquireNextImageKHR(
-        gContext._device, pRenderer->_swapchain, TIMEOUT_NANOS, pFrame->_imageAvailable,
-        VK_NULL_HANDLE, &pRenderer->_iSwapchainImage);
+        gContext._device,
+        pRenderer->_swapchain,
+        TIMEOUT_NANOS,
+        pFrame->_imageAvailable,
+        VK_NULL_HANDLE,
+        &pRenderer->_iSwapchainImage);
     if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
         *pCommandBuffer = VK_NULL_HANDLE;
         return renderer_recreate_swapchain(pRenderer);

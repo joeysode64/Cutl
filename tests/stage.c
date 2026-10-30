@@ -80,7 +80,9 @@ int main()
 
     CuStaticBuffer vertexBuffer = {};
     query(cu_static_buffer_create(
-        &vertexBuffer, sizeof(vertices), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+        &vertexBuffer,
+        sizeof(vertices),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
         CU_DEDICATED_ALLOCATOR_MODE));
 
     CuStagingBuffer stagingBuffer = {};
@@ -92,8 +94,12 @@ int main()
     query(cu_task_create(&task));
     query(cu_task_begin(&task));
     cu_cmd_buffer_copy(
-        cu_task_get_command_buffer(&task), cu_buffer_get(&vertexBuffer), 0,
-        cu_buffer_get(&stagingBuffer), 0, sizeof(vertices));
+        cu_task_get_command_buffer(&task),
+        cu_buffer_get(&vertexBuffer),
+        0,
+        cu_buffer_get(&stagingBuffer),
+        0,
+        sizeof(vertices));
     query(cu_task_submit(&task));
     cu_task_await(&task, UINT64_MAX);
     cu_task_destroy(&task);

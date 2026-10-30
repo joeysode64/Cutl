@@ -56,7 +56,11 @@ namespace cu {
      * @param y The number of local workgroups in Y.
      * @param z The number of local workgroups in Z.
      */
-    inline void cmd_dispatch(const VkCommandBuffer commandBuffer, const uint32_t x, const uint32_t y, const uint32_t z)
+    inline void cmd_dispatch(
+        const VkCommandBuffer commandBuffer,
+        const uint32_t x,
+        const uint32_t y,
+        const uint32_t z)
     {
         cu_cmd_dispatch(commandBuffer, x, y, z);
     }
@@ -72,7 +76,7 @@ namespace cu {
     inline void cmd_write_push_constants(
         const VkCommandBuffer commandBuffer,
         const CuPipelineLayout pipelineLayout,
-        const void*const  p,
+        const void* const p,
         const size_t z,
         const size_t o)
     {
@@ -121,8 +125,14 @@ namespace cu {
         const VkImageLayout newLayout)
     {
         cu_cmd_image_barrier(
-            commandBuffer, image, srcStageMask, srcAccessMask, dstStageMask, dstAccessMask,
-            oldLayout, newLayout);
+            commandBuffer,
+            image,
+            srcStageMask,
+            srcAccessMask,
+            dstStageMask,
+            dstAccessMask,
+            oldLayout,
+            newLayout);
     }
 
     /**
@@ -170,7 +180,9 @@ namespace cu {
      * @note Sampled images are at binding 0, samplers at 1 and storage images at 2
      * of set 0.
      */
-    inline void cmd_bind_descriptors(const VkCommandBuffer commandBuffer, const CuPipelineLayout pipelineLayout)
+    inline void cmd_bind_descriptors(
+        const VkCommandBuffer commandBuffer,
+        const CuPipelineLayout pipelineLayout)
     {
         cu_cmd_bind_descriptors(commandBuffer, pipelineLayout);
     }

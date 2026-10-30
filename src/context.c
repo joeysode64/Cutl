@@ -410,12 +410,14 @@ CuResult cu_context_init(const CuContextCreateInfo* const pCreateInfo)
     dbg_log_create(gContext._queue);
 
     cu_try_catch_vk(create_descriptor_pool(
-        pCreateInfo->nSampledImageDescriptors, pCreateInfo->nSamplerDescriptors,
+        pCreateInfo->nSampledImageDescriptors,
+        pCreateInfo->nSamplerDescriptors,
         pCreateInfo->nStorageImageDescriptors));
     dbg_log_create(gContext._descriptorPool);
 
     cu_try_catch_vk(create_descriptor_set_layout(
-        pCreateInfo->nSampledImageDescriptors, pCreateInfo->nSamplerDescriptors,
+        pCreateInfo->nSampledImageDescriptors,
+        pCreateInfo->nSamplerDescriptors,
         pCreateInfo->nStorageImageDescriptors));
     dbg_log_create(gContext._descriptorSetLayout);
 

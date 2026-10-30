@@ -83,7 +83,9 @@ static const char* const INSTANCE_EXTENSIONS[] = {
     "VK_KHR_portability_enumeration",
     "VK_EXT_metal_surface",
 #elif ON_LINUX
-    "VK_KHR_xcb_surface", "VK_KHR_xlib_surface",     "VK_KHR_wayland_surface",
+    "VK_KHR_xcb_surface",
+    "VK_KHR_xlib_surface",
+    "VK_KHR_wayland_surface",
 #elif ON_WINDOWS
     "VK_KHR_win32_surface",
 #endif

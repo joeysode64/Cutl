@@ -28,11 +28,16 @@ CuResult cu_image_create(
     VkMemoryRequirements memoryRequirements = {};
     vkGetImageMemoryRequirements(gContext._device, pImage->_image, &memoryRequirements);
     cu_try_catch(mode_allocate(
-        &pImage->_allocation, nullptr, mode, &memoryRequirements,
+        &pImage->_allocation,
+        nullptr,
+        mode,
+        &memoryRequirements,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
 
     cu_try_catch_vk(vkBindImageMemory(
-        gContext._device, pImage->_image, pImage->_allocation._memory,
+        gContext._device,
+        pImage->_image,
+        pImage->_allocation._memory,
         pImage->_allocation._offset));
 
     cu_try_catch(create_image_view(&pImage->_imageView, pImage->_image, (VkFormat)format));
@@ -190,8 +195,12 @@ void cu_image_end_rendering(
 
     // Convert the image for its next use.
     cu_cmd_image_barrier(
-        commandBuffer, pImage->_image, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+        commandBuffer,
+        pImage->_image,
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+        VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
         VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, newLayout);
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        newLayout);
 }

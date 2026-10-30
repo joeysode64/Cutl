@@ -10,12 +10,12 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-CuResult create_surface(VkSurfaceKHR*const  pSurface, GLFWwindow*const  window)
+CuResult create_surface(VkSurfaceKHR* const pSurface, GLFWwindow* const window)
 {
     return cu_vk_result(glfwCreateWindowSurface(gContext._instance, window, nullptr, pSurface));
 }
 
-CuResult create_headless_surface(VkSurfaceKHR*const  pSurface)
+CuResult create_headless_surface(VkSurfaceKHR* const pSurface)
 {
     auto const fCreateHeadlessSurface = (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(
         gContext._instance, "vkCreateHeadlessSurfaceEXT");

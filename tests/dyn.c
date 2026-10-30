@@ -40,8 +40,11 @@ int main()
 
     CuDynamicBuffer vertexBuffer = {};
     query(cu_dynamic_buffer_create(
-        &vertexBuffer, CU_DEFAULT_RENDERER_CREATE_INFO.maxFramesInFlight, 3 * sizeof(vec2),
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, CU_DEDICATED_ALLOCATOR_MODE));
+        &vertexBuffer,
+        CU_DEFAULT_RENDERER_CREATE_INFO.maxFramesInFlight,
+        3 * sizeof(vec2),
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+        CU_DEDICATED_ALLOCATOR_MODE));
     float angle = 0.0F;
 
     while (!cu_window_should_close(&window)) {

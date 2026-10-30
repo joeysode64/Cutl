@@ -24,7 +24,10 @@ int main()
 
     CuDynamicBuffer buffer = {};
     query(cu_dynamic_buffer_create(
-        &buffer, 1, N * sizeof(float), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+        &buffer,
+        1,
+        N * sizeof(float),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
         CU_DEDICATED_ALLOCATOR_MODE));
 
     void* pData = nullptr;

@@ -40,8 +40,12 @@ int main()
 
     CuImage image = {};
     query(cu_image_create(
-        &image, w, h, VK_FORMAT_R8G8B8A8_SRGB,
-        VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, CU_DEDICATED_ALLOCATOR_MODE));
+        &image,
+        w,
+        h,
+        VK_FORMAT_R8G8B8A8_SRGB,
+        VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+        CU_DEDICATED_ALLOCATOR_MODE));
     cu_context_bind_sampled_image(&image, 0);
 
     CuSampler sampler = {};
@@ -58,16 +62,30 @@ int main()
     query(cu_task_create(&task));
     query(cu_task_begin(&task));
     cu_cmd_image_barrier(
-        cu_task_get_command_buffer(&task), image._image, VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
-        VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
+        cu_task_get_command_buffer(&task),
+        image._image,
+        VK_PIPELINE_STAGE_2_NONE,
+        VK_ACCESS_2_NONE,
+        VK_PIPELINE_STAGE_2_COPY_BIT,
+        VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     cu_cmd_image_copy_from_buffer(
-        cu_task_get_command_buffer(&task), image._image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, w, h,
-        cu_buffer_get(&stagingBuffer), 0);
+        cu_task_get_command_buffer(&task),
+        image._image,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        w,
+        h,
+        cu_buffer_get(&stagingBuffer),
+        0);
     cu_cmd_image_barrier(
-        cu_task_get_command_buffer(&task), image._image, VK_PIPELINE_STAGE_2_COPY_BIT,
-        VK_ACCESS_2_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
-        VK_ACCESS_2_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        cu_task_get_command_buffer(&task),
+        image._image,
+        VK_PIPELINE_STAGE_2_COPY_BIT,
+        VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+        VK_ACCESS_2_SHADER_READ_BIT,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     query(cu_task_submit(&task));
     cu_task_await(&task, UINT64_MAX);

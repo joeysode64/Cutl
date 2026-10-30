@@ -17,11 +17,11 @@ ReferenceAlignment: Left
 DerivePointerAlignment: false
 
 AlignAfterOpenBracket: AlwaysBreak
-BinPackParameters: OnePerLine
 AllowAllParametersOfDeclarationOnNextLine: false
-
 BreakAfterReturnType: None
 PenaltyReturnTypeOnItsOwnLine: 1000
+BinPackArguments: false
+BinPackParameters: false
 
 BreakConstructorInitializers: BeforeColon
 PackConstructorInitializers: NextLineOnly
