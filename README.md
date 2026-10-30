@@ -57,7 +57,7 @@ int main() {
         .nVert = vert.n,
         .pFrag = frag.data,
         .nFrag = frag.n,
-        .pFormats = (CuFormat[]){ cu_renderer_get_format(&renderer) },
+        .pFormats = (VkFormat[]){ cu_renderer_get_format(&renderer) },
         .nFormats = 1,
     };
     cu_graphics_pipeline_create(&graphicsPipeline, &graphicsPipelineCreateInfo, pipelineLayout);
@@ -69,17 +69,22 @@ int main() {
         cu_window_update(&window);
 
         // Get the command buffer for the next frame.
-        CuFrame* pFrame = nullptr;
-        cu_renderer_begin_frame(&renderer, &pFrame);
+        VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+        cu_renderer_begin_frame(&renderer, &commandBuffer);
+
+        // Will be set to null if the swapchain is resizing.
+        if (commandBuffer == VK_NULL_HANDLE) {
+            continue;
+        }
 
         // Begin rendering and draw the triangle.
-        cu_frame_begin_render(pFrame, &renderer);
-        cu_cmd_bind_graphics_pipeline(pFrame, graphicsPipeline);
-        cu_cmd_draw(pFrame, 3, 0, 1, 0);
+        cu_renderer_start_rendering(&renderer, commandBuffer);
+        cu_cmd_bind_graphics_pipeline(commandBuffer, graphicsPipeline);
+        cu_cmd_draw(commandBuffer, 3, 0, 1, 0);
 
         // Finish rendering and submit.
-        cu_frame_end_render(pFrame, &renderer);
-        cu_renderer_submit_frame(&renderer, pFrame);
+        cu_renderer_end_rendering(&renderer, commandBuffer);
+        cu_renderer_submit_frame(&renderer);
     }
 
     // Cleanup.
