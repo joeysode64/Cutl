@@ -1,4 +1,3 @@
-#define CU_INCLUDE_MATH
 #include "cutl.h"
 #include "test.h"
 

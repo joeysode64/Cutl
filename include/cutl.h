@@ -10,6 +10,7 @@
 #include "frame.h"
 #include "image.h"
 #include "info.h"
+#include "mdef.h"
 #include "pipeline.h"
 #include "renderer.h"
 #include "result.h"
@@ -19,10 +20,6 @@
 #include "task.h"
 #include "version.h"
 #include "window.h"
-
-#ifdef CU_INCLUDE_MATH
-    #include "mdef.h"
-#endif
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
