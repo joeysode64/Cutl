@@ -60,19 +60,19 @@ int main()
         memcpy(pData, vertices, sizeof(vertices));
         angle += 0.02F;
 
-        CuFrame* pFrame = nullptr;
-        query(cu_renderer_begin_frame(&renderer, &pFrame));
-        if (pFrame == nullptr) {
+        VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+        query(cu_renderer_begin_frame(&renderer, &commandBuffer));
+        if (commandBuffer == VK_NULL_HANDLE) {
             continue;
         }
 
-        cu_frame_begin_render(pFrame, &renderer);
-        cu_cmd_bind_graphics_pipeline(pFrame, graphicsPipeline);
-        cu_cmd_write_push_constants(pFrame, pipelineLayout, &address, sizeof(address), 0);
-        cu_cmd_draw(pFrame, 3, 0, 1, 0);
-        cu_frame_end_render(pFrame, &renderer);
+        cu_renderer_start_rendering(&renderer, commandBuffer);
+        cu_cmd_bind_graphics_pipeline(commandBuffer, graphicsPipeline);
+        cu_cmd_write_push_constants(commandBuffer, pipelineLayout, &address, sizeof(address), 0);
+        cu_cmd_draw(commandBuffer, 3, 0, 1, 0);
+        cu_renderer_end_rendering(&renderer, commandBuffer);
 
-        query(cu_renderer_submit_frame(&renderer, pFrame));
+        query(cu_renderer_submit_frame(&renderer));
     }
 
     cu_context_wait_for_idle();

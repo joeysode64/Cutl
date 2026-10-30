@@ -1,6 +1,7 @@
 #include "image.h"
 
 #include "allocation.h"
+#include "cmd_buffer.h"
 #include "debug.h"
 #include "g_context.h"
 #include "result.h"
@@ -119,4 +120,78 @@ FAIL:
     dbg_log_fail(result);
     png_image_free(&image);
     return result;
+}
+
+void cu_image_start_rendering(
+    const CuImage* const pImage,
+    const VkCommandBuffer commandBuffer,
+    const uint32_t w,
+    const uint32_t h)
+{
+    // Set the viewport and scissor.
+    const VkRect2D area = {
+        .offset =
+            {
+                .x = 0,
+                .y = 0,
+            },
+        .extent =
+            {
+                .width = w,
+                .height = h,
+            },
+    };
+    const VkViewport viewport = {
+        .x = 0.0F,
+        .y = (float)area.extent.height,
+        .width = (float)area.extent.width,
+        .height = -(float)area.extent.height,
+        .minDepth = 0.0F,
+        .maxDepth = 1.0F,
+    };
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &area);
+
+    // Begin rendering.
+    const VkRenderingAttachmentInfo colorAttachment = {
+        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+        .pNext = nullptr,
+        .imageView = pImage->_imageView,
+        .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .resolveMode = VK_RESOLVE_MODE_NONE,
+        .resolveImageView = VK_NULL_HANDLE,
+        .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .clearValue = {},
+    };
+    const VkRenderingInfo renderingInfo = {
+        .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .renderArea = area,
+        .layerCount = 1,
+        .viewMask = 0,
+        .colorAttachmentCount = 1,
+        .pColorAttachments = &colorAttachment,
+        .pDepthAttachment = nullptr,
+        .pStencilAttachment = nullptr,
+    };
+    vkCmdBeginRendering(commandBuffer, &renderingInfo);
+}
+
+void cu_image_end_rendering(
+    const CuImage* const pImage,
+    const VkCommandBuffer commandBuffer,
+    const VkImageLayout newLayout)
+{
+    // End the render.
+    vkCmdEndRendering(commandBuffer);
+
+    // Convert the image for its next use.
+    cu_cmd_image_barrier(
+        commandBuffer, pImage->_image, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+        VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, newLayout);
 }

@@ -6,7 +6,6 @@
 #include "wrapper.hpp"
 
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 namespace cu {
     /** @ref CuRenderer */
@@ -103,15 +102,27 @@ namespace cu {
         }
 
         /** @ref cu_renderer_begin_frame() */
-        inline Result begin_frame(CuFrame*& pFrame)
+        inline Result begin_frame(VkCommandBuffer& commandBuffer)
         {
-            return cu_renderer_begin_frame(this, &pFrame);
+            return cu_renderer_begin_frame(this, &commandBuffer);
         }
 
         /** @ref cu_renderer_submit_frame() */
-        inline Result submit_frame(CuFrame* pFrame)
+        inline Result submit_frame()
         {
-            return cu_renderer_submit_frame(this, pFrame);
+            return cu_renderer_submit_frame(this);
+        }
+
+        /** @ref cu_renderer_start_rendering() */
+        inline void start_rendering(VkCommandBuffer commandBuffer)
+        {
+            return cu_renderer_start_rendering(this, commandBuffer);
+        }
+
+        /** @ref cu_renderer_end_rendering() */
+        inline void end_rendering(VkCommandBuffer commandBuffer)
+        {
+            return cu_renderer_end_rendering(this, commandBuffer);
         }
 
         /** @ref cu_renderer_get_formats() */

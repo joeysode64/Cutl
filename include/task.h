@@ -34,31 +34,42 @@ void cu_task_destroy(CuTask* pTask);
 
 /**
  * @brief Begins the task for command insertion.
- * @param [in, out] pTask A pointer to the task.
+ * @param [in] pTask A pointer to the task.
  * @return The result of beginning the task.
  */
-CuResult cu_task_begin(CuTask* pTask);
+CuResult cu_task_begin(const CuTask* pTask);
 
 /**
  * @brief Ends the task's command insertions and submits it.
- * @param [in, out] pTask A pointer to the task.
+ * @param [in] pTask A pointer to the task.
  * @return The result of ending and submitting the task.
  */
-CuResult cu_task_submit(CuTask* pTask);
+CuResult cu_task_submit(const CuTask* pTask);
 
 /**
  * @brief Returns whether the task is currently running.
  * @param [in] pTask A pointer to the task.
  * @return Whether the task is currently running.
  */
-bool cu_task_is_running(CuTask* pTask);
+bool cu_task_is_running(const CuTask* pTask);
 
 /**
  * @brief Waits for the task to finish running, if it is.
  * @param [in] pTask A pointer to the task.
  * @param timeout The maximum number of nanoseconds to wait.
  */
-void cu_task_await(CuTask* pTask, uint64_t timeout);
+void cu_task_await(const CuTask* pTask, uint64_t timeout);
+
+/**
+ * @brief Returns the task's command buffer.
+ * @param [in] pTask A pointer to the task.
+ * @return The task's command buffer.
+ * @warning The command buffer is only open between `cu_task_begin` and `cu_task_submit`.
+ */
+inline static VkCommandBuffer cu_task_get_command_buffer(const CuTask* const pTask)
+{
+    return pTask->_commandBuffer;
+}
 
 #ifdef __cplusplus
 }

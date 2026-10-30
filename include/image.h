@@ -75,6 +75,31 @@ void cu_sampler_destroy(CuSampler* pSampler);
  */
 CuResult cu_png_load(void* pData, uint32_t* pW, uint32_t* pH, const char* path, png_uint_32 format);
 
+/**
+ * @brief Starts rendering to the image.
+ * @param [in] pImage A pointer to the image.
+ * @param commandBuffer The command buffer handle.
+ * @param w The image's width.
+ * @param h The image's height.
+ * @note The image's layout muse be color attachment optimal.
+ */
+void cu_image_start_rendering(
+    const CuImage* pImage,
+    VkCommandBuffer commandBuffer,
+    uint32_t w,
+    uint32_t h);
+
+/**
+ * @brief Ends the frame's current image render.
+ * @param [in] pImage A pointer to the image.
+ * @param commandBuffer The command buffer handle.
+ * @param newLayout The layout to leave the image in.
+ */
+void cu_image_end_rendering(
+    const CuImage* pImage,
+    VkCommandBuffer commandBuffer,
+    VkImageLayout newLayout);
+
 #ifdef __cplusplus
 }
 #endif

@@ -40,9 +40,10 @@ int main()
     query(cu_task_create(&task));
 
     query(cu_task_begin(&task));
-    cu_cmd_bind_compute_pipeline(&task, computePipeline);
-    cu_cmd_write_push_constants(&task, pipelineLayout, &address, sizeof(address), 0);
-    cu_cmd_dispatch(&task, 1, 1, 1);
+    cu_cmd_bind_compute_pipeline(cu_task_get_command_buffer(&task), computePipeline);
+    cu_cmd_write_push_constants(
+        cu_task_get_command_buffer(&task), pipelineLayout, &address, sizeof(address), 0);
+    cu_cmd_dispatch(cu_task_get_command_buffer(&task), 1, 1, 1);
     query(cu_task_submit(&task));
 
     cu_task_await(&task, 2'000'000'000);

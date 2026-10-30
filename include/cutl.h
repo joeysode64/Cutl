@@ -7,7 +7,6 @@
 #include "context.h"
 #include "dedicated_allocator.h"
 #include "dynamic_buffer.h"
-#include "frame.h"
 #include "image.h"
 #include "info.h"
 #include "mdef.h"

@@ -2,63 +2,57 @@
 
 #include "color.h"
 #include "g_context.h"
-#include "image.h"
 #include "pipeline.h"
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-/** @return The dereferenced command buffer. */
-#define deref(p) (*(VkCommandBuffer*)p)
-
 void cu_cmd_bind_graphics_pipeline(
-    const CuCmdBuffer commandBuffer,
+    const VkCommandBuffer commandBuffer,
     const CuGraphicsPipeline graphicsPipeline)
 {
-    vkCmdBindPipeline(
-        deref(commandBuffer), VK_PIPELINE_BIND_POINT_GRAPHICS, (VkPipeline)graphicsPipeline);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, (VkPipeline)graphicsPipeline);
 }
 
 void cu_cmd_draw(
-    const CuCmdBuffer commandBuffer,
+    const VkCommandBuffer commandBuffer,
     const uint32_t nVertices,
     const uint32_t iFirstVertex,
     const uint32_t nInstances,
     const uint32_t iFirstInstance)
 {
-    vkCmdDraw(deref(commandBuffer), nVertices, nInstances, iFirstVertex, iFirstInstance);
+    vkCmdDraw(commandBuffer, nVertices, nInstances, iFirstVertex, iFirstInstance);
 }
 
 void cu_cmd_bind_compute_pipeline(
-    const CuCmdBuffer commandBuffer,
+    const VkCommandBuffer commandBuffer,
     const CuComputePipeline computePipeline)
 {
-    vkCmdBindPipeline(
-        deref(commandBuffer), VK_PIPELINE_BIND_POINT_COMPUTE, (VkPipeline)computePipeline);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, (VkPipeline)computePipeline);
 }
 
 void cu_cmd_dispatch(
-    const CuCmdBuffer commandBuffer,
+    const VkCommandBuffer commandBuffer,
     const uint32_t x,
     const uint32_t y,
     const uint32_t z)
 {
-    vkCmdDispatch(deref(commandBuffer), x, y, z);
+    vkCmdDispatch(commandBuffer, x, y, z);
 }
 
 void cu_cmd_write_push_constants(
-    const CuCmdBuffer commandBuffer,
+    const VkCommandBuffer commandBuffer,
     const CuPipelineLayout pipelineLayout,
     const void* const p,
     const size_t z,
     const size_t o)
 {
     vkCmdPushConstants(
-        deref(commandBuffer), (VkPipelineLayout)pipelineLayout, VK_SHADER_STAGE_ALL, o, z, p);
+        commandBuffer, (VkPipelineLayout)pipelineLayout, VK_SHADER_STAGE_ALL, o, z, p);
 }
 
 void cu_cmd_buffer_copy(
-    CuCmdBuffer commandBuffer,
+    VkCommandBuffer commandBuffer,
     VkBuffer dst,
     size_t oDst,
     VkBuffer src,
@@ -80,12 +74,12 @@ void cu_cmd_buffer_copy(
         .regionCount = 1,
         .pRegions = &region,
     };
-    vkCmdCopyBuffer2(deref(commandBuffer), &copyInfo);
+    vkCmdCopyBuffer2(commandBuffer, &copyInfo);
 }
 
 void cu_cmd_image_barrier(
-    const CuCmdBuffer commandBuffer,
-    const CuImage* const pImage,
+    const VkCommandBuffer commandBuffer,
+    const VkImage image,
     const VkPipelineStageFlags2 srcStageMask,
     const VkAccessFlags2 srcAccessMask,
     const VkPipelineStageFlags2 dstStageMask,
@@ -111,7 +105,7 @@ void cu_cmd_image_barrier(
         .newLayout = newLayout,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = pImage->_image,
+        .image = image,
         .subresourceRange = subresourceRange,
     };
     const VkDependencyInfo dependencyInfo = {
@@ -125,12 +119,12 @@ void cu_cmd_image_barrier(
         .imageMemoryBarrierCount = 1,
         .pImageMemoryBarriers = &imageBarrier,
     };
-    vkCmdPipelineBarrier2(deref(commandBuffer), &dependencyInfo);
+    vkCmdPipelineBarrier2(commandBuffer, &dependencyInfo);
 }
 
 void cu_cmd_image_fill(
-    const CuCmdBuffer commandBuffer,
-    const CuImage* const pImage,
+    const VkCommandBuffer commandBuffer,
+    const VkImage image,
     const VkImageLayout layout,
     const CuRGBA color)
 {
@@ -151,13 +145,12 @@ void cu_cmd_image_fill(
         .layerCount = 1,
     };
     vkCmdClearColorImage(
-        deref(commandBuffer), pImage->_image, (VkImageLayout)layout, &clearColor, 1,
-        &subresourceRange);
+        commandBuffer, image, (VkImageLayout)layout, &clearColor, 1, &subresourceRange);
 }
 
 void cu_cmd_image_copy_from_buffer(
-    const CuCmdBuffer commandBuffer,
-    const CuImage* const pImage,
+    const VkCommandBuffer commandBuffer,
+    const VkImage image,
     const VkImageLayout layout,
     const uint32_t w,
     const uint32_t h,
@@ -184,15 +177,17 @@ void cu_cmd_image_copy_from_buffer(
         .sType = VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2,
         .pNext = nullptr,
         .srcBuffer = src,
-        .dstImage = pImage->_image,
+        .dstImage = image,
         .dstImageLayout = layout,
         .regionCount = 1,
         .pRegions = &region,
     };
-    vkCmdCopyBufferToImage2(deref(commandBuffer), &copyInfo);
+    vkCmdCopyBufferToImage2(commandBuffer, &copyInfo);
 }
 
-void cu_cmd_bind_descriptors(const CuCmdBuffer commandBuffer, const CuPipelineLayout pipelineLayout)
+void cu_cmd_bind_descriptors(
+    const VkCommandBuffer commandBuffer,
+    const CuPipelineLayout pipelineLayout)
 {
     const VkPipelineBindPoint bindPoints[] = {
         VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -200,7 +195,7 @@ void cu_cmd_bind_descriptors(const CuCmdBuffer commandBuffer, const CuPipelineLa
     };
     for (size_t i = 0; i < sizeof(bindPoints) / sizeof(bindPoints[0]); i++) {
         vkCmdBindDescriptorSets(
-            deref(commandBuffer), bindPoints[i], (VkPipelineLayout)pipelineLayout, 0, 1,
+            commandBuffer, bindPoints[i], (VkPipelineLayout)pipelineLayout, 0, 1,
             &gContext._descriptorSet, 0, nullptr);
     }
 }

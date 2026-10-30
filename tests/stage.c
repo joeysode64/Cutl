@@ -92,7 +92,8 @@ int main()
     query(cu_task_create(&task));
     query(cu_task_begin(&task));
     cu_cmd_buffer_copy(
-        &task, cu_buffer_get(&vertexBuffer), 0, cu_buffer_get(&stagingBuffer), 0, sizeof(vertices));
+        cu_task_get_command_buffer(&task), cu_buffer_get(&vertexBuffer), 0,
+        cu_buffer_get(&stagingBuffer), 0, sizeof(vertices));
     query(cu_task_submit(&task));
     cu_task_await(&task, UINT64_MAX);
     cu_task_destroy(&task);
@@ -103,19 +104,19 @@ int main()
     while (!cu_window_should_close(&window)) {
         cu_window_update(&window);
 
-        CuFrame* pFrame = nullptr;
-        query(cu_renderer_begin_frame(&renderer, &pFrame));
-        if (pFrame == nullptr) {
+        VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+        query(cu_renderer_begin_frame(&renderer, &commandBuffer));
+        if (commandBuffer == VK_NULL_HANDLE) {
             continue;
         }
 
-        cu_frame_begin_render(pFrame, &renderer);
-        cu_cmd_bind_graphics_pipeline(pFrame, graphicsPipeline);
-        cu_cmd_write_push_constants(pFrame, pipelineLayout, &address, sizeof(address), 0);
-        cu_cmd_draw(pFrame, N_VERTICES, 0, 1, 0);
-        cu_frame_end_render(pFrame, &renderer);
+        cu_renderer_start_rendering(&renderer, commandBuffer);
+        cu_cmd_bind_graphics_pipeline(commandBuffer, graphicsPipeline);
+        cu_cmd_write_push_constants(commandBuffer, pipelineLayout, &address, sizeof(address), 0);
+        cu_cmd_draw(commandBuffer, N_VERTICES, 0, 1, 0);
+        cu_renderer_end_rendering(&renderer, commandBuffer);
 
-        query(cu_renderer_submit_frame(&renderer, pFrame));
+        query(cu_renderer_submit_frame(&renderer));
     }
 
     cu_context_wait_for_idle();

@@ -2,7 +2,6 @@
 
 #include "cmd_buffer.h"
 #include "color.h"
-#include "image.h"
 #include "pipeline.h"
 
 #include <vulkan/vulkan.h>
@@ -113,7 +112,7 @@ namespace cu {
      */
     inline void cmd_image_barrier(
         VkCommandBuffer commandBuffer,
-        const CuImage* pImage,
+        VkImage image,
         VkPipelineStageFlags2 srcStageMask,
         VkAccessFlags2 srcAccessMask,
         VkPipelineStageFlags2 dstStageMask,
@@ -122,7 +121,7 @@ namespace cu {
         VkImageLayout newLayout)
     {
         cu_cmd_image_barrier(
-            commandBuffer, pImage, srcStageMask, srcAccessMask, dstStageMask, dstAccessMask,
+            commandBuffer, image, srcStageMask, srcAccessMask, dstStageMask, dstAccessMask,
             oldLayout, newLayout);
     }
 
@@ -135,11 +134,11 @@ namespace cu {
      */
     inline void cmd_image_fill(
         VkCommandBuffer commandBuffer,
-        const CuImage* pImage,
+        VkImage image,
         VkImageLayout layout,
         CuRGBA color)
     {
-        cu_cmd_image_fill(commandBuffer, pImage, layout, color);
+        cu_cmd_image_fill(commandBuffer, image, layout, color);
     }
 
     /**
@@ -154,14 +153,14 @@ namespace cu {
      */
     inline void cmd_image_copy_from_buffer(
         VkCommandBuffer commandBuffer,
-        const CuImage* pImage,
+        VkImage image,
         VkImageLayout layout,
         uint32_t w,
         uint32_t h,
         VkBuffer src,
         size_t oSrc)
     {
-        cu_cmd_image_copy_from_buffer(commandBuffer, pImage, layout, w, h, src, oSrc);
+        cu_cmd_image_copy_from_buffer(commandBuffer, image, layout, w, h, src, oSrc);
     }
 
     /**

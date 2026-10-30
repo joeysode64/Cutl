@@ -1,7 +1,6 @@
 #pragma once
 
 #include "allocation.h"
-#include "frame.h"
 #include "result.h"
 #include "util.h"
 
@@ -180,9 +179,3 @@ CuResult create_buffer(
  * @return The buffer's device address.
  */
 VkDeviceAddress get_buffer_device_address(VkBuffer buffer);
-
-/** @brief Creates N frames. */
-CuResult create_frames(CuFrame* pFrames, size_t nFrames);
-
-/** @brief Destroys N frames. */
-void destroy_frames(CuFrame* pFrames, size_t nFrames);

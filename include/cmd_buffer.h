@@ -1,18 +1,11 @@
 #pragma once
 
 #include "color.h"
-#include "image.h"
 #include "pipeline.h"
 
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-
-/**
- * @brief A command buffer.
- * @note This is any type that can be dereferenced as a `VkCommandBuffer`.
- */
-typedef void* CuCmdBuffer;
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,7 +16,9 @@ extern "C" {
  * @param [in, out] commandBuffer The command buffer.
  * @param graphicsPipeline The graphics pipeline.
  */
-void cu_cmd_bind_graphics_pipeline(CuCmdBuffer commandBuffer, CuGraphicsPipeline graphicsPipeline);
+void cu_cmd_bind_graphics_pipeline(
+    VkCommandBuffer commandBuffer,
+    CuGraphicsPipeline graphicsPipeline);
 
 /**
  * @brief Runs a draw call.
@@ -34,7 +29,7 @@ void cu_cmd_bind_graphics_pipeline(CuCmdBuffer commandBuffer, CuGraphicsPipeline
  * @param iFirstInstance The index of the first instance.
  */
 void cu_cmd_draw(
-    CuCmdBuffer commandBuffer,
+    VkCommandBuffer commandBuffer,
     uint32_t nVertices,
     uint32_t iFirstVertex,
     uint32_t nInstances,
@@ -45,7 +40,7 @@ void cu_cmd_draw(
  * @param [in, out] commandBuffer The command buffer.
  * @param computePipeline The graphics pipeline.
  */
-void cu_cmd_bind_compute_pipeline(CuCmdBuffer commandBuffer, CuComputePipeline computePipeline);
+void cu_cmd_bind_compute_pipeline(VkCommandBuffer commandBuffer, CuComputePipeline computePipeline);
 
 /**
  * @brief Dispatches compute workgroups.
@@ -54,7 +49,7 @@ void cu_cmd_bind_compute_pipeline(CuCmdBuffer commandBuffer, CuComputePipeline c
  * @param y The number of local workgroups in Y.
  * @param z The number of local workgroups in Z.
  */
-void cu_cmd_dispatch(CuCmdBuffer commandBuffer, uint32_t x, uint32_t y, uint32_t z);
+void cu_cmd_dispatch(VkCommandBuffer commandBuffer, uint32_t x, uint32_t y, uint32_t z);
 
 /**
  * @brief Sets the push constants at the given range.
@@ -65,7 +60,7 @@ void cu_cmd_dispatch(CuCmdBuffer commandBuffer, uint32_t x, uint32_t y, uint32_t
  * @param o The offset to write the push constants to.
  */
 void cu_cmd_write_push_constants(
-    CuCmdBuffer commandBuffer,
+    VkCommandBuffer commandBuffer,
     CuPipelineLayout pipelineLayout,
     const void* p,
     size_t z,
@@ -81,7 +76,7 @@ void cu_cmd_write_push_constants(
  * @param z The size of the data to copy.
  */
 void cu_cmd_buffer_copy(
-    CuCmdBuffer commandBuffer,
+    VkCommandBuffer commandBuffer,
     VkBuffer dst,
     size_t oDst,
     VkBuffer src,
@@ -91,7 +86,7 @@ void cu_cmd_buffer_copy(
 /**
  * @brief Transitions the image from one layout to another.
  * @param [in, out] commandBuffer The command buffer.
- * @param [in] pImage A pointer to the image.
+ * @param image The image handle.
  * @param srcStageMask The pipeline stages that last used the image.
  * @param srcAccessMask How the image was last accessed.
  * @param dstStageMask The pipeline stages that will use the image next.
@@ -100,8 +95,8 @@ void cu_cmd_buffer_copy(
  * @param newLayout The layout to transition the image to.
  */
 void cu_cmd_image_barrier(
-    CuCmdBuffer commandBuffer,
-    const CuImage* pImage,
+    VkCommandBuffer commandBuffer,
+    VkImage image,
     VkPipelineStageFlags2 srcStageMask,
     VkAccessFlags2 srcAccessMask,
     VkPipelineStageFlags2 dstStageMask,
@@ -112,20 +107,20 @@ void cu_cmd_image_barrier(
 /**
  * @brief Fills the image with a color.
  * @param [in, out] commandBuffer The command buffer.
- * @param [in] pImage A pointer to the image.
+ * @param image The image handle.
  * @param layout The image's current layout.
  * @param color The color to fill the image with.
  */
 void cu_cmd_image_fill(
-    CuCmdBuffer commandBuffer,
-    const CuImage* pImage,
+    VkCommandBuffer commandBuffer,
+    VkImage image,
     VkImageLayout layout,
     CuRGBA color);
 
 /**
  * @brief Copies data from a buffer into the whole image.
  * @param [in, out] commandBuffer The command buffer.
- * @param [in] pImage A pointer to the image.
+ * @param image The image handle.
  * @param layout The image's current layout.
  * @param w The image's width.
  * @param h The image's height.
@@ -133,8 +128,8 @@ void cu_cmd_image_fill(
  * @param oSrc The read offset.
  */
 void cu_cmd_image_copy_from_buffer(
-    CuCmdBuffer commandBuffer,
-    const CuImage* pImage,
+    VkCommandBuffer commandBuffer,
+    VkImage image,
     VkImageLayout layout,
     uint32_t w,
     uint32_t h,
@@ -148,7 +143,7 @@ void cu_cmd_image_copy_from_buffer(
  * @note Sampled images are at binding 0, samplers at 1 and storage images at 2
  * of set 0.
  */
-void cu_cmd_bind_descriptors(CuCmdBuffer commandBuffer, CuPipelineLayout pipelineLayout);
+void cu_cmd_bind_descriptors(VkCommandBuffer commandBuffer, CuPipelineLayout pipelineLayout);
 
 #ifdef __cplusplus
 }

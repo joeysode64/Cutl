@@ -7,7 +7,6 @@
 #include "result.h"
 #include "util.h"
 #include "vk.h"
-#include <vulkan/vulkan_core.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>

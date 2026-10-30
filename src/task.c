@@ -52,7 +52,7 @@ void cu_task_destroy(CuTask* const pTask)
     dbg_log_destroy(pTask->_commandBuffer);
 }
 
-CuResult cu_task_begin(CuTask* const pTask)
+CuResult cu_task_begin(const CuTask* const pTask)
 {
     const VkCommandBufferBeginInfo beginInfo = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -65,7 +65,7 @@ CuResult cu_task_begin(CuTask* const pTask)
     return CU_SUCCESS;
 }
 
-CuResult cu_task_submit(CuTask* const pTask)
+CuResult cu_task_submit(const CuTask* const pTask)
 {
     cu_try_vk(vkEndCommandBuffer(pTask->_commandBuffer));
 
@@ -87,12 +87,12 @@ CuResult cu_task_submit(CuTask* const pTask)
     return CU_SUCCESS;
 }
 
-bool cu_task_is_running(CuTask* const pTask)
+bool cu_task_is_running(const CuTask* const pTask)
 {
     return vkGetFenceStatus(gContext._device, pTask->_taskFinished) == VK_NOT_READY;
 }
 
-void cu_task_await(CuTask* const pTask, const uint64_t timeout)
+void cu_task_await(const CuTask* const pTask, const uint64_t timeout)
 {
     vkWaitForFences(gContext._device, 1, &pTask->_taskFinished, VK_TRUE, timeout);
 }
