@@ -101,6 +101,34 @@
  * it fails. */
 #define allocate(p) allocate_n(p, 1)
 
+/**
+ * @brief Tries to allocate the size, and if it fails, sets the local
+ * `CuResult result` to `CU_ERROR_BAD_ALLOC` and jumps to `FAIL`.
+ */
+#define allocate_catch_z(p, z)                                                                     \
+    p = (typeof(*p)*)calloc(z, 1);                                                                 \
+    if (p == nullptr) {                                                                            \
+        result = cu_error(CU_ERROR_BAD_ALLOC);                                                     \
+        goto FAIL;                                                                                 \
+    }
+
+/**
+ * @brief Tries to allocate to the elements, and if it fails, sets the local
+ * `CuResult result` to `CU_ERROR_BAD_ALLOC` and jumps to `FAIL`.
+ */
+#define allocate_catch_n(p, n)                                                                     \
+    p = (typeof(*p)*)calloc(n, sizeof(*p));                                                        \
+    if (p == nullptr) {                                                                            \
+        result = cu_error(CU_ERROR_BAD_ALLOC);                                                     \
+        goto FAIL;                                                                                 \
+    }
+
+/**
+ * @brief Tries to allocate to the pointer, and if it fails, sets the local
+ * `CuResult result` to `CU_ERROR_BAD_ALLOC` and jumps to `FAIL`.
+ */
+#define allocate_catch(p) allocate_catch_n(p, 1)
+
 /** @brief Queries the Cutl result and returns it if it's not `CU_SUCCESS`. */
 #define cu_try(e)                                                                                  \
     do {                                                                                           \

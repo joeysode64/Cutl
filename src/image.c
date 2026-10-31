@@ -58,75 +58,6 @@ void cu_image_destroy(CuImage* const pImage, const CuAllocationMode mode)
     mode_free(&pImage->_allocation, mode);
 }
 
-CuResult cu_sampler_create(CuSampler* const pSampler)
-{
-    const VkSamplerCreateInfo createInfo = {
-        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .magFilter = VK_FILTER_NEAREST,
-        .minFilter = VK_FILTER_NEAREST,
-        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
-        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .mipLodBias = 0,
-        .anisotropyEnable = VK_FALSE,
-        .maxAnisotropy = 0,
-        .compareEnable = VK_FALSE,
-        .compareOp = VK_COMPARE_OP_NEVER,
-        .minLod = 0.0F,
-        .maxLod = 0.0F,
-        .borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
-        .unnormalizedCoordinates = VK_FALSE,
-    };
-    return cu_vk_result(
-        vkCreateSampler(gContext._device, &createInfo, nullptr, &pSampler->_sampler));
-}
-
-void cu_sampler_destroy(CuSampler* const pSampler)
-{
-    vkDestroySampler(gContext._device, pSampler->_sampler, nullptr);
-}
-
-CuResult cu_png_load(
-    void* const pData,
-    uint32_t* const pW,
-    uint32_t* const pH,
-    const char* const path,
-    const png_uint_32 format)
-{
-    CuResult result = CU_SUCCESS;
-
-    png_image image = {};
-    image.version = PNG_IMAGE_VERSION;
-    cu_assert_catch(png_image_begin_read_from_file(&image, path), cu_error(CU_ERROR_PNG_READ));
-
-    if (format != 0) {
-        image.format = format;
-    }
-
-    if (pW != nullptr) {
-        *pW = image.width;
-    }
-    if (pH != nullptr) {
-        *pH = image.height;
-    }
-
-    if (pData != nullptr) {
-        cu_assert_catch(
-            png_image_finish_read(&image, nullptr, pData, 0, nullptr), cu_error(CU_ERROR_PNG_READ));
-    }
-
-    png_image_free(&image);
-    return CU_SUCCESS;
-
-FAIL:
-    dbg_log_fail(result);
-    png_image_free(&image);
-    return result;
-}
-
 void cu_image_start_rendering(
     const CuImage* const pImage,
     const VkCommandBuffer commandBuffer,
@@ -203,4 +134,75 @@ void cu_image_end_rendering(
         VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         newLayout);
+}
+
+CuResult cu_sampler_create(CuSampler* const pSampler)
+{
+    const VkSamplerCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .magFilter = VK_FILTER_NEAREST,
+        .minFilter = VK_FILTER_NEAREST,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .mipLodBias = 0,
+        .anisotropyEnable = VK_FALSE,
+        .maxAnisotropy = 0,
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_NEVER,
+        .minLod = 0.0F,
+        .maxLod = 0.0F,
+        .borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
+        .unnormalizedCoordinates = VK_FALSE,
+    };
+    return cu_vk_result(
+        vkCreateSampler(gContext._device, &createInfo, nullptr, &pSampler->_sampler));
+}
+
+void cu_sampler_destroy(CuSampler* const pSampler)
+{
+    vkDestroySampler(gContext._device, pSampler->_sampler, nullptr);
+}
+
+CuResult cu_png_load(
+    void** const ppData,
+    uint32_t* const pW,
+    uint32_t* const pH,
+    const char* const path,
+    const png_uint_32 format)
+{
+    CuResult result = CU_SUCCESS;
+
+    png_image image = {};
+    image.version = PNG_IMAGE_VERSION;
+    cu_assert_catch(png_image_begin_read_from_file(&image, path), cu_error(CU_ERROR_PNG_READ));
+
+    if (format != 0) {
+        image.format = format;
+    }
+
+    if (pW != nullptr) {
+        *pW = image.width;
+    }
+    if (pH != nullptr) {
+        *pH = image.height;
+    }
+
+    if (ppData != nullptr) {
+        allocate_catch_z(*ppData, PNG_IMAGE_SIZE(image));
+        cu_assert_catch(
+            png_image_finish_read(&image, nullptr, *ppData, 0, nullptr),
+            cu_error(CU_ERROR_PNG_READ));
+    }
+
+    png_image_free(&image);
+    return CU_SUCCESS;
+
+FAIL:
+    dbg_log_fail(result);
+    png_image_free(&image);
+    return result;
 }

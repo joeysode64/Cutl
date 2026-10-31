@@ -1,6 +1,7 @@
 #include "cutl.h"
 #include "test.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
 #define PNG_PATH "tests/assets/emotion.png"
@@ -29,14 +30,12 @@ int main()
     CuRenderer renderer = {};
     query(cu_renderer_create(&renderer, &CU_DEFAULT_RENDERER_CREATE_INFO, &window));
 
-    // Get the PNG's size then its data.
+    // Load the PNG.
+    void* pPixels;
     uint32_t w = 0;
     uint32_t h = 0;
-    query(cu_png_load(nullptr, &w, &h, PNG_PATH, PNG_FORMAT_RGBA));
-    const size_t zPixels = (size_t)w * h * 4;
-    void* pPixels = malloc(zPixels);
-    expect(pPixels != nullptr, "Failed to allocate the pixels.\n");
-    query(cu_png_load(pPixels, nullptr, nullptr, PNG_PATH, PNG_FORMAT_RGBA));
+    query(cu_png_load(&pPixels, &w, &h, PNG_PATH, PNG_FORMAT_RGBA));
+    const size_t zPixels = w * h * 4;
 
     CuImage image = {};
     query(cu_image_create(

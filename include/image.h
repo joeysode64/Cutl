@@ -49,33 +49,6 @@ CuResult cu_image_create(
 void cu_image_destroy(CuImage* pImage, CuAllocationMode mode);
 
 /**
- * @brief Creates the sampler.
- * @param [out] pSampler A pointer to the sampler.
- * @return The result of creating the sampler.
- */
-CuResult cu_sampler_create(CuSampler* pSampler);
-
-/**
- * @brief Destroys the sampler.
- * @param [in, out] pSampler A pointer to the sampler.
- */
-void cu_sampler_destroy(CuSampler* pSampler);
-
-/**
- * @brief Loads the PNG image from the file.
- * @param [out] pData A pointer to the buffer to write the image's data to.
- * Ignored if null.
- * @param [out] pW A pointer to the image's width. Ignored if null.
- * @param [out] pH A pointer to the image's height. Ignored if null.
- * @param path The path to the PNG image file.
- * @param format The `PNG_FORMAT_*` to convert the image to. Ignored if 0.
- * @return The result of reading the image.
- * @note The buffer must hold `w * h` pixels of the format. Call with a null
- * `pData` first to get the size.
- */
-CuResult cu_png_load(void* pData, uint32_t* pW, uint32_t* pH, const char* path, png_uint_32 format);
-
-/**
  * @brief Starts rendering to the image.
  * @param [in] pImage A pointer to the image.
  * @param commandBuffer The command buffer handle.
@@ -99,6 +72,36 @@ void cu_image_end_rendering(
     const CuImage* pImage,
     VkCommandBuffer commandBuffer,
     VkImageLayout newLayout);
+
+/**
+ * @brief Creates the sampler.
+ * @param [out] pSampler A pointer to the sampler.
+ * @return The result of creating the sampler.
+ */
+CuResult cu_sampler_create(CuSampler* pSampler);
+
+/**
+ * @brief Destroys the sampler.
+ * @param [in, out] pSampler A pointer to the sampler.
+ */
+void cu_sampler_destroy(CuSampler* pSampler);
+
+/**
+ * @brief Loads the PNG image from the file.
+ * @param [out] pData A pointer to the allocated image data. Ignored if null.
+ * @param [out] pW A pointer to the image's width. Ignored if null.
+ * @param [out] pH A pointer to the image's height. Ignored if null.
+ * @param path The path to the PNG image file.
+ * @param format The `PNG_FORMAT_*` to convert the image to. Ignored if 0.
+ * @return The result of reading the image.
+ * @warning If `ppData` is set, it must be freed yourself with `free`.
+ */
+CuResult cu_png_load(
+    void** ppData,
+    uint32_t* pW,
+    uint32_t* pH,
+    const char* path,
+    png_uint_32 format);
 
 #ifdef __cplusplus
 }
