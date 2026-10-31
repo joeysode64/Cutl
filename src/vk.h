@@ -123,12 +123,22 @@ CuResult create_surface(VkSurfaceKHR* pSurface, GLFWwindow* window);
  */
 CuResult create_headless_surface(VkSurfaceKHR* pSurface);
 
-/** @brief Creates an image. */
+/**
+ * @brief Creates the image.
+ * @param [out] pImage A pointer to the image.
+ * @param w The image's width.
+ * @param h The image's height.
+ * @param format The image's format.
+ * @param samples The sample count flag.
+ * @param usage The image's usage.
+ * @param initialLayout The image's initial layout.
+ */
 CuResult create_image(
     VkImage* pImage,
     uint32_t w,
     uint32_t h,
     VkFormat format,
+    VkSampleCountFlags samples,
     VkImageUsageFlags usage);
 
 /** @brief Creates an image view. */
@@ -148,12 +158,11 @@ CuResult create_semaphore(VkSemaphore* pSemaphore, VkSemaphoreType type, uint64_
 /**
  * @brief Allocates the memory.
  * @param [out] pMemory A pointer to the memory handle.
- * @param device The device handle.
  * @param size The size of the allocation.
  * @param i The index of the memory type.
  * @return The result of allocationg the memory.
  */
-CuResult allocate_memory(VkDeviceMemory* pMemory, VkDevice device, uint64_t size, uint32_t i);
+CuResult allocate_memory(VkDeviceMemory* pMemory, uint64_t size, uint32_t i);
 
 /**
  * @brief Creates the buffer and its allication.

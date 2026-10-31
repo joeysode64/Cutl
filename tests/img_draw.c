@@ -97,6 +97,7 @@ int main()
         .nFrag = triangleFrag.n,
         .pFormats = (VkFormat[]){VK_FORMAT_R8G8B8A8_UNORM},
         .nFormats = 1,
+        .rasterizationSamples = 1,
     };
     query(cu_graphics_pipeline_create(
         &trianglePipeline, &trianglePipelineCreateInfo, trianglePipelineLayout));
@@ -119,6 +120,7 @@ int main()
         .nFrag = screenFrag.n,
         .pFormats = (VkFormat[]){cu_renderer_get_format(&renderer)},
         .nFormats = 1,
+        .rasterizationSamples = 1,
     };
     query(cu_graphics_pipeline_create(
         &screenPipeline, &screenPipelineCreateInfo, screenPipelineLayout));

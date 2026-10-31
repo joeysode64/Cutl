@@ -39,6 +39,8 @@ typedef struct {
     const VkFormat* pFormats; /**< A pointer to the formats the pipeline must handle. */
 
     size_t nFormats; /**< The number of formats the pipeline must handle. */
+
+    VkSampleCountFlags rasterizationSamples; /**< The rasterization samples value. */
 } CuGraphicsPipelineCreateInfo;
 
 #ifdef __cplusplus

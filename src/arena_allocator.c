@@ -34,7 +34,7 @@ static CuResult allocate_slot(CuArena* const pArena, const size_t i)
 {
     CuArenaSlot* const pSlot = &pArena->_slots[i];
 
-    cu_try(allocate_memory(&pSlot->_memory, gContext._device, pArena->_size, i));
+    cu_try(allocate_memory(&pSlot->_memory, pArena->_size, i));
     if (ones_overlap(gContext._memoryInfo._mHostVisible, 1u << i)) {
         cu_try_vk(
             vkMapMemory(gContext._device, pSlot->_memory, 0, pArena->_size, 0, &pSlot->_pData));

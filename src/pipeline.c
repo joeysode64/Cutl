@@ -178,7 +178,7 @@ CuResult cu_graphics_pipeline_create(
         .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
+        .rasterizationSamples = pCreateInfo->rasterizationSamples,
         .sampleShadingEnable = VK_FALSE,
         .minSampleShading = 1.0F,
         .pSampleMask = nullptr,

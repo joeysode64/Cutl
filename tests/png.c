@@ -109,6 +109,7 @@ int main()
         .nFrag = frag.n,
         .pFormats = (VkFormat[]){cu_renderer_get_format(&renderer)},
         .nFormats = 1,
+        .rasterizationSamples = 1,
     };
     query(cu_graphics_pipeline_create(
         &graphicsPipeline, &graphicsPipelineCreateInfo, pipelineLayout));

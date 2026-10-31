@@ -22,7 +22,7 @@ CuResult cu_image_create(
 {
     CuResult result = CU_SUCCESS;
 
-    cu_try_catch(create_image(&pImage->_image, w, h, (VkFormat)format, (VkImageUsageFlags)usage));
+    cu_try_catch(create_image(&pImage->_image, w, h, format, VK_SAMPLE_COUNT_1_BIT, usage));
     dbg_log_create(pImage->_image);
 
     VkMemoryRequirements memoryRequirements = {};
@@ -40,7 +40,7 @@ CuResult cu_image_create(
         pImage->_allocation._memory,
         pImage->_allocation._offset));
 
-    cu_try_catch(create_image_view(&pImage->_imageView, pImage->_image, (VkFormat)format));
+    cu_try_catch(create_image_view(&pImage->_imageView, pImage->_image, format));
     dbg_log_create(pImage->_imageView);
 
     return CU_SUCCESS;

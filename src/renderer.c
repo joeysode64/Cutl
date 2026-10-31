@@ -1,7 +1,9 @@
 #include "renderer.h"
 
+#include "cmd_buffer.h"
 #include "debug.h"
 #include "g_context.h"
+#include "physical_device.h"
 #include "result.h"
 #include "swapchain.h"
 #include "util.h"
@@ -113,6 +115,58 @@ FAIL:
 }
 
 /**
+ * @brief Creates the renderer's MSAA info.
+ * @param [in, out] pRenderer A pointer to the renderer.
+ * @warning The renderer's `_nMsaaSampels` must have been set.
+ */
+static CuResult renderer_create_msaa_info(CuRenderer* const pRenderer)
+{
+    if (pRenderer->_nMsaaSamples == 1) {
+        return CU_SUCCESS;
+    }
+
+    cu_try(create_image(
+        &pRenderer->_msaaImage,
+        pRenderer->_swapchainExtent.width,
+        pRenderer->_swapchainExtent.height,
+        pRenderer->_swapchainFormat,
+        pRenderer->_nMsaaSamples,
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT));
+    dbg_log_create(pRenderer->_msaaImage);
+
+    VkMemoryRequirements memoryRequirements = {};
+    vkGetImageMemoryRequirements(gContext._device, pRenderer->_msaaImage, &memoryRequirements);
+    const uint32_t mMemoryTypes = find_memory_types(
+        &gContext._memoryInfo,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        memoryRequirements.memoryTypeBits);
+    const uint32_t iMemoryType = __builtin_ctz(mMemoryTypes);
+    cu_try(allocate_memory(&pRenderer->_msaaMemory, memoryRequirements.size, iMemoryType));
+    dbg_log_create(pRenderer->_msaaMemory);
+    vkBindImageMemory(gContext._device, pRenderer->_msaaImage, pRenderer->_msaaMemory, 0);
+
+    cu_try(create_image_view(
+        &pRenderer->_msaaImageView, pRenderer->_msaaImage, pRenderer->_swapchainFormat));
+    dbg_log_create(pRenderer->_msaaImageView);
+
+    return CU_SUCCESS;
+}
+
+/**
+ * @brief Destroys the renderer's MSAA info.
+ * @param [in, out] pRenderer A pointer to the renderer.
+ */
+static void renderer_destroy_msaa_info(CuRenderer* const pRenderer)
+{
+    vkDestroyImageView(gContext._device, pRenderer->_msaaImageView, nullptr);
+    dbg_log_destroy(pRenderer->_msaaImageView);
+    vkDestroyImage(gContext._device, pRenderer->_msaaImage, nullptr);
+    dbg_log_destroy(pRenderer->_msaaImage);
+    vkFreeMemory(gContext._device, pRenderer->_msaaMemory, nullptr);
+    dbg_log_destroy(pRenderer->_msaaMemory);
+}
+
+/**
  * @brief Recreates the renderer's swapchain.
  * @param [in, out] pRenderer A pointer to the renderer.
  * @return The result of creating the new swapchain.
@@ -143,6 +197,9 @@ static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer)
 
     cu_try(renderer_create_swapchain_images(pRenderer));
 
+    renderer_destroy_msaa_info(pRenderer);
+    cu_try(renderer_create_msaa_info(pRenderer));
+
     return CU_SUCCESS;
 }
 
@@ -171,11 +228,15 @@ CuResult cu_renderer_create(
     pRenderer->_swapchain = swapchainInfo._handle;
     pRenderer->_swapchainFormat = swapchainInfo._format;
     pRenderer->_swapchainExtent = swapchainInfo._extent;
+
     pRenderer->_nSwapchainImages = swapchainInfo._nImages;
     cu_try_catch(renderer_create_swapchain_images(pRenderer));
 
     pRenderer->_nFramesInFlight = pCreateInfo->maxFramesInFlight;
     cu_try_catch(renderer_create_frames(pRenderer));
+
+    pRenderer->_nMsaaSamples = pCreateInfo->nMsaaSamples;
+    cu_try_catch(renderer_create_msaa_info(pRenderer));
 
     cu_try_catch(create_semaphore(&pRenderer->_timelineSemaphore, VK_SEMAPHORE_TYPE_TIMELINE, 0));
     dbg_log_create(pRenderer->_timelineSemaphore);
@@ -210,6 +271,7 @@ void cu_renderer_destroy(CuRenderer* const pRenderer)
     dbg_log_destroy(pRenderer->_swapchain);
     vkDestroySurfaceKHR(gContext._instance, pRenderer->_surface, nullptr);
     dbg_log_destroy(pRenderer->_surface);
+    renderer_destroy_msaa_info(pRenderer);
 }
 
 CuResult cu_renderer_begin_frame(CuRenderer* const pRenderer, VkCommandBuffer* const pCommandBuffer)
@@ -395,20 +457,41 @@ void cu_renderer_start_rendering(
     };
     vkCmdPipelineBarrier2(commandBuffer, &dependencyInfo);
 
+    // Convert MSAA image if active.
+    const bool msaaActive = pRenderer->_msaaImage != VK_NULL_HANDLE;
+    if (msaaActive) {
+        cu_cmd_image_barrier(
+            commandBuffer,
+            pRenderer->_msaaImage,
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    }
+
     // Begin rendering.
     const VkClearValue clearValue = {
         .color.float32 = {0.0F, 0.0F, 0.0F, 1.0F},
     };
+    const VkImageView imageView =
+        msaaActive ? pRenderer->_msaaImageView : pSwapchainImage->_imageView;
+    const VkResolveModeFlagBits resolveMode =
+        msaaActive ? VK_RESOLVE_MODE_AVERAGE_BIT : VK_RESOLVE_MODE_NONE;
+    const VkImageView resolveImageView = msaaActive ? pSwapchainImage->_imageView : VK_NULL_HANDLE;
+    const VkAttachmentStoreOp storeOp =
+        msaaActive ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
     const VkRenderingAttachmentInfo colorAttachment = {
         .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
         .pNext = nullptr,
-        .imageView = pSwapchainImage->_imageView,
+        .imageView = imageView,
         .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        .resolveMode = VK_RESOLVE_MODE_NONE,
-        .resolveImageView = VK_NULL_HANDLE,
-        .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .resolveMode = resolveMode,
+        .resolveImageView = resolveImageView,
+        .resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .storeOp = storeOp,
         .clearValue = clearValue,
     };
     const VkRenderingInfo renderingInfo = {

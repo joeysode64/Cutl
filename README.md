@@ -59,6 +59,7 @@ int main() {
         .nFrag = frag.n,
         .pFormats = (VkFormat[]){ cu_renderer_get_format(&renderer) },
         .nFormats = 1,
+        .rasterizationSamples = 1,
     };
     cu_graphics_pipeline_create(&graphicsPipeline, &graphicsPipelineCreateInfo, pipelineLayout);
 
@@ -108,6 +109,7 @@ Before version 1.0:
 - ~~Standardize formatting~~
 - ~~Add image loading/saving (`libpng`)~~
 - ~~Add swapchain recreation~~
+- ~~Add multisampling~~
 - Add the ability for users to use their own physical device and swapchain format/present mode judge functions
 - ~~Add the ability to include custom extensions~~
 - Add template shaders

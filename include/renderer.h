@@ -48,6 +48,14 @@ typedef struct CuRenderer_T {
 
     VkFormat _swapchainFormat; /**< The swapchain format. */
 
+    VkImage _msaaImage; /**< The MSAA image handle. */
+
+    VkDeviceMemory _msaaMemory; /**< The MSAA image's allocation. */
+
+    VkImageView _msaaImageView; /**< The MSAA image view handle. */
+
+    uint32_t _nMsaaSamples; /**< The number of MSAA samples. */
+
     VkSemaphore _timelineSemaphore; /**< The timeline semaphore. */
 
     uint64_t _frameCounter; /**< The frame counter. */
@@ -66,6 +74,8 @@ typedef struct CuRendererCreateInfo_T {
     VkPresentModeKHR preferredPresentMode; /**< The preferred present mode. Default is
                                               `VK_PRESENT_MODE_FIFO_KHR`, which is also the
                                               fallback. */
+
+    uint32_t nMsaaSamples; /**< The number of MSAA samples. Default is 1 (no anti-aliasing). */
 } CuRendererCreateInfo;
 
 /** @brief The default renderer create info. */
@@ -73,6 +83,7 @@ constexpr CuRendererCreateInfo CU_DEFAULT_RENDERER_CREATE_INFO = {
     .maxFramesInFlight = 3,
     .minSwapchainImages = 3,
     .preferredPresentMode = VK_PRESENT_MODE_FIFO_KHR,
+    .nMsaaSamples = 1,
 };
 
 #ifdef __cplusplus

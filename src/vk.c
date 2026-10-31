@@ -36,6 +36,7 @@ CuResult create_image(
     const uint32_t w,
     const uint32_t h,
     const VkFormat format,
+    const VkSampleCountFlags samples,
     const VkImageUsageFlags usage)
 {
     const VkImageCreateInfo createInfo = {
@@ -52,7 +53,7 @@ CuResult create_image(
             },
         .mipLevels = 1,
         .arrayLayers = 1,
-        .samples = 1,
+        .samples = samples,
         .tiling = VK_IMAGE_TILING_OPTIMAL,
         .usage = usage,
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
@@ -127,11 +128,7 @@ CuResult create_semaphore(
     return cu_vk_result(vkCreateSemaphore(gContext._device, &createInfo, nullptr, pSemaphore));
 }
 
-CuResult allocate_memory(
-    VkDeviceMemory* const pMemory,
-    const VkDevice device,
-    const uint64_t size,
-    const uint32_t i)
+CuResult allocate_memory(VkDeviceMemory* const pMemory, const uint64_t size, const uint32_t i)
 {
     const VkMemoryAllocateFlagsInfo allocateFlagsInfo = {
         .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
@@ -145,7 +142,7 @@ CuResult allocate_memory(
         .allocationSize = size,
         .memoryTypeIndex = i,
     };
-    return cu_vk_result(vkAllocateMemory(device, &allocateInfo, nullptr, pMemory));
+    return cu_vk_result(vkAllocateMemory(gContext._device, &allocateInfo, nullptr, pMemory));
 }
 
 CuResult create_buffer(
