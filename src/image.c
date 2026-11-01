@@ -1,7 +1,7 @@
 #include "image.h"
 
 #include "allocation.h"
-#include "cmd_buffer.h"
+#include "command_buffer.h"
 #include "debug.h"
 #include "g_context.h"
 #include "result.h"
