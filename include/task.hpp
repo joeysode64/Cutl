@@ -1,5 +1,6 @@
 #pragma once
 
+#include "command_buffer.hpp"
 #include "result.hpp"
 #include "task.h"
 #include "wrapper.hpp"
@@ -8,7 +9,7 @@
 
 namespace cu {
     /** @ref CuTask */
-    class Task : public Wrapper<CuTask> {
+    class Task : public Wrapper<CuTask>, public CommandBuffer {
     public:
         /** @ref cu_task_destroy() */
         inline ~Task()
