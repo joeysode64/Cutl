@@ -3,7 +3,6 @@
 #include "command_buffer.h"
 #include "debug.h"
 #include "g_context.h"
-#include "physical_device.h"
 #include "result.h"
 #include "swapchain.h"
 #include "util.h"
@@ -15,25 +14,83 @@
 #include <vulkan/vulkan.h>
 
 /**
+ * @brief Creates the MSAA state.
+ * @param [in, out] pMsaa A pointer to the MSAA state.
+ * @param nSamples The number of samples.
+ * @param extent The image's extent.
+ * @param format The image's format.
+ * @return The result of creating the MSAA state.
+ */
+static CuResult msaa_create(
+    CuRendererMsaaState* const pMsaa,
+    const uint32_t nSamples,
+    const VkExtent2D extent,
+    const VkFormat format)
+{
+    if (nSamples == 1) {
+        return CU_SUCCESS;
+    }
+
+    cu_try(create_image(
+        &pMsaa->_image,
+        extent.width,
+        extent.height,
+        format,
+        nSamples,
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT));
+    dbg_log_create(pMsaa->_image);
+
+    VkMemoryRequirements memoryRequirements = {};
+    vkGetImageMemoryRequirements(gContext._device, pMsaa->_image, &memoryRequirements);
+    const uint32_t iMemoryType =
+        __builtin_ctz(gContext._memoryInfo._mDeviceLocal & memoryRequirements.memoryTypeBits);
+    cu_try(allocate_memory(&pMsaa->_memory, memoryRequirements.size, iMemoryType));
+    dbg_log_create(pMsaa->_memory);
+    vkBindImageMemory(gContext._device, pMsaa->_image, pMsaa->_memory, 0);
+
+    cu_try(create_image_view(&pMsaa->_imageView, pMsaa->_image, format));
+    dbg_log_create(pMsaa->_imageView);
+
+    return CU_SUCCESS;
+}
+
+/**
+ * @brief Destroys the MSAA state.
+ * @param [in, out] pMsaa A pointer to the MSAA state.
+ */
+static void msaa_destroy(CuRendererMsaaState* const pMsaa)
+{
+    vkDestroyImageView(gContext._device, pMsaa->_imageView, nullptr);
+    dbg_log_destroy(pMsaa->_imageView);
+    vkDestroyImage(gContext._device, pMsaa->_image, nullptr);
+    dbg_log_destroy(pMsaa->_image);
+    vkFreeMemory(gContext._device, pMsaa->_memory, nullptr);
+    dbg_log_destroy(pMsaa->_memory);
+}
+
+/**
  * @brief Creates the renderer's swapchain images.
  * @param [in, out] pRenderer A pointer to the renderer.
  * @return The result of creating the renderer's swapchain images.
- * @warning Requires the renderer's swapchain info to be set.
  */
-static CuResult renderer_create_swapchain_images(CuRenderer* pRenderer)
+static CuResult renderer_create_swapchain_images(CuRenderer* const pRenderer)
 {
-    allocate_n(pRenderer->_pSwapchainImages, pRenderer->_nSwapchainImages);
-
-    VkImage images[pRenderer->_nSwapchainImages];
+    uint32_t nImages = 0;
     cu_try_vk(vkGetSwapchainImagesKHR(
-        gContext._device, pRenderer->_swapchain, &pRenderer->_nSwapchainImages, images));
+        gContext._device, pRenderer->_swapchainState._swapchain, &nImages, nullptr));
+    VkImage images[nImages];
+    cu_try_vk(vkGetSwapchainImagesKHR(
+        gContext._device, pRenderer->_swapchainState._swapchain, &nImages, images));
+
+    allocate_n(pRenderer->_pSwapchainImages, nImages);
+    pRenderer->_nSwapchainImages = nImages;
 
     for (uint32_t i = 0; i < pRenderer->_nSwapchainImages; i++) {
         CuSwapchainImage* const pSwapchainImage = &pRenderer->_pSwapchainImages[i];
         dbg_log_note("Creating swapchain image object for image #%u (%p)", i, (void*)images[i]);
 
         cu_try(create_image_view(
-            &pSwapchainImage->_imageView, images[i], pRenderer->_swapchainFormat));
+            &pSwapchainImage->_imageView, images[i], pRenderer->_swapchainState._format));
         dbg_log_create(pSwapchainImage->_imageView);
 
         cu_try(create_semaphore(&pSwapchainImage->_renderFinished, VK_SEMAPHORE_TYPE_BINARY, 0));
@@ -48,9 +105,8 @@ static CuResult renderer_create_swapchain_images(CuRenderer* pRenderer)
 /**
  * @brief Destroys the swapchain images.
  * @param [in, out] pSwapchainImages A pointer to the swapchain images.
- * @param nSwapchainImages The number of swapchain images.
  */
-static void renderer_destroy_swapchain_images(CuRenderer* pRenderer)
+static void renderer_destroy_swapchain_images(CuRenderer* const pRenderer)
 {
     for (uint32_t i = 0; i < pRenderer->_nSwapchainImages; i++) {
         const CuSwapchainImage* const pSwapchainImage = &pRenderer->_pSwapchainImages[i];
@@ -66,7 +122,7 @@ static void renderer_destroy_swapchain_images(CuRenderer* pRenderer)
  * @brief Destroys the renderer's frame in flight objects.
  * @param [in, out] pRenderer A pointer to the renderer.
  */
-static void renderer_destroy_frames(CuRenderer* pRenderer)
+static void renderer_destroy_frames(CuRenderer* const pRenderer)
 {
     VkCommandBuffer commandBuffers[pRenderer->_nFramesInFlight];
 
@@ -88,19 +144,20 @@ static void renderer_destroy_frames(CuRenderer* pRenderer)
 /**
  * @brief Creates the renderer's frame in flight objects.
  * @param [in, out] pRenderer A pointer to the renderer.
+ * @param n The number of frame in flight objects to create.
  * @return The result of creating the frames.
- * @warning The renderer's `_nFramesInFlight` must have been set.
  */
-static CuResult renderer_create_frames(CuRenderer* const pRenderer)
+static CuResult renderer_create_frames(CuRenderer* const pRenderer, const uint32_t n)
 {
-    allocate_n(pRenderer->_pFramesInFlight, pRenderer->_nFramesInFlight);
+    allocate_n(pRenderer->_pFramesInFlight, n);
+    pRenderer->_nFramesInFlight = n;
 
     CuResult result = CU_SUCCESS;
 
-    VkCommandBuffer commandBuffers[pRenderer->_nFramesInFlight];
-    cu_try_catch(allocate_command_buffers(commandBuffers, pRenderer->_nFramesInFlight));
+    VkCommandBuffer commandBuffers[n];
+    cu_try_catch(allocate_command_buffers(commandBuffers, n));
 
-    for (size_t i = 0; i < pRenderer->_nFramesInFlight; i++) {
+    for (size_t i = 0; i < n; i++) {
         CuFrame* const pFrame = &pRenderer->_pFramesInFlight[i];
 
         cu_try_catch(create_semaphore(&pFrame->_imageAvailable, VK_SEMAPHORE_TYPE_BINARY, 0));
@@ -112,95 +169,6 @@ static CuResult renderer_create_frames(CuRenderer* const pRenderer)
 FAIL:
     renderer_destroy_frames(pRenderer);
     return result;
-}
-
-/**
- * @brief Creates the renderer's MSAA info.
- * @param [in, out] pRenderer A pointer to the renderer.
- * @warning The renderer's `_nMsaaSampels` must have been set.
- */
-static CuResult renderer_create_msaa_info(CuRenderer* const pRenderer)
-{
-    if (pRenderer->_nMsaaSamples == 1) {
-        return CU_SUCCESS;
-    }
-
-    cu_try(create_image(
-        &pRenderer->_msaaImage,
-        pRenderer->_swapchainExtent.width,
-        pRenderer->_swapchainExtent.height,
-        pRenderer->_swapchainFormat,
-        pRenderer->_nMsaaSamples,
-        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT));
-    dbg_log_create(pRenderer->_msaaImage);
-
-    VkMemoryRequirements memoryRequirements = {};
-    vkGetImageMemoryRequirements(gContext._device, pRenderer->_msaaImage, &memoryRequirements);
-    const uint32_t mMemoryTypes = find_memory_types(
-        &gContext._memoryInfo,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        memoryRequirements.memoryTypeBits);
-    const uint32_t iMemoryType = __builtin_ctz(mMemoryTypes);
-    cu_try(allocate_memory(&pRenderer->_msaaMemory, memoryRequirements.size, iMemoryType));
-    dbg_log_create(pRenderer->_msaaMemory);
-    vkBindImageMemory(gContext._device, pRenderer->_msaaImage, pRenderer->_msaaMemory, 0);
-
-    cu_try(create_image_view(
-        &pRenderer->_msaaImageView, pRenderer->_msaaImage, pRenderer->_swapchainFormat));
-    dbg_log_create(pRenderer->_msaaImageView);
-
-    return CU_SUCCESS;
-}
-
-/**
- * @brief Destroys the renderer's MSAA info.
- * @param [in, out] pRenderer A pointer to the renderer.
- */
-static void renderer_destroy_msaa_info(CuRenderer* const pRenderer)
-{
-    vkDestroyImageView(gContext._device, pRenderer->_msaaImageView, nullptr);
-    dbg_log_destroy(pRenderer->_msaaImageView);
-    vkDestroyImage(gContext._device, pRenderer->_msaaImage, nullptr);
-    dbg_log_destroy(pRenderer->_msaaImage);
-    vkFreeMemory(gContext._device, pRenderer->_msaaMemory, nullptr);
-    dbg_log_destroy(pRenderer->_msaaMemory);
-}
-
-/**
- * @brief Recreates the renderer's swapchain.
- * @param [in, out] pRenderer A pointer to the renderer.
- * @return The result of creating the new swapchain.
- */
-static CuResult renderer_recreate_swapchain(CuRenderer* const pRenderer)
-{
-    dbg_log_note("Recreating the swapchain %p", (void*)pRenderer->_swapchain);
-
-    CuSwapchainInfo swapchainInfo = {};
-    cu_try(create_swapchain(
-        &swapchainInfo,
-        pRenderer->_minSwapchainImages,
-        pRenderer->_pWindow,
-        pRenderer->_surface,
-        pRenderer->_preferredPresentMode,
-        pRenderer->_swapchain));
-    dbg_log_create(swapchainInfo._handle);
-
-    vkQueueWaitIdle(gContext._queue);
-    vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
-    dbg_log_destroy(pRenderer->_swapchain);
-    renderer_destroy_swapchain_images(pRenderer);
-
-    pRenderer->_swapchain = swapchainInfo._handle;
-    pRenderer->_swapchainFormat = swapchainInfo._format;
-    pRenderer->_swapchainExtent = swapchainInfo._extent;
-    pRenderer->_nSwapchainImages = swapchainInfo._nImages;
-
-    cu_try(renderer_create_swapchain_images(pRenderer));
-
-    renderer_destroy_msaa_info(pRenderer);
-    cu_try(renderer_create_msaa_info(pRenderer));
-
-    return CU_SUCCESS;
 }
 
 CuResult cu_renderer_create(
@@ -225,25 +193,28 @@ CuResult cu_renderer_create(
         pRenderer->_surface,
         pCreateInfo->preferredPresentMode,
         VK_NULL_HANDLE));
-    pRenderer->_swapchain = swapchainInfo._handle;
-    pRenderer->_swapchainFormat = swapchainInfo._format;
-    pRenderer->_swapchainExtent = swapchainInfo._extent;
+    pRenderer->_swapchainState._swapchain = swapchainInfo._handle;
+    pRenderer->_swapchainState._extent = swapchainInfo._extent;
+    pRenderer->_swapchainState._format = swapchainInfo._format;
 
-    pRenderer->_nSwapchainImages = swapchainInfo._nImages;
     cu_try_catch(renderer_create_swapchain_images(pRenderer));
 
-    pRenderer->_nFramesInFlight = pCreateInfo->maxFramesInFlight;
-    cu_try_catch(renderer_create_frames(pRenderer));
+    cu_try_catch(renderer_create_frames(pRenderer, pCreateInfo->maxFramesInFlight));
 
-    pRenderer->_nMsaaSamples = pCreateInfo->nMsaaSamples;
-    cu_try_catch(renderer_create_msaa_info(pRenderer));
+    cu_try_catch(msaa_create(
+        &pRenderer->_msaaState,
+        pCreateInfo->nMsaaSamples,
+        pRenderer->_swapchainState._extent,
+        pRenderer->_swapchainState._format));
 
     cu_try_catch(create_semaphore(&pRenderer->_timelineSemaphore, VK_SEMAPHORE_TYPE_TIMELINE, 0));
     dbg_log_create(pRenderer->_timelineSemaphore);
 
-    pRenderer->_pWindow = pWindow;
-    pRenderer->_minSwapchainImages = pCreateInfo->minSwapchainImages;
-    pRenderer->_preferredPresentMode = pCreateInfo->preferredPresentMode;
+    pRenderer->_config._pWindow = pWindow;
+    pRenderer->_config._nSwapchainImages = pCreateInfo->minSwapchainImages;
+    pRenderer->_config._nMsaaSamples = pCreateInfo->nMsaaSamples;
+    pRenderer->_config._preferredPresentMode = pCreateInfo->preferredPresentMode;
+
     pRenderer->_frameCounter = (uint64_t)pRenderer->_nFramesInFlight - 1;
     pRenderer->_iSwapchainImage = 0;
 
@@ -267,11 +238,46 @@ void cu_renderer_destroy(CuRenderer* const pRenderer)
     dbg_log_destroy(pRenderer->_timelineSemaphore);
     renderer_destroy_frames(pRenderer);
     renderer_destroy_swapchain_images(pRenderer);
-    vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
-    dbg_log_destroy(pRenderer->_swapchain);
+    vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchainState._swapchain, nullptr);
+    dbg_log_destroy(pRenderer->_swapchainState._swapchain);
     vkDestroySurfaceKHR(gContext._instance, pRenderer->_surface, nullptr);
     dbg_log_destroy(pRenderer->_surface);
-    renderer_destroy_msaa_info(pRenderer);
+    msaa_destroy(&pRenderer->_msaaState);
+}
+
+CuResult cu_renderer_recreate_swapchain(CuRenderer* const pRenderer)
+{
+    dbg_log_note("Recreating the swapchain %p", (void*)pRenderer->_swapchainState._swapchain);
+
+    CuSwapchainInfo swapchainInfo = {};
+    cu_try(create_swapchain(
+        &swapchainInfo,
+        pRenderer->_config._nSwapchainImages,
+        pRenderer->_config._pWindow,
+        pRenderer->_surface,
+        pRenderer->_config._preferredPresentMode,
+        pRenderer->_swapchainState._swapchain));
+    dbg_log_create(swapchainInfo._handle);
+
+    vkQueueWaitIdle(gContext._queue);
+    vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchainState._swapchain, nullptr);
+    dbg_log_destroy(pRenderer->_swapchainState._swapchain);
+    renderer_destroy_swapchain_images(pRenderer);
+
+    pRenderer->_swapchainState._swapchain = swapchainInfo._handle;
+    pRenderer->_swapchainState._format = swapchainInfo._format;
+    pRenderer->_swapchainState._extent = swapchainInfo._extent;
+
+    cu_try(renderer_create_swapchain_images(pRenderer));
+
+    msaa_destroy(&pRenderer->_msaaState);
+    cu_try(msaa_create(
+        &pRenderer->_msaaState,
+        pRenderer->_config._nMsaaSamples,
+        pRenderer->_swapchainState._extent,
+        pRenderer->_swapchainState._format));
+
+    return CU_SUCCESS;
 }
 
 CuResult cu_renderer_begin_frame(CuRenderer* const pRenderer, VkCommandBuffer* const pCommandBuffer)
@@ -293,14 +299,14 @@ CuResult cu_renderer_begin_frame(CuRenderer* const pRenderer, VkCommandBuffer* c
     // Get the next target swapchain image's index.
     const VkResult acquireResult = vkAcquireNextImageKHR(
         gContext._device,
-        pRenderer->_swapchain,
+        pRenderer->_swapchainState._swapchain,
         TIMEOUT_NANOS,
         pFrame->_imageAvailable,
         VK_NULL_HANDLE,
         &pRenderer->_iSwapchainImage);
     if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
         *pCommandBuffer = VK_NULL_HANDLE;
-        return renderer_recreate_swapchain(pRenderer);
+        return cu_renderer_recreate_swapchain(pRenderer);
     } else if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
         return cu_vk_error(acquireResult);
     }
@@ -382,13 +388,13 @@ CuResult cu_renderer_submit_frame(CuRenderer* const pRenderer)
         .waitSemaphoreCount = 1,
         .pWaitSemaphores = &pSwapchainImage->_renderFinished,
         .swapchainCount = 1,
-        .pSwapchains = &pRenderer->_swapchain,
+        .pSwapchains = &pRenderer->_swapchainState._swapchain,
         .pImageIndices = &pRenderer->_iSwapchainImage,
         .pResults = nullptr,
     };
     const VkResult presentResult = vkQueuePresentKHR(gContext._queue, &presentInfo);
     if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
-        cu_try(renderer_recreate_swapchain(pRenderer));
+        cu_try(cu_renderer_recreate_swapchain(pRenderer));
     } else if (presentResult != VK_SUCCESS) {
         return cu_vk_error(presentResult);
     }
@@ -407,7 +413,7 @@ void cu_renderer_start_rendering(
                 .x = 0,
                 .y = 0,
             },
-        .extent = pRenderer->_swapchainExtent,
+        .extent = pRenderer->_swapchainState._extent,
     };
     const VkViewport viewport = {
         .x = 0.0F,
@@ -458,11 +464,11 @@ void cu_renderer_start_rendering(
     vkCmdPipelineBarrier2(commandBuffer, &dependencyInfo);
 
     // Convert MSAA image if active.
-    const bool msaaActive = pRenderer->_msaaImage != VK_NULL_HANDLE;
+    const bool msaaActive = pRenderer->_msaaState._image != VK_NULL_HANDLE;
     if (msaaActive) {
         cu_cmd_image_barrier(
             commandBuffer,
-            pRenderer->_msaaImage,
+            pRenderer->_msaaState._image,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -476,7 +482,7 @@ void cu_renderer_start_rendering(
         .color.float32 = {0.0F, 0.0F, 0.0F, 1.0F},
     };
     const VkImageView imageView =
-        msaaActive ? pRenderer->_msaaImageView : pSwapchainImage->_imageView;
+        msaaActive ? pRenderer->_msaaState._imageView : pSwapchainImage->_imageView;
     const VkResolveModeFlagBits resolveMode =
         msaaActive ? VK_RESOLVE_MODE_AVERAGE_BIT : VK_RESOLVE_MODE_NONE;
     const VkImageView resolveImageView = msaaActive ? pSwapchainImage->_imageView : VK_NULL_HANDLE;

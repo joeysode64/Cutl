@@ -171,13 +171,6 @@ CuResult create_swapchain(
         vkCreateSwapchainKHR(gContext._device, &createInfo, nullptr, &pSwapchainInfo->_handle));
     dbg_log_create(pSwapchainInfo->_handle);
 
-    cu_try_vk(vkGetSwapchainImagesKHR(
-        gContext._device, pSwapchainInfo->_handle, &pSwapchainInfo->_nImages, nullptr));
-    dbg_log_note(
-        "Swapchain %p was created with %u swapchain images",
-        (void*)pSwapchainInfo->_handle,
-        pSwapchainInfo->_nImages);
-
     pSwapchainInfo->_format = surfaceFormat.format;
     pSwapchainInfo->_extent = extent;
 

@@ -15,8 +15,6 @@ typedef struct CuSwapchainInfo_T {
 
     VkExtent2D _extent; /**< The swapchain's extent. */
 
-    uint32_t _nImages; /**< The number of swapchain images. */
-
     VkFormat _format; /**< The surface's format. */
 } CuSwapchainInfo;
 

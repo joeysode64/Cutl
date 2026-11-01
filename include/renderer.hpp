@@ -110,6 +110,12 @@ namespace cu {
             return cu_renderer_create(this, &createInfo, &window.get());
         }
 
+        /** @ref cu_renderer_recreate_swapchain() */
+        inline Result recreate_swapchain()
+        {
+            return cu_renderer_recreate_swapchain(this);
+        }
+
         /** @ref cu_renderer_begin_frame() */
         inline Result begin_frame(CommandBuffer& commandBuffer)
         {
