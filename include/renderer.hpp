@@ -13,6 +13,9 @@ namespace cu {
     /** @ref CuRenderer */
     class Renderer : public Wrapper<CuRenderer> {
     public:
+        /** @ref CuRendererConfig */
+        using Config = CuRendererConfig;
+
         /** @ref CuRendererCreateInfo */
         using CreateInfo = CuRendererCreateInfo;
 
@@ -61,6 +64,13 @@ namespace cu {
             constexpr Builder& n_msaa_samples(const uint32_t n)
             {
                 nMsaaSamples = n;
+                return *this;
+            }
+
+            /** @ref CuRendererCreateInfo::enableDepth */
+            constexpr Builder& enable_depth(const bool x)
+            {
+                enableDepth = x;
                 return *this;
             }
 
@@ -138,6 +148,16 @@ namespace cu {
         inline void end_rendering(const CommandBuffer commandBuffer)
         {
             return cu_renderer_end_rendering(this, commandBuffer);
+        }
+
+        /** @ref cu_renderer_get_config() */
+        inline Config& get_config() {
+            return _config;
+        }
+
+        /** @ref cu_renderer_get_config() */
+        inline const Config& get_config() const {
+            return _config;
         }
 
         /** @ref cu_renderer_get_formats() */

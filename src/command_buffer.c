@@ -80,6 +80,7 @@ void cu_cmd_buffer_copy(
 void cu_cmd_image_barrier(
     const VkCommandBuffer commandBuffer,
     const VkImage image,
+    const VkImageAspectFlags aspectMask,
     const VkPipelineStageFlags2 srcStageMask,
     const VkAccessFlags2 srcAccessMask,
     const VkPipelineStageFlags2 dstStageMask,
@@ -88,7 +89,7 @@ void cu_cmd_image_barrier(
     const VkImageLayout newLayout)
 {
     const VkImageSubresourceRange subresourceRange = {
-        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .aspectMask = aspectMask,
         .baseMipLevel = 0,
         .levelCount = 1,
         .baseArrayLayer = 0,

@@ -87,6 +87,7 @@ void cu_cmd_buffer_copy(
  * @brief Transitions the image from one layout to another.
  * @param [in, out] commandBuffer The command buffer.
  * @param image The image handle.
+ * @param aspectMask A bitmap of the image aspects to transition.
  * @param srcStageMask The pipeline stages that last used the image.
  * @param srcAccessMask How the image was last accessed.
  * @param dstStageMask The pipeline stages that will use the image next.
@@ -97,6 +98,7 @@ void cu_cmd_buffer_copy(
 void cu_cmd_image_barrier(
     VkCommandBuffer commandBuffer,
     VkImage image,
+    VkImageAspectFlags aspectMask,
     VkPipelineStageFlags2 srcStageMask,
     VkAccessFlags2 srcAccessMask,
     VkPipelineStageFlags2 dstStageMask,

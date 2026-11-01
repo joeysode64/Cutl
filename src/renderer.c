@@ -12,60 +12,120 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
+
+/** @brief The format of the renderer's depth image. */
+constexpr VkFormat DEPTH_FORMAT = VK_FORMAT_D32_SFLOAT;
 
 /**
- * @brief Creates the MSAA state.
- * @param [in, out] pMsaa A pointer to the MSAA state.
- * @param nSamples The number of samples.
- * @param extent The image's extent.
- * @param format The image's format.
- * @return The result of creating the MSAA state.
+ * @brief Creates the renderer's MSAA and depth images, which share a single allocation.
+ * @param [in, out] pRenderer A pointer to the renderer.
+ * @param nMsaaSamples The number of MSAA samples.
+ * @param enableDepth Whether to create a depth image.
+ * @return The result of creating the images.
+ * @warning Depends on the renderer's swapchain as well as its extent and format to be set.
+ * @note On failure, anything already created is released by `renderer_destroy_images`.
  */
-static CuResult msaa_create(
-    CuRendererMsaaState* const pMsaa,
-    const uint32_t nSamples,
-    const VkExtent2D extent,
-    const VkFormat format)
+static CuResult renderer_create_images(
+    CuRenderer* const pRenderer,
+    const uint32_t nMsaaSamples,
+    const bool enableDepth)
 {
-    if (nSamples == 1) {
+    pRenderer->_msaaImage = VK_NULL_HANDLE;
+    pRenderer->_msaaImageView = VK_NULL_HANDLE;
+    pRenderer->_depthImage = VK_NULL_HANDLE;
+    pRenderer->_depthImageView = VK_NULL_HANDLE;
+    pRenderer->_imageMemory = VK_NULL_HANDLE;
+
+    const bool enableMsaa = nMsaaSamples > 1;
+    if (!enableMsaa && !enableDepth) {
         return CU_SUCCESS;
     }
 
-    cu_try(create_image(
-        &pMsaa->_image,
-        extent.width,
-        extent.height,
-        format,
-        nSamples,
-        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT));
-    dbg_log_create(pMsaa->_image);
+    const VkExtent2D extent = pRenderer->_extent;
+    VkDeviceSize size = 0;
+    uint32_t mMemoryTypes = UINT32_MAX;
 
-    VkMemoryRequirements memoryRequirements = {};
-    vkGetImageMemoryRequirements(gContext._device, pMsaa->_image, &memoryRequirements);
-    const uint32_t iMemoryType =
-        __builtin_ctz(gContext._memoryInfo._mDeviceLocal & memoryRequirements.memoryTypeBits);
-    cu_try(allocate_memory(&pMsaa->_memory, memoryRequirements.size, iMemoryType));
-    dbg_log_create(pMsaa->_memory);
-    vkBindImageMemory(gContext._device, pMsaa->_image, pMsaa->_memory, 0);
+    if (enableMsaa) {
+        cu_try(create_image(
+            &pRenderer->_msaaImage,
+            extent.width,
+            extent.height,
+            pRenderer->_format,
+            nMsaaSamples,
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT));
+        dbg_log_create(pRenderer->_msaaImage);
 
-    cu_try(create_image_view(&pMsaa->_imageView, pMsaa->_image, format));
-    dbg_log_create(pMsaa->_imageView);
+        VkMemoryRequirements memoryRequirements = {};
+        vkGetImageMemoryRequirements(gContext._device, pRenderer->_msaaImage, &memoryRequirements);
+        size += memoryRequirements.size;
+        mMemoryTypes &= memoryRequirements.memoryTypeBits;
+    }
+
+    VkDeviceSize depthOffset = 0;
+    if (enableDepth) {
+        cu_try(create_image(
+            &pRenderer->_depthImage,
+            extent.width,
+            extent.height,
+            DEPTH_FORMAT,
+            nMsaaSamples,
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT));
+        dbg_log_create(pRenderer->_depthImage);
+
+        VkMemoryRequirements memoryRequirements = {};
+        vkGetImageMemoryRequirements(gContext._device, pRenderer->_depthImage, &memoryRequirements);
+        depthOffset = align_up(size, memoryRequirements.alignment);
+        size = depthOffset + memoryRequirements.size;
+        mMemoryTypes &= memoryRequirements.memoryTypeBits;
+    }
+
+    const uint32_t iMemoryType = __builtin_ctz(gContext._memoryInfo._mDeviceLocal & mMemoryTypes);
+    cu_try(allocate_memory(&pRenderer->_imageMemory, size, iMemoryType));
+    dbg_log_create(pRenderer->_imageMemory);
+
+    if (enableMsaa) {
+        cu_try_vk(vkBindImageMemory(gContext._device, pRenderer->_msaaImage, pRenderer->_imageMemory, 0));
+
+        cu_try(create_image_view(
+            &pRenderer->_msaaImageView,
+            pRenderer->_msaaImage,
+            pRenderer->_format,
+            VK_IMAGE_ASPECT_COLOR_BIT));
+        dbg_log_create(pRenderer->_msaaImageView);
+    }
+
+    if (enableDepth) {
+        cu_try_vk(vkBindImageMemory(
+            gContext._device, pRenderer->_depthImage, pRenderer->_imageMemory, depthOffset));
+
+        cu_try(create_image_view(
+            &pRenderer->_depthImageView,
+            pRenderer->_depthImage,
+            DEPTH_FORMAT,
+            VK_IMAGE_ASPECT_DEPTH_BIT));
+        dbg_log_create(pRenderer->_depthImageView);
+    }
 
     return CU_SUCCESS;
 }
 
 /**
- * @brief Destroys the MSAA state.
- * @param [in, out] pMsaa A pointer to the MSAA state.
+ * @brief Destroys the renderer's MSAA and depth images and their allocation.
+ * @param [in, out] pRenderer A pointer to the renderer.
  */
-static void msaa_destroy(CuRendererMsaaState* const pMsaa)
+static void renderer_destroy_images(CuRenderer* const pRenderer)
 {
-    vkDestroyImageView(gContext._device, pMsaa->_imageView, nullptr);
-    dbg_log_destroy(pMsaa->_imageView);
-    vkDestroyImage(gContext._device, pMsaa->_image, nullptr);
-    dbg_log_destroy(pMsaa->_image);
-    vkFreeMemory(gContext._device, pMsaa->_memory, nullptr);
-    dbg_log_destroy(pMsaa->_memory);
+    vkDestroyImageView(gContext._device, pRenderer->_depthImageView, nullptr);
+    dbg_log_destroy(pRenderer->_depthImageView);
+    vkDestroyImage(gContext._device, pRenderer->_depthImage, nullptr);
+    dbg_log_destroy(pRenderer->_depthImage);
+    vkDestroyImageView(gContext._device, pRenderer->_msaaImageView, nullptr);
+    dbg_log_destroy(pRenderer->_msaaImageView);
+    vkDestroyImage(gContext._device, pRenderer->_msaaImage, nullptr);
+    dbg_log_destroy(pRenderer->_msaaImage);
+    vkFreeMemory(gContext._device, pRenderer->_imageMemory, nullptr);
+    dbg_log_destroy(pRenderer->_imageMemory);
 }
 
 /**
@@ -77,10 +137,10 @@ static CuResult renderer_create_swapchain_images(CuRenderer* const pRenderer)
 {
     uint32_t nImages = 0;
     cu_try_vk(vkGetSwapchainImagesKHR(
-        gContext._device, pRenderer->_swapchainState._swapchain, &nImages, nullptr));
+        gContext._device, pRenderer->_swapchain, &nImages, nullptr));
     VkImage images[nImages];
     cu_try_vk(vkGetSwapchainImagesKHR(
-        gContext._device, pRenderer->_swapchainState._swapchain, &nImages, images));
+        gContext._device, pRenderer->_swapchain, &nImages, images));
 
     allocate_n(pRenderer->_pSwapchainImages, nImages);
     pRenderer->_nSwapchainImages = nImages;
@@ -90,7 +150,10 @@ static CuResult renderer_create_swapchain_images(CuRenderer* const pRenderer)
         dbg_log_note("Creating swapchain image object for image #%u (%p)", i, (void*)images[i]);
 
         cu_try(create_image_view(
-            &pSwapchainImage->_imageView, images[i], pRenderer->_swapchainState._format));
+            &pSwapchainImage->_imageView,
+            images[i],
+            pRenderer->_format,
+            VK_IMAGE_ASPECT_COLOR_BIT));
         dbg_log_create(pSwapchainImage->_imageView);
 
         cu_try(create_semaphore(&pSwapchainImage->_renderFinished, VK_SEMAPHORE_TYPE_BINARY, 0));
@@ -193,27 +256,25 @@ CuResult cu_renderer_create(
         pRenderer->_surface,
         pCreateInfo->preferredPresentMode,
         VK_NULL_HANDLE));
-    pRenderer->_swapchainState._swapchain = swapchainInfo._handle;
-    pRenderer->_swapchainState._extent = swapchainInfo._extent;
-    pRenderer->_swapchainState._format = swapchainInfo._format;
+    pRenderer->_swapchain = swapchainInfo._handle;
+    pRenderer->_extent = swapchainInfo._extent;
+    pRenderer->_format = swapchainInfo._format;
 
     cu_try_catch(renderer_create_swapchain_images(pRenderer));
 
     cu_try_catch(renderer_create_frames(pRenderer, pCreateInfo->maxFramesInFlight));
 
-    cu_try_catch(msaa_create(
-        &pRenderer->_msaaState,
-        pCreateInfo->nMsaaSamples,
-        pRenderer->_swapchainState._extent,
-        pRenderer->_swapchainState._format));
+    cu_try_catch(
+        renderer_create_images(pRenderer, pCreateInfo->nMsaaSamples, pCreateInfo->enableDepth));
 
     cu_try_catch(create_semaphore(&pRenderer->_timelineSemaphore, VK_SEMAPHORE_TYPE_TIMELINE, 0));
     dbg_log_create(pRenderer->_timelineSemaphore);
 
-    pRenderer->_config._pWindow = pWindow;
-    pRenderer->_config._nSwapchainImages = pCreateInfo->minSwapchainImages;
-    pRenderer->_config._nMsaaSamples = pCreateInfo->nMsaaSamples;
-    pRenderer->_config._preferredPresentMode = pCreateInfo->preferredPresentMode;
+    pRenderer->_pWindow = pWindow;
+    pRenderer->_config.nSwapchainImages = pCreateInfo->minSwapchainImages;
+    pRenderer->_config.nMsaaSamples = pCreateInfo->nMsaaSamples;
+    pRenderer->_config.preferredPresentMode = pCreateInfo->preferredPresentMode;
+    pRenderer->_config.enableDepth = pCreateInfo->enableDepth;
 
     pRenderer->_frameCounter = (uint64_t)pRenderer->_nFramesInFlight - 1;
     pRenderer->_iSwapchainImage = 0;
@@ -238,44 +299,41 @@ void cu_renderer_destroy(CuRenderer* const pRenderer)
     dbg_log_destroy(pRenderer->_timelineSemaphore);
     renderer_destroy_frames(pRenderer);
     renderer_destroy_swapchain_images(pRenderer);
-    vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchainState._swapchain, nullptr);
-    dbg_log_destroy(pRenderer->_swapchainState._swapchain);
+    vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
+    dbg_log_destroy(pRenderer->_swapchain);
     vkDestroySurfaceKHR(gContext._instance, pRenderer->_surface, nullptr);
     dbg_log_destroy(pRenderer->_surface);
-    msaa_destroy(&pRenderer->_msaaState);
+    renderer_destroy_images(pRenderer);
 }
 
 CuResult cu_renderer_recreate_swapchain(CuRenderer* const pRenderer)
 {
-    dbg_log_note("Recreating the swapchain %p", (void*)pRenderer->_swapchainState._swapchain);
+    dbg_log_note("Recreating the swapchain %p", (void*)pRenderer->_swapchain);
 
     CuSwapchainInfo swapchainInfo = {};
     cu_try(create_swapchain(
         &swapchainInfo,
-        pRenderer->_config._nSwapchainImages,
-        pRenderer->_config._pWindow,
+        pRenderer->_config.nSwapchainImages,
+        pRenderer->_pWindow,
         pRenderer->_surface,
-        pRenderer->_config._preferredPresentMode,
-        pRenderer->_swapchainState._swapchain));
+        pRenderer->_config.preferredPresentMode,
+        pRenderer->_swapchain));
     dbg_log_create(swapchainInfo._handle);
 
     vkQueueWaitIdle(gContext._queue);
-    vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchainState._swapchain, nullptr);
-    dbg_log_destroy(pRenderer->_swapchainState._swapchain);
+    vkDestroySwapchainKHR(gContext._device, pRenderer->_swapchain, nullptr);
+    dbg_log_destroy(pRenderer->_swapchain);
     renderer_destroy_swapchain_images(pRenderer);
 
-    pRenderer->_swapchainState._swapchain = swapchainInfo._handle;
-    pRenderer->_swapchainState._format = swapchainInfo._format;
-    pRenderer->_swapchainState._extent = swapchainInfo._extent;
+    pRenderer->_swapchain = swapchainInfo._handle;
+    pRenderer->_format = swapchainInfo._format;
+    pRenderer->_extent = swapchainInfo._extent;
 
     cu_try(renderer_create_swapchain_images(pRenderer));
 
-    msaa_destroy(&pRenderer->_msaaState);
-    cu_try(msaa_create(
-        &pRenderer->_msaaState,
-        pRenderer->_config._nMsaaSamples,
-        pRenderer->_swapchainState._extent,
-        pRenderer->_swapchainState._format));
+    renderer_destroy_images(pRenderer);
+    cu_try(renderer_create_images(
+        pRenderer, pRenderer->_config.nMsaaSamples, pRenderer->_config.enableDepth));
 
     return CU_SUCCESS;
 }
@@ -299,7 +357,7 @@ CuResult cu_renderer_begin_frame(CuRenderer* const pRenderer, VkCommandBuffer* c
     // Get the next target swapchain image's index.
     const VkResult acquireResult = vkAcquireNextImageKHR(
         gContext._device,
-        pRenderer->_swapchainState._swapchain,
+        pRenderer->_swapchain,
         TIMEOUT_NANOS,
         pFrame->_imageAvailable,
         VK_NULL_HANDLE,
@@ -388,7 +446,7 @@ CuResult cu_renderer_submit_frame(CuRenderer* const pRenderer)
         .waitSemaphoreCount = 1,
         .pWaitSemaphores = &pSwapchainImage->_renderFinished,
         .swapchainCount = 1,
-        .pSwapchains = &pRenderer->_swapchainState._swapchain,
+        .pSwapchains = &pRenderer->_swapchain,
         .pImageIndices = &pRenderer->_iSwapchainImage,
         .pResults = nullptr,
     };
@@ -413,7 +471,7 @@ void cu_renderer_start_rendering(
                 .x = 0,
                 .y = 0,
             },
-        .extent = pRenderer->_swapchainState._extent,
+        .extent = pRenderer->_extent,
     };
     const VkViewport viewport = {
         .x = 0.0F,
@@ -464,11 +522,12 @@ void cu_renderer_start_rendering(
     vkCmdPipelineBarrier2(commandBuffer, &dependencyInfo);
 
     // Convert MSAA image if active.
-    const bool msaaActive = pRenderer->_msaaState._image != VK_NULL_HANDLE;
+    const bool msaaActive = pRenderer->_msaaImage != VK_NULL_HANDLE;
     if (msaaActive) {
         cu_cmd_image_barrier(
             commandBuffer,
-            pRenderer->_msaaState._image,
+            pRenderer->_msaaImage,
+            VK_IMAGE_ASPECT_COLOR_BIT,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -477,12 +536,34 @@ void cu_renderer_start_rendering(
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     }
 
+    // Convert depth image if active.
+    const bool depthActive = pRenderer->_depthImage != VK_NULL_HANDLE;
+    if (depthActive) {
+        const VkPipelineStageFlags2 depthStages =
+            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+            VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+        cu_cmd_image_barrier(
+            commandBuffer,
+            pRenderer->_depthImage,
+            VK_IMAGE_ASPECT_DEPTH_BIT,
+            depthStages,
+            VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+            depthStages,
+            VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+    }
+
     // Begin rendering.
-    const VkClearValue clearValue = {
+    const VkClearValue colorClearValue = {
         .color.float32 = {0.0F, 0.0F, 0.0F, 1.0F},
     };
+    const VkClearValue depthStencilClearValue = {
+        .depthStencil = { .depth = 1.0f, .stencil = 0, },
+    };
     const VkImageView imageView =
-        msaaActive ? pRenderer->_msaaState._imageView : pSwapchainImage->_imageView;
+        msaaActive ? pRenderer->_msaaImageView : pSwapchainImage->_imageView;
     const VkResolveModeFlagBits resolveMode =
         msaaActive ? VK_RESOLVE_MODE_AVERAGE_BIT : VK_RESOLVE_MODE_NONE;
     const VkImageView resolveImageView = msaaActive ? pSwapchainImage->_imageView : VK_NULL_HANDLE;
@@ -498,7 +579,19 @@ void cu_renderer_start_rendering(
         .resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
         .storeOp = storeOp,
-        .clearValue = clearValue,
+        .clearValue = colorClearValue,
+    };
+    const VkRenderingAttachmentInfo depthAttachment = {
+        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+        .pNext = nullptr,
+        .imageView = pRenderer->_depthImageView,
+        .imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+        .resolveMode = VK_RESOLVE_MODE_NONE,
+        .resolveImageView = VK_NULL_HANDLE,
+        .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .clearValue = depthStencilClearValue,
     };
     const VkRenderingInfo renderingInfo = {
         .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
@@ -509,7 +602,7 @@ void cu_renderer_start_rendering(
         .viewMask = 0,
         .colorAttachmentCount = 1,
         .pColorAttachments = &colorAttachment,
-        .pDepthAttachment = nullptr,
+        .pDepthAttachment = depthActive ? &depthAttachment : nullptr,
         .pStencilAttachment = nullptr,
     };
     vkCmdBeginRendering(commandBuffer, &renderingInfo);

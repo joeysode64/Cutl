@@ -42,6 +42,16 @@ typedef struct {
 
     VkSampleCountFlags rasterizationSamples; /**< The rasterization samples value. Default is 1 (no
                                                 MSAA). */
+
+    bool depthTestEnable; /**< Whether to enable depth testing. Default is false. */
+
+    bool depthWriteEnable; /**< Whether to enable depth writes. Default is false. */
+
+    VkCompareOp depthCompareOp; /**< The depth comparison. Default is `VK_COMPARE_OP_NEVER`. */
+
+    float minDepthBounds; /**< The minimum depth bound. Default is 0.0. */
+
+    float maxDepthBounds; /**< The maximum depth bound. Default is 1.0. */
 } CuGraphicsPipelineCreateInfo;
 
 /**
@@ -56,6 +66,11 @@ constexpr CuGraphicsPipelineCreateInfo CU_DEFAULT_GRAPHICS_PIPELINE_CREATE_INFO 
     .pFormats = nullptr,
     .nFormats = 0,
     .rasterizationSamples = 1,
+    .depthTestEnable = false,
+    .depthWriteEnable = false,
+    .depthCompareOp = VK_COMPARE_OP_NEVER,
+    .minDepthBounds = 0.0F,
+    .maxDepthBounds = 1.0F,
 };
 
 #ifdef __cplusplus

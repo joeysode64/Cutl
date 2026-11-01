@@ -6,35 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-
-/** @brief A renderer's configuration. */
-typedef struct CuRendererConfig_T {
-    const CuWindow* _pWindow; /**< A pointer to the target window. */
-
-    uint32_t _nSwapchainImages; /**< The target number of swapchain images. */
-
-    uint32_t _nMsaaSamples; /**< The number of MSAA samples. */
-
-    VkPresentModeKHR _preferredPresentMode; /**< The preferred present mode. */
-} CuRendererConfig;
-
-/** @brief A renderer's swapchain state. */
-typedef struct CuRendererSwapchainState_T {
-    VkSwapchainKHR _swapchain; /**< The swapchain handle. */
-
-    VkExtent2D _extent; /**< The swapchain's extent. */
-
-    VkFormat _format; /**< The swapchain format. */
-} CuRendererSwapchainState;
-
-/** @brief A renderer's MSAA state. */
-typedef struct CuRendererMsaaState_T {
-    VkImage _image; /**< The MSAA image handle. */
-
-    VkDeviceMemory _memory; /**< The MSAA image's allocation handle. */
-
-    VkImageView _imageView; /**< The MSAA image view handle. */
-} CuRendererMsaaState;
+#include <vulkan/vulkan_core.h>
 
 /** @brief A swapchain image. */
 typedef struct CuSwapchainImage_T {
@@ -52,14 +24,19 @@ typedef struct CuFrame_T {
     VkSemaphore _imageAvailable; /**< The "image available" semaphore handle. */
 } CuFrame;
 
+/** @brief A renderer's configuration. */
+typedef struct CuRendererConfig_T {
+    uint32_t nSwapchainImages; /**< The target number of swapchain images. */
+
+    uint32_t nMsaaSamples; /**< The number of MSAA samples. */
+
+    VkPresentModeKHR preferredPresentMode; /**< The preferred present mode. */
+
+    bool enableDepth; /**< Whether to create a depth image. */
+} CuRendererConfig;
+
 /** @brief A renderer. */
 typedef struct CuRenderer_T {
-    CuRendererConfig _config; /**< The config. */
-
-    CuRendererSwapchainState _swapchainState; /**< The swapchain state. */
-
-    CuRendererMsaaState _msaaState; /**< The MSAA state. */
-
     CuSwapchainImage* _pSwapchainImages; /**< A pointer to the swapchain images. */
 
     uint32_t _nSwapchainImages; /**< The number of swapchain images. */
@@ -67,6 +44,26 @@ typedef struct CuRenderer_T {
     CuFrame* _pFramesInFlight; /**< A pointer to the frame in flight objects. */
 
     uint32_t _nFramesInFlight; /**< The number of frame in flight objects. */
+
+    const CuWindow* _pWindow; /**< A pointer to the window target. */
+
+    CuRendererConfig _config; /**< The config. */
+
+    VkSwapchainKHR _swapchain; /**< The swapchain handle. */
+
+    VkExtent2D _extent; /**< The swapchain extent. */
+
+    VkFormat _format; /**< The swapchain format. */
+
+    VkImage _msaaImage; /**< The MSAA image handle. */
+
+    VkImageView _msaaImageView; /**< The MSAA image view handle. */
+
+    VkImage _depthImage; /**< The depth image handle. */
+
+    VkImageView _depthImageView; /**< The depth image view handle. */
+
+    VkDeviceMemory _imageMemory; /**< The MSAA and depth image's allocation handle. */
 
     VkSurfaceKHR _surface; /**< The surface handle. */
 
@@ -90,6 +87,8 @@ typedef struct CuRendererCreateInfo_T {
                                               fallback. */
 
     uint32_t nMsaaSamples; /**< The number of MSAA samples. Default is 1 (no anti-aliasing). */
+
+    bool enableDepth; /**< Whether to create a depth image. Default is false. */
 } CuRendererCreateInfo;
 
 /** @brief The default renderer create info. */
@@ -98,6 +97,7 @@ constexpr CuRendererCreateInfo CU_DEFAULT_RENDERER_CREATE_INFO = {
     .minSwapchainImages = 3,
     .preferredPresentMode = VK_PRESENT_MODE_FIFO_KHR,
     .nMsaaSamples = 1,
+    .enableDepth = false,
 };
 
 #ifdef __cplusplus
@@ -128,6 +128,7 @@ void cu_renderer_destroy(CuRenderer* pRenderer);
  * @param [in, out] pRenderer A pointer to the renderer.
  * @note This function is called internally as needed. Only call manually when you change a
  * configuration.
+ * @warning This function should not be called between a frame's start and submission.
  */
 CuResult cu_renderer_recreate_swapchain(CuRenderer* pRenderer);
 
@@ -165,13 +166,23 @@ void cu_renderer_start_rendering(const CuRenderer* pRenderer, VkCommandBuffer co
 void cu_renderer_end_rendering(const CuRenderer* pRenderer, VkCommandBuffer commandBuffer);
 
 /**
+ * @brief Returns a pointer to the renderer's config.
+ * @param [in, out] pRenderer A pointer to the renderer.
+ * @return A pointer to the renderer's config.
+ * @note Changing any values will require recreating the swapchain.
+ */
+inline static CuRendererConfig* cu_renderer_get_config(CuRenderer* pRenderer) {
+    return &pRenderer->_config;
+}
+
+/**
  * @brief Returns the renderer's swapchain's extent.
  * @param [in] pRenderer A pointer to the renderer.
  * @return The renderer's swapchain's extent..
  */
 inline static VkExtent2D cu_renderer_get_extent(const CuRenderer* pRenderer)
 {
-    return pRenderer->_swapchainState._extent;
+    return pRenderer->_extent;
 }
 
 /**
@@ -181,7 +192,7 @@ inline static VkExtent2D cu_renderer_get_extent(const CuRenderer* pRenderer)
  */
 inline static VkFormat cu_renderer_get_format(const CuRenderer* pRenderer)
 {
-    return pRenderer->_swapchainState._format;
+    return pRenderer->_format;
 }
 
 /**

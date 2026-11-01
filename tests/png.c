@@ -63,6 +63,7 @@ int main()
     cu_cmd_image_barrier(
         cu_task_get_command_buffer(&task),
         image._image,
+        VK_IMAGE_ASPECT_COLOR_BIT,
         VK_PIPELINE_STAGE_2_NONE,
         VK_ACCESS_2_NONE,
         VK_PIPELINE_STAGE_2_COPY_BIT,
@@ -80,6 +81,7 @@ int main()
     cu_cmd_image_barrier(
         cu_task_get_command_buffer(&task),
         image._image,
+        VK_IMAGE_ASPECT_COLOR_BIT,
         VK_PIPELINE_STAGE_2_COPY_BIT,
         VK_ACCESS_2_TRANSFER_WRITE_BIT,
         VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,

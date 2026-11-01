@@ -165,6 +165,41 @@ namespace cu {
                 return *this;
             }
 
+            /** @ref CuGraphicsPipelineCreateInfo::depthTestEnable */
+            constexpr Builder& depth_test_enable(const bool x)
+            {
+                depthTestEnable = x;
+                return *this;
+            }
+
+            /** @ref CuGraphicsPipelineCreateInfo::depthWriteEnable */
+            constexpr Builder& depth_write_enable(const bool x)
+            {
+                depthWriteEnable = x;
+                return *this;
+            }
+
+            /** @ref CuGraphicsPipelineCreateInfo::depthCompareOp */
+            constexpr Builder& depth_compare_op(const VkCompareOp x)
+            {
+                depthCompareOp = x;
+                return *this;
+            }
+
+            /** @ref CuGraphicsPipelineCreateInfo::minDepthBounds */
+            constexpr Builder& min_depth_bounds(const float x)
+            {
+                minDepthBounds = x;
+                return *this;
+            }
+
+            /** @ref CuGraphicsPipelineCreateInfo::maxDepthBounds */
+            constexpr Builder& max_depth_bounds(const float x)
+            {
+                maxDepthBounds = x;
+                return *this;
+            }
+
             /**
              * @brief Builds/creates the graphics pipeline.
              * @param [out] graphicsPipeline The graphics pipeline.

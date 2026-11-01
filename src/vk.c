@@ -67,7 +67,8 @@ CuResult create_image(
 CuResult create_image_view(
     VkImageView* const pImageView,
     const VkImage image,
-    const VkFormat format)
+    const VkFormat format,
+    const VkImageAspectFlags aspectMask)
 {
     const VkComponentMapping componentMapping = {
         .r = VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -76,7 +77,7 @@ CuResult create_image_view(
         .a = VK_COMPONENT_SWIZZLE_IDENTITY,
     };
     const VkImageSubresourceRange subresourceRange = {
-        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .aspectMask = aspectMask,
         .baseMipLevel = 0,
         .levelCount = 1,
         .baseArrayLayer = 0,

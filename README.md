@@ -110,6 +110,7 @@ Before version 1.0:
 - ~~Add image loading/saving (`libpng`)~~
 - ~~Add swapchain recreation~~
 - ~~Add multisampling~~
+- ~~Add depth testing~~
 - Add the ability for users to use their own physical device and swapchain format/present mode judge functions
 - ~~Add the ability to include custom extensions~~
 - Add template shaders

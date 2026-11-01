@@ -62,6 +62,7 @@ namespace cu {
         /** @ref cu_cmd_image_barrier() */
         inline void cmd_image_barrier(
             const VkImage image,
+            const VkImageAspectFlags aspectMask,
             const VkPipelineStageFlags2 srcStageMask,
             const VkAccessFlags2 srcAccessMask,
             const VkPipelineStageFlags2 dstStageMask,
@@ -72,6 +73,7 @@ namespace cu {
             cu_cmd_image_barrier(
                 *this,
                 image,
+                aspectMask,
                 srcStageMask,
                 srcAccessMask,
                 dstStageMask,

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 CuResult cu_pipeline_layout_create(
     CuPipelineLayout* const pPipelineLayout,
@@ -189,15 +190,15 @@ CuResult cu_graphics_pipeline_create(
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .depthTestEnable = VK_FALSE,
-        .depthWriteEnable = VK_FALSE,
-        .depthCompareOp = VK_COMPARE_OP_NEVER,
+        .depthTestEnable = pCreateInfo->depthTestEnable ? VK_TRUE : VK_FALSE,
+        .depthWriteEnable = pCreateInfo->depthWriteEnable ? VK_TRUE : VK_FALSE,
+        .depthCompareOp = pCreateInfo->depthCompareOp,
         .depthBoundsTestEnable = VK_FALSE,
         .stencilTestEnable = VK_FALSE,
         .front = {},
         .back = {},
-        .minDepthBounds = 0.0F,
-        .maxDepthBounds = 1.0F,
+        .minDepthBounds = pCreateInfo->minDepthBounds,
+        .maxDepthBounds = pCreateInfo->maxDepthBounds,
     };
     const VkColorComponentFlags colorWriteMask =
         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
@@ -227,8 +228,8 @@ CuResult cu_graphics_pipeline_create(
         .pNext = nullptr,
         .viewMask = 0,
         .colorAttachmentCount = pCreateInfo->nFormats,
-        .pColorAttachmentFormats = (VkFormat*)pCreateInfo->pFormats,
-        .depthAttachmentFormat = VK_FORMAT_UNDEFINED,
+        .pColorAttachmentFormats = pCreateInfo->pFormats,
+        .depthAttachmentFormat = VK_FORMAT_D32_SFLOAT,
         .stencilAttachmentFormat = VK_FORMAT_UNDEFINED,
     };
     const VkDynamicState dynamicStates[] = {

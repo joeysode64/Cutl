@@ -40,7 +40,8 @@ CuResult cu_image_create(
         pImage->_allocation._memory,
         pImage->_allocation._offset));
 
-    cu_try_catch(create_image_view(&pImage->_imageView, pImage->_image, format));
+    cu_try_catch(create_image_view(
+        &pImage->_imageView, pImage->_image, format, VK_IMAGE_ASPECT_COLOR_BIT));
     dbg_log_create(pImage->_imageView);
 
     return CU_SUCCESS;
@@ -128,6 +129,7 @@ void cu_image_end_rendering(
     cu_cmd_image_barrier(
         commandBuffer,
         pImage->_image,
+        VK_IMAGE_ASPECT_COLOR_BIT,
         VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
         VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
         VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,

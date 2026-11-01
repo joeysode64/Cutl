@@ -141,8 +141,19 @@ CuResult create_image(
     VkSampleCountFlags samples,
     VkImageUsageFlags usage);
 
-/** @brief Creates an image view. */
-CuResult create_image_view(VkImageView* pImageView, VkImage image, VkFormat format);
+/**
+ * @brief Creates an image view.
+ * @param [out] pImageView A pointer to the image view.
+ * @param image The image.
+ * @param format The image's format.
+ * @param aspectMask A bitmap of the image aspects the view covers.
+ * @return The result of creating the image view.
+ */
+CuResult create_image_view(
+    VkImageView* pImageView,
+    VkImage image,
+    VkFormat format,
+    VkImageAspectFlags aspectMask);
 
 /**
  * @brief Allocates the command buffers.
