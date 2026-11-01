@@ -16,7 +16,7 @@ typedef struct CuPipelineLayoutCreateInfo_T {
 } CuPipelineLayoutCreateInfo;
 
 /** @brief The default pipeline layout create info. */
-static const CuPipelineLayoutCreateInfo CU_DEFAULT_PIPELINE_LAYOUT_CREATE_INFO = {
+constexpr CuPipelineLayoutCreateInfo CU_DEFAULT_PIPELINE_LAYOUT_CREATE_INFO = {
     .pushConstantSize = 0,
 };
 
@@ -40,8 +40,23 @@ typedef struct {
 
     size_t nFormats; /**< The number of formats the pipeline must handle. */
 
-    VkSampleCountFlags rasterizationSamples; /**< The rasterization samples value. */
+    VkSampleCountFlags rasterizationSamples; /**< The rasterization samples value. Default is 1 (no
+                                                MSAA). */
 } CuGraphicsPipelineCreateInfo;
+
+/**
+ * @brief The default graphics pipeline create info.
+ * @warning This cannot be used on its own as it doesn't define any shader code or formats.
+ */
+constexpr CuGraphicsPipelineCreateInfo CU_DEFAULT_GRAPHICS_PIPELINE_CREATE_INFO = {
+    .pVert = nullptr,
+    .nVert = 0,
+    .pFrag = nullptr,
+    .nFrag = 0,
+    .pFormats = nullptr,
+    .nFormats = 0,
+    .rasterizationSamples = 1,
+};
 
 #ifdef __cplusplus
 extern "C" {

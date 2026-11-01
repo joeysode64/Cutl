@@ -2,6 +2,7 @@
 
 #include "command_buffer.hpp"
 #include "context.hpp"
+#include "pipeline.hpp"
 #include "rect.hpp"
 #include "renderer.hpp"
 #include "result.hpp"

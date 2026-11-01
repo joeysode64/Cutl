@@ -47,7 +47,9 @@ CuResult cu_spirv_read_from_file(CuSpirV* const pSpirV, const char* const path)
     return CU_SUCCESS;
 
 FAIL:
-    fclose(f);
+    if (f != nullptr) {
+        fclose(f);
+    }
     free(data);
     return result;
 }

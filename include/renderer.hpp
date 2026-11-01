@@ -1,10 +1,12 @@
 #pragma once
 
+#include "command_buffer.hpp"
 #include "renderer.h"
 #include "result.hpp"
 #include "window.hpp"
 #include "wrapper.hpp"
 
+#include <stdint.h>
 #include <vulkan/vulkan.h>
 
 namespace cu {
@@ -55,6 +57,13 @@ namespace cu {
                 return *this;
             }
 
+            /** @ref CuRendererCreateInfo::nMsaaSamples */
+            constexpr Builder& n_msaa_samples(const uint32_t n)
+            {
+                nMsaaSamples = n;
+                return *this;
+            }
+
             /**
              * @brief Builds/creates the renderer.
              * @param [out] renderer The renderer.
@@ -102,9 +111,9 @@ namespace cu {
         }
 
         /** @ref cu_renderer_begin_frame() */
-        inline Result begin_frame(VkCommandBuffer& commandBuffer)
+        inline Result begin_frame(CommandBuffer& commandBuffer)
         {
-            return cu_renderer_begin_frame(this, &commandBuffer);
+            return cu_renderer_begin_frame(this, &commandBuffer.get());
         }
 
         /** @ref cu_renderer_submit_frame() */
@@ -114,13 +123,13 @@ namespace cu {
         }
 
         /** @ref cu_renderer_start_rendering() */
-        inline void start_rendering(const VkCommandBuffer commandBuffer)
+        inline void start_rendering(const CommandBuffer commandBuffer)
         {
             return cu_renderer_start_rendering(this, commandBuffer);
         }
 
         /** @ref cu_renderer_end_rendering() */
-        inline void end_rendering(const VkCommandBuffer commandBuffer)
+        inline void end_rendering(const CommandBuffer commandBuffer)
         {
             return cu_renderer_end_rendering(this, commandBuffer);
         }

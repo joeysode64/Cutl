@@ -1,18 +1,17 @@
 #pragma once
 
-#include "command_buffer.h"
-#include "command_buffer.h"
 #include "color.h"
+#include "command_buffer.h"
 #include "pipeline.h"
+#include "wrapper.hpp"
 
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 namespace cu {
-    struct CommandBuffer {
+    /** @brief A command buffer wrapper. */
+    struct CommandBufferWrapper : public CWrapper<VkCommandBuffer> {
         /** @ref cu_cmd_bind_graphics_pipeline() */
-        inline void cmd_bind_graphics_pipeline(
-            const CuGraphicsPipeline graphicsPipeline)
+        inline void cmd_bind_graphics_pipeline(const CuGraphicsPipeline graphicsPipeline)
         {
             cu_cmd_bind_graphics_pipeline(*this, graphicsPipeline);
         }
@@ -28,17 +27,13 @@ namespace cu {
         }
 
         /** @ref cu_cmd_bind_compute_pipeline() */
-        inline void cmd_bind_compute_pipeline(
-            const CuComputePipeline computePipeline)
+        inline void cmd_bind_compute_pipeline(const CuComputePipeline computePipeline)
         {
             cu_cmd_bind_compute_pipeline(*this, computePipeline);
         }
 
         /** @ref cu_cmd_dispatch() */
-        inline void cmd_dispatch(
-            const uint32_t x,
-            const uint32_t y,
-            const uint32_t z)
+        inline void cmd_dispatch(const uint32_t x, const uint32_t y, const uint32_t z)
         {
             cu_cmd_dispatch(*this, x, y, z);
         }
@@ -111,7 +106,18 @@ namespace cu {
         {
             cu_cmd_bind_descriptors(*this, pipelineLayout);
         }
+    };
 
-        operator VkCommandBuffer() const;
+    /** @brief A command buffer. */
+    class CommandBuffer : public CommandBufferWrapper {
+    public:
+        /**
+         * @brief Creates the command buffer.
+         * @param commandBuffer The command buffer handle.
+         */
+        inline CommandBuffer(const VkCommandBuffer commandBuffer)
+        {
+            _v = commandBuffer;
+        }
     };
 } // namespace cu

@@ -6,7 +6,7 @@ int main()
     query(cu_context_init(&CU_DEFAULT_CONTEXT_CREATE_INFO));
 
     CuWindow window = {};
-    query(cu_window_create(&window, WIN_W, WIN_H, "Initialization Test"));
+    query(cu_window_create(&window, WIN_W, WIN_H, "MSAA Test"));
 
     CuRenderer renderer = {};
     CuRendererCreateInfo rendererCreateInfo = CU_DEFAULT_RENDERER_CREATE_INFO;
