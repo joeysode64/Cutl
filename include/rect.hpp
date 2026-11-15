@@ -9,19 +9,23 @@ namespace cu {
      * @note A rectangle with a negative width or height is considered invalid.
      */
     template <Num T> struct Rect {
-        T x; /**< The rectangle's left bound. */
+        /** @brief The rectangle's left bound. */
+        T x;
 
-        T y; /**< The rectangle's bottom bound. */
+        /** @brief The rectangle's bottom bound. */
+        T y;
 
-        T w; /**< The rectangle's width. */
+        /** @brief The rectangle's width. */
+        T w;
 
-        T h; /**< The rectangle's height. */
+        /** @brief The rectangle's height. */
+        T h;
 
         /**
-         * @brief Creates a rectangle with the given x and y position an side length.
-         * @param x The x position.
-         * @param y The y position.
-         * @param s The side length.
+         * @brief Creates a square with the given x and y position and side length.
+         * @param x The x position of the left bound.
+         * @param y The y position of the bottom bound.
+         * @param s The side length. Must not be negative.
          */
         constexpr Rect(const T x, const T y, const T s)
             : x{x}, y{y}, w{s}, h{s}
@@ -30,65 +34,47 @@ namespace cu {
 
         /**
          * @brief Creates a rectangle with the given x and y position and dimensions.
-         * @param x The x position.
-         * @param y The y position.
-         * @param w The width.
-         * @param h The height.
+         * @param x The x position of the left bound.
+         * @param y The y position of the bottom bound.
+         * @param w The width. Must not be negative.
+         * @param h The height. Must not be negative.
          */
         constexpr Rect(const T x, const T y, const T w, const T h)
             : x{x}, y{y}, w{w}, h{h}
         {
         }
 
-        /**
-         * @brief Returns the rectangle's position.
-         * @return The rectangle's position.
-         */
+        /** @brief Returns the rectangle's position. */
         constexpr Vec2<T> pos() const
         {
             return Vec2{x, y};
         }
 
-        /**
-         * @brief Returns the rectangle's dimensions.
-         * @return The rectangle's dimensions.
-         */
+        /** @brief Returns the rectangle's dimensions. */
         constexpr Vec2<T> dimensions() const
         {
             return Vec2{w, h};
         }
 
-        /**
-         * @brief Returns the rectangle's area.
-         * @return The rectangle's area.
-         */
+        /** @brief Returns the rectangle's area. */
         constexpr T area() const
         {
             return w * h;
         }
 
-        /**
-         * @brief Returns the rectangle's perimeter.
-         * @return The rectangle's perimeter.
-         */
+        /** @brief Returns the rectangle's perimeter. */
         constexpr T perimeter() const
         {
             return 2 * (w + h);
         }
 
-        /**
-         * @brief Returns the rectangle's diagonal length squared.
-         * @return The rectangle's diagonal length squared.
-         */
+        /** @brief Returns the rectangle's diagonal length squared. */
         constexpr T diag_sqr() const
         {
             return dimensions().mag_sqr();
         }
 
-        /**
-         * @brief Returns the rectangle's diagonal length.
-         * @return The rectangle's diagonal length.
-         */
+        /** @brief Returns the rectangle's diagonal length. */
         constexpr T diag() const
             requires Float<T>
         {

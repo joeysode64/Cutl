@@ -10,19 +10,13 @@ namespace cu {
         {
         }
 
-        /**
-         * @brief Returns the internal value.
-         * @return The internal value.
-         */
+        /** @brief Returns the internal value. */
         constexpr T& get()
         {
             return *this;
         }
 
-        /**
-         * @brief Returns the internal value.
-         * @return The internal value.
-         */
+        /** @brief Returns the internal value. */
         constexpr const T& get() const
         {
             return *this;
@@ -32,27 +26,23 @@ namespace cu {
     /** @brief A wrapper for an opaque type. */
     template <typename T> class CWrapper {
     protected:
-        T _v; /**< The wrapped value. */
+        /** @brief The wrapped value. */
+        T _v;
 
     public:
-        /**
-         * @brief Returns the internal value.
-         * @return The internal value.
-         */
+        /** @brief Returns the internal value. */
         constexpr T& get()
         {
             return _v;
         }
 
-        /**
-         * @brief Returns the internal value.
-         * @return The internal value.
-         */
+        /** @brief Returns the internal value. */
         constexpr const T& get() const
         {
             return _v;
         }
 
+        /** @brief Converts to the internal value. */
         operator T() const
         {
             return _v;

@@ -8,13 +8,17 @@
 
 /** @brief A physical device's memory type info. */
 typedef struct CuPhysicalDeviceMemoryInfo_T {
-    uint32_t _mDeviceLocal; /**< A bitmask of the device local memory types. */
+    /** @brief A bitmask of the device local memory types. */
+    uint32_t _mDeviceLocal;
 
-    uint32_t _mHostVisible; /**< A bitmask of the host visible memory types. */
+    /** @brief A bitmask of the host visible memory types. */
+    uint32_t _mHostVisible;
 
-    uint32_t _mHostCoherent; /**< A bitmask of the host coherent memory types. */
+    /** @brief A bitmask of the host coherent memory types. */
+    uint32_t _mHostCoherent;
 
-    uint32_t _mHostCached; /**< A bitmask of the host cached memory types. */
+    /** @brief A bitmask of the host cached memory types. */
+    uint32_t _mHostCached;
 } CuPhysicalDeviceMemoryInfo;
 
 /**
@@ -22,28 +26,41 @@ typedef struct CuPhysicalDeviceMemoryInfo_T {
  * @note Only one is supposed to exist: the global instance.
  */
 typedef struct CuContext_T {
-    VkInstance _instance; /**< The instance handle. */
+    /** @brief The instance handle. */
+    VkInstance _instance;
 
-    VkDebugUtilsMessengerEXT _debugMessenger; /**< The (optional) debug messenger handle. */
+    /** @brief The (optional) debug messenger handle. */
+    VkDebugUtilsMessengerEXT _debugMessenger;
 
-    VkPhysicalDevice _physicalDevice; /**< The physical device handle. */
+    /** @brief The physical device handle. */
+    VkPhysicalDevice _physicalDevice;
 
-    uint32_t _iQueueFamily; /**< The index of the main queue family. This queue
-        supports graphics, transfer, compute, and presentation. */
+    /**
+     * @brief The index of the main queue family. This queue supports graphics, transfer, compute,
+     * and presentation.
+     */
+    uint32_t _iQueueFamily;
 
-    CuPhysicalDeviceMemoryInfo _memoryInfo; /**< The physical device memory info. */
+    /** @brief The physical device memory info. */
+    CuPhysicalDeviceMemoryInfo _memoryInfo;
 
-    VkDevice _device; /**< The logical device handle. */
+    /** @brief The logical device handle. */
+    VkDevice _device;
 
-    VkQueue _queue; /**< The main queue handle. */
+    /** @brief The main queue handle. */
+    VkQueue _queue;
 
-    VkCommandPool _commandPool; /**< The command pool handle. */
+    /** @brief The command pool handle. */
+    VkCommandPool _commandPool;
 
-    VkDescriptorPool _descriptorPool; /**< The descriptor pool handle. */
+    /** @brief The descriptor pool handle. */
+    VkDescriptorPool _descriptorPool;
 
-    VkDescriptorSetLayout _descriptorSetLayout; /**< The descriptor set layout handle. */
+    /** @brief The descriptor set layout handle. */
+    VkDescriptorSetLayout _descriptorSetLayout;
 
-    VkDescriptorSet _descriptorSet; /**< The descriptor set handle. */
+    /** @brief The descriptor set handle. */
+    VkDescriptorSet _descriptorSet;
 } CuContext;
 
 /**
@@ -51,28 +68,61 @@ typedef struct CuContext_T {
  * @note For extensions, Cutl's defaults are always used. See them in `src/vk.h`.
  */
 typedef struct CuContextCreateInfo_T {
-    uint32_t nInstanceExtensions; /**< The number of instance extensions to use. Default is 0. */
+    /**
+     * @brief The number of instance extensions to use.
+     * @note Default is 0.
+     */
+    uint32_t nInstanceExtensions;
 
-    const char* const* pInstanceExtensions; /**< A pointer to the instance extensions to use.
-                                               Default is null. */
+    /**
+     * @brief A pointer to the instance extensions to use. Must not be null if `nInstanceExtensions`
+     * isn't 0.
+     * @note Default is null.
+     */
+    const char* const* pInstanceExtensions;
 
-    uint32_t nDeviceExtensions; /**< The number of instance device to use. Default is 0. */
+    /**
+     * @brief The number of device extensions to use.
+     * @note Default is 0.
+     */
+    uint32_t nDeviceExtensions;
 
-    const char* const* pDeviceExtensions; /**< A pointer to the device extensions to use. Default is
-                                             null. */
+    /**
+     * @brief A pointer to the device extensions to use. Must not be null if `nDeviceExtensions`
+     * isn't 0.
+     * @note Default is null.
+     */
+    const char* const* pDeviceExtensions;
 
-    const char* appName; /**< The application name. Can be null. Default is null. */
+    /**
+     * @brief The application name. Can be null.
+     * @note Default is null.
+     */
+    const char* appName;
 
-    uint32_t appVersion; /**< The application version. Default is v0.0.0. */
+    /**
+     * @brief The application version.
+     * @note Default is v0.0.0.
+     */
+    uint32_t appVersion;
 
-    uint32_t nSampledImageDescriptors; /**< The number of sampled image descriptors. Default is 16
-                                          (spec minimum). */
+    /**
+     * @brief The number of sampled image descriptor slots.
+     * @note Default is 16 (spec minimum).
+     */
+    uint32_t nSampledImageDescriptors;
 
-    uint32_t nSamplerDescriptors; /**< The number of sampler descriptor slots. Default is 16 (spec
-                                     minimum). */
+    /**
+     * @brief The number of sampler descriptor slots.
+     * @note Default is 16 (spec minimum).
+     */
+    uint32_t nSamplerDescriptors;
 
-    uint32_t nStorageImageDescriptors; /**< The number of storage image descriptor slogs. Default is
-                                          4 (spec minimum). */
+    /**
+     * @brief The number of storage image descriptor slots.
+     * @note Default is 4 (spec minimum).
+     */
+    uint32_t nStorageImageDescriptors;
 } CuContextCreateInfo;
 
 /** @brief The default context create info. */
@@ -92,17 +142,16 @@ constexpr CuContextCreateInfo CU_DEFAULT_CONTEXT_CREATE_INFO = {
 extern "C" {
 #endif
 
-/**
- * @brief Returns a pointer to the global GPU context.
- * @return A pointer to the global GPU Context.
- */
+/** @brief Returns a pointer to the global GPU context. */
 CuContext* cu_context_get();
 
 /**
- * @brief Creates the context
- * @param pCreateInfo A pointer to the create info.
- * @return The result of creating the context.
+ * @brief Creates the context.
+ * @param pCreateInfo A pointer to the create info. Must not be null. Use
+ * `&CU_DEFAULT_CONTEXT_CREATE_INFO` for the defaults.
+ * @note On failure, the context is terminated automatically.
  */
+CU_NODISCARD_RESULT
 CuResult cu_context_init(const CuContextCreateInfo* pCreateInfo);
 
 /**
@@ -117,32 +166,33 @@ void cu_context_wait_for_idle();
 
 /**
  * @brief Binds the image to the given sampled image descriptor.
- * @param pImage A pointer to the image to bind.
- * @param i The index of the descriptor to bind to.
- * @return The result of binding the image.
+ * @param pImage A pointer to the image to bind. Must not be null.
+ * @param i The index of the descriptor to bind to. Must be less than
+ * `CuContextCreateInfo::nSampledImageDescriptors`.
+ * @note The image must be in `VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL` when used.
  */
 void cu_context_bind_sampled_image(CuImage* pImage, uint32_t i);
 
 /**
  * @brief Binds the sampler to the given sampler descriptor.
- * @param pSampler A pointer to the sampler to bind.
- * @param i The index of the descriptor to bind to.
- * @return The result of binding the sampler.
+ * @param pSampler A pointer to the sampler to bind. Must not be null.
+ * @param i The index of the descriptor to bind to. Must be less than
+ * `CuContextCreateInfo::nSamplerDescriptors`.
  */
 void cu_context_bind_sampler(CuSampler* pSampler, uint32_t i);
 
 /**
  * @brief Binds the image to the given storage image descriptor.
- * @param pImage A pointer to the image to bind.
- * @param i The index of the descriptor to bind to.
- * @return The result of binding the image.
+ * @param pImage A pointer to the image to bind. Must not be null.
+ * @param i The index of the descriptor to bind to. Must be less than
+ * `CuContextCreateInfo::nStorageImageDescriptors`.
+ * @note The image must be in `VK_IMAGE_LAYOUT_GENERAL` when used.
  */
 void cu_context_bind_storage_image(CuImage* pImage, uint32_t i);
 
 /**
  * @brief Returns whether the context is initialized at all and should be
  * terminated.
- * @return Whether the context is initialized at all.
  */
 static inline bool cu_context_is_initialized()
 {

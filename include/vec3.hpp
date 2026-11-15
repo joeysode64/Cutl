@@ -6,23 +6,26 @@
 #include <stdint.h>
 
 namespace cu {
-    /** @brief A 2-dimensional vector. */
+    /** @brief A 3-dimensional vector. */
     template <Num T> struct Vec3 {
-        T x; /**< The x factor. */
+        /** @brief The x component. */
+        T x;
 
-        T y; /**< The y factor. */
+        /** @brief The y component. */
+        T y;
 
-        T z; /**< The z factor. */
+        /** @brief The z component. */
+        T z;
 
-        /** @brief Creates a vector with an x and y of 0. */
+        /** @brief Creates a vector with an x, y, and z of 0. */
         constexpr Vec3()
             : x{}, y{}, z{}
         {
         }
 
         /**
-         * @brief Creates a vector with the given x y and z value.
-         * @param xyz The x y and z value.
+         * @brief Creates a vector with all components set to the same value.
+         * @param xyz The value of x, y, and z.
          */
         constexpr Vec3(const T xyz)
             : x{xyz}, y{xyz}, z{xyz}
@@ -30,7 +33,7 @@ namespace cu {
         }
 
         /**
-         * @brief Creates a vector with the given x y and z value.
+         * @brief Creates a vector with the given x, y, and z values.
          * @param x The x value.
          * @param y The y value.
          * @param z The z value.
@@ -41,9 +44,9 @@ namespace cu {
         }
 
         /**
-         * @brief Creates a vector with the given x y and z value.
+         * @brief Creates a vector from a 2D vector and a z value.
          * @param xy The x and y values.
-         * @param z The z value. Ignore for 0.
+         * @param z The z value. Defaults to 0.
          */
         constexpr Vec3(const Vec2<T> xy, const T z = {})
             : x{xy.x}, y{xy.y}, z{z}
@@ -51,9 +54,9 @@ namespace cu {
         }
 
         /**
-         * @brief Creates a vector with the given x y and z value.
+         * @brief Creates a vector from an x value and a 2D vector.
          * @param x The x value.
-         * @param yz The y and z value.
+         * @param yz The y and z values.
          */
         constexpr Vec3(const T x, const Vec2<T> yz)
             : x{x}, y{yz.y}, z{yz.z}
@@ -61,9 +64,8 @@ namespace cu {
         }
 
         /**
-         * @brief Returns the cross product of the two vectors.
-         * @param rhs The other vector.
-         * @return The cross product of the two vectors.
+         * @brief Returns the dot product of the two vectors.
+         * @param rhs The vector on the right-hand side.
          */
         constexpr T dot(const Vec3<T> rhs) const
         {
@@ -73,7 +75,6 @@ namespace cu {
         /**
          * @brief Returns the distance between the vectors squared.
          * @param v The other vector.
-         * @return The distance between the vectors squared.
          */
         constexpr T dst_sqr(const Vec3<T> v) const
         {
@@ -86,7 +87,6 @@ namespace cu {
         /**
          * @brief Returns the distance between the vectors.
          * @param v The other vector.
-         * @return The distance between the vectors.
          */
         constexpr T dst(const Vec3<T> v) const
             requires Float<T>
@@ -94,19 +94,13 @@ namespace cu {
             return sqrt(dst_sqr(v));
         }
 
-        /**
-         * @brief Returns the vector's magnitude squared.
-         * @return The vector's magnitude squared.
-         */
+        /** @brief Returns the vector's magnitude squared. */
         constexpr T mag_sqr() const
         {
             return (x * x) + (y * y) + (z * z);
         }
 
-        /**
-         * @brief Returns the vector's magnitude.
-         * @return The vector's magnitude.
-         */
+        /** @brief Returns the vector's magnitude. */
         constexpr T mag() const
             requires Float<T>
         {
@@ -115,7 +109,7 @@ namespace cu {
 
         /**
          * @brief Returns the vector normalized.
-         * @return The vector normalized.
+         * @warning The vector must not have a magnitude of 0.
          */
         constexpr Vec3<T> normalized() const
             requires Float<T>
@@ -123,17 +117,17 @@ namespace cu {
             return *this / mag();
         }
 
-        /** @brief Normalizes the vector. */
+        /**
+         * @brief Normalizes the vector.
+         * @warning The vector must not have a magnitude of 0.
+         */
         constexpr void normalize()
             requires Float<T>
         {
             *this /= mag();
         }
 
-        /**
-         * @brief Returns the vector converted to the given type.
-         * @return The vector converted to the given type.
-         */
+        /** @brief Returns the vector converted to the given type. */
         template <Num U> constexpr Vec3<U> as() const
         {
             Vec3<U>{static_cast<U>(x), static_cast<U>(y), static_cast<U>(z)};

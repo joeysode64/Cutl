@@ -8,13 +8,17 @@
 
 /** @brief A window. */
 typedef struct CuWindow_T {
-    GLFWwindow* _handle; /**< The GLFW window handle. */
+    /** @brief The GLFW window handle. */
+    GLFWwindow* _handle;
 
-    uint32_t _w; /**< The window's cached framebuffer width. */
+    /** @brief The window's cached framebuffer width. */
+    uint32_t _w;
 
-    uint32_t _h; /**< The window's cached framebuffer height. */
+    /** @brief The window's cached framebuffer height. */
+    uint32_t _h;
 
-    bool _shouldClose; /**< Whether the window should close. */
+    /** @brief Whether the window should close. */
+    bool _shouldClose;
 } CuWindow;
 
 #ifdef __cplusplus
@@ -23,31 +27,30 @@ extern "C" {
 
 /**
  * @brief Creates the window.
- * @param [out] pWindow A pointer to the window.
- * @param w The window's width.
- * @param h The window's height.
- * @param title The window's title.
- * @return The result of the window's creation.
+ * @param[out] pWindow A pointer to the window. Must not be null.
+ * @param w The window's width in screen coordinates. Must not be 0.
+ * @param h The window's height in screen coordinates. Must not be 0.
+ * @param title The window's title, UTF-8 encoded. Must not be null.
+ * @note The context must be initialized first.
  */
+CU_NODISCARD_RESULT
 CuResult cu_window_create(CuWindow* pWindow, uint32_t w, uint32_t h, const char* title);
 
 /**
  * @brief Destroys the window.
- * @param [in, out] pWindow A pointer to the window.
- * @note Passing a null pointer is a safe no-op.
+ * @param[in out] pWindow A pointer to the window. Ignored if null.
  */
 void cu_window_destroy(CuWindow* pWindow);
 
 /**
- * @brief Updates the window.
- * @param [in, out] pWindow A pointer to the window.
+ * @brief Polls the window's events and updates its cached state.
+ * @param[in out] pWindow A pointer to the window. Must not be null.
  */
 void cu_window_update(CuWindow* pWindow);
 
 /**
  * @brief Returns the window's framebuffer width.
- * @param [in] pWindow A pointer to the window.
- * @return The window's width.
+ * @param[in] pWindow A pointer to the window. Must not be null.
  */
 static inline uint32_t cu_window_get_width(const CuWindow* pWindow)
 {
@@ -56,8 +59,7 @@ static inline uint32_t cu_window_get_width(const CuWindow* pWindow)
 
 /**
  * @brief Returns the window's framebuffer height.
- * @param [in] pWindow A pointer to the window.
- * @return The window's height.
+ * @param[in] pWindow A pointer to the window. Must not be null.
  */
 static inline uint32_t cu_window_get_height(const CuWindow* pWindow)
 {
@@ -66,8 +68,7 @@ static inline uint32_t cu_window_get_height(const CuWindow* pWindow)
 
 /**
  * @brief Returns whether the window should close.
- * @param [in] pWindow A pointer to the window.
- * @return Whether the window should close.
+ * @param[in] pWindow A pointer to the window. Must not be null.
  */
 static inline bool cu_window_should_close(const CuWindow* pWindow)
 {

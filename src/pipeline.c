@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 CuResult cu_pipeline_layout_create(
     CuPipelineLayout* const pPipelineLayout,

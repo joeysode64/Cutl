@@ -60,7 +60,7 @@
 /** @brief An attribute for an enumerator to automatically free it. */
 #define ENUMERATOR_AUTO_FREE __attribute__((cleanup(enumerator_auto_free_)))
 
-/** @brief The `AUTO_FREE` callback. */
+/** @brief The `ENUMERATOR_AUTO_FREE` callback. */
 static inline void enumerator_auto_free_(void* pEnumerator)
 {
     Enumerator(void)* e = pEnumerator;

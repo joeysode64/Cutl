@@ -50,9 +50,9 @@ namespace cu {
 
             /**
              * @brief Builds/creates the pipeline layout.
-             * @param [out] pipelineLayout The pipeline layout.
-             * @return The result of creating the pipeline layout.
+             * @param[out] pipelineLayout The pipeline layout.
              */
+            CU_NODISCARD_RESULT
             inline Result build(PipelineLayout& pipelineLayout) const
             {
                 return pipelineLayout.init(*this);
@@ -72,6 +72,7 @@ namespace cu {
         }
 
         /** @ref cu_pipeline_layout_create() */
+        CU_NODISCARD_RESULT
         inline Result init(const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
             return cu_pipeline_layout_create(&_v, &createInfo);
@@ -99,6 +100,7 @@ namespace cu {
         }
 
         /** @ref cu_compute_pipeline_create() */
+        CU_NODISCARD_RESULT
         inline Result init(
             const CuPipelineLayout pipelineLayout,
             const uint32_t* const pCode,
@@ -111,8 +113,8 @@ namespace cu {
          * @brief Creates the compute pipeline from a SPIR-V file.
          * @param pipelineLayout The pipeline layout to use.
          * @param path The compute shader's SPIR-V file path.
-         * @return The result of the compute pipeline's creation.
          */
+        CU_NODISCARD_RESULT
         inline Result init(const CuPipelineLayout pipelineLayout, const char* const path)
         {
             CuSpirV spirv{};
@@ -202,14 +204,14 @@ namespace cu {
 
             /**
              * @brief Builds/creates the graphics pipeline.
-             * @param [out] graphicsPipeline The graphics pipeline.
+             * @param[out] graphicsPipeline The graphics pipeline.
              * @param pipelineLayout The pipeline layout to use.
              * @param vertPath The vertex shader's SPIR-V file path.
              * @param fragPath The fragment shader's SPIR-V file path.
              * @param pFormats A pointer to the formats the pipeline must handle.
              * @param nFormats The number of formats the pipeline must handle.
-             * @return The result of creating the graphics pipeline.
              */
+            CU_NODISCARD_RESULT
             inline Result build(
                 GraphicsPipeline& graphicsPipeline,
                 const CuPipelineLayout pipelineLayout,
@@ -259,6 +261,7 @@ namespace cu {
         }
 
         /** @ref cu_graphics_pipeline_create() */
+        CU_NODISCARD_RESULT
         inline Result init(const CuPipelineLayout pipelineLayout, const CreateInfo& createInfo)
         {
             return cu_graphics_pipeline_create(&_v, &createInfo, pipelineLayout);

@@ -10,8 +10,7 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-/** @brief Queries the Vulkan result and returns it as a `CuResult` if it's not
- * `VK_SUCCESS`. */
+/** @brief Queries the Vulkan result and returns it as a `CuResult` if it's not `VK_SUCCESS`. */
 #define vk_try(e)                                                                                  \
     do {                                                                                           \
         const VkResult _result = (e);                                                              \
@@ -105,34 +104,36 @@ static const char* const DEVICE_EXTENSIONS[] = {
 #endif
 };
 
-/**@ brief The number of device extensions. */
+/** @brief The number of device extensions. */
 constexpr uint32_t N_DEVICE_EXTENSIONS = arr_len(DEVICE_EXTENSIONS);
 
 /**
  * @brief Creates the surface.
- * @param [out] pSurface A pointer to the surface handle.
- * @param window The window the surface is for.
- * @return The result of creating the surface.
+ * @param[out] pSurface A pointer to the surface handle. Must not be null.
+ * @param window The window the surface is for. Must not be null.
  */
+CU_NODISCARD_RESULT
 CuResult create_surface(VkSurfaceKHR* pSurface, GLFWwindow* window);
 
 /**
  * @brief Creates the headless surface.
- * @param [out] pSurface A pointer to the surface handle.
- * @return The result of creating the surface.
+ * @param[out] pSurface A pointer to the surface handle. Must not be null.
+ * @note Requires the `VK_EXT_headless_surface` instance extension.
  */
+CU_NODISCARD_RESULT
 CuResult create_headless_surface(VkSurfaceKHR* pSurface);
 
 /**
  * @brief Creates the image.
- * @param [out] pImage A pointer to the image.
- * @param w The image's width.
- * @param h The image's height.
+ * @param[out] pImage A pointer to the image handle. Must not be null.
+ * @param w The image's width in pixels. Must not be 0.
+ * @param h The image's height in pixels. Must not be 0.
  * @param format The image's format.
- * @param samples The sample count flag.
- * @param usage The image's usage.
- * @param initialLayout The image's initial layout.
+ * @param samples The number of samples per pixel. Must be a single `VK_SAMPLE_COUNT_*_BIT`.
+ * @param usage A bitmap of how the image will be used. Must not be 0.
+ * @note The image is created in `VK_IMAGE_LAYOUT_UNDEFINED`.
  */
+CU_NODISCARD_RESULT
 CuResult create_image(
     VkImage* pImage,
     uint32_t w,
@@ -143,12 +144,12 @@ CuResult create_image(
 
 /**
  * @brief Creates an image view.
- * @param [out] pImageView A pointer to the image view.
- * @param image The image.
+ * @param[out] pImageView A pointer to the image view handle. Must not be null.
+ * @param image The image to create a view of.
  * @param format The image's format.
  * @param aspectMask A bitmap of the image aspects the view covers.
- * @return The result of creating the image view.
  */
+CU_NODISCARD_RESULT
 CuResult create_image_view(
     VkImageView* pImageView,
     VkImage image,
@@ -157,35 +158,43 @@ CuResult create_image_view(
 
 /**
  * @brief Allocates the command buffers.
- * @param [out] pCommandBuffers A pointer to the command buffers.
- * @param nCommandBuffers The number of command buffers.
- * @return The result of allocating the command buffers.
+ * @param[out] pCommandBuffers A pointer to the command buffer handles. Must not be null and must
+ * have room for `nCommandBuffers` handles.
+ * @param nCommandBuffers The number of command buffers to allocate. Must not be 0.
  */
+CU_NODISCARD_RESULT
 CuResult allocate_command_buffers(VkCommandBuffer* pCommandBuffers, size_t nCommandBuffers);
 
-/** @brief Creates a semaphore. */
+/**
+ * @brief Creates a semaphore.
+ * @param[out] pSemaphore A pointer to the semaphore handle. Must not be null.
+ * @param type The semaphore's type.
+ * @param x The initial value of a timeline semaphore. Ignored for binary semaphores.
+ */
+CU_NODISCARD_RESULT
 CuResult create_semaphore(VkSemaphore* pSemaphore, VkSemaphoreType type, uint64_t x);
 
 /**
  * @brief Allocates the memory.
- * @param [out] pMemory A pointer to the memory handle.
- * @param size The size of the allocation.
- * @param i The index of the memory type.
- * @return The result of allocationg the memory.
+ * @param[out] pMemory A pointer to the memory handle. Must not be null.
+ * @param size The size of the allocation in bytes. Must not be 0.
+ * @param i The index of the memory type to allocate from.
+ * @note The memory is allocated with `VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT`.
  */
+CU_NODISCARD_RESULT
 CuResult allocate_memory(VkDeviceMemory* pMemory, uint64_t size, uint32_t i);
 
 /**
- * @brief Creates the buffer and its allication.
- * @param [out] pBuffer A pointer to the buffer.
- * @param [out] pAllocation A pointer to the allocation.
- * @param [out] ppData A pointer to the mapped memory (ignored if null).
- * @param z The size of the buffer.
- * @param usage A bitmap of the buffer usage flags.
- * @param mode The allocation mode.
- * @param mProperties A bitmap of the memory properties.
- * @return The result of the buffer's creation.
+ * @brief Creates the buffer and its allocation.
+ * @param[out] pBuffer A pointer to the buffer handle. Must not be null.
+ * @param[out] pAllocation A pointer to the allocation. Must not be null.
+ * @param[out] ppData A pointer to the mapped memory. Ignored if null.
+ * @param z The size of the buffer in bytes. Must not be 0.
+ * @param usage A bitmap of the buffer usage flags. Must not be 0.
+ * @param mode The allocation mode to allocate the buffer's memory with.
+ * @param mProperties A bitmap of the memory properties. Must not be 0.
  */
+CU_NODISCARD_RESULT
 CuResult create_buffer(
     VkBuffer* pBuffer,
     CuAllocation* pAllocation,
@@ -197,7 +206,7 @@ CuResult create_buffer(
 
 /**
  * @brief Returns the buffer's device address.
- * @param buffer The buffer to get the device address of.
- * @return The buffer's device address.
+ * @param buffer The buffer to get the device address of. Must have been created with
+ * `VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT`.
  */
 VkDeviceAddress get_buffer_device_address(VkBuffer buffer);

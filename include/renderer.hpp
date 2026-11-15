@@ -76,9 +76,9 @@ namespace cu {
 
             /**
              * @brief Builds/creates the renderer.
-             * @param [out] renderer The renderer.
-             * @return The result of creating the renderer.
+             * @param[out] renderer The renderer to create. Must be uninitialized.
              */
+            CU_NODISCARD_RESULT
             inline Result build(Renderer& renderer) const
             {
                 return renderer.init(*this);
@@ -86,10 +86,10 @@ namespace cu {
 
             /**
              * @brief Builds/creates the renderer.
-             * @param [out] renderer The renderer.
-             * @param window The target window.
-             * @return The result of creating the renderer.
+             * @param[out] renderer The renderer to create. Must be uninitialized.
+             * @param window The target window. Must outlive the renderer.
              */
+            CU_NODISCARD_RESULT
             inline Result build(Renderer& renderer, const Window& window) const
             {
                 return renderer.init(window, *this);
@@ -109,30 +109,35 @@ namespace cu {
         }
 
         /** @ref cu_renderer_create() */
+        CU_NODISCARD_RESULT
         inline Result init(const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
             return cu_renderer_create(this, &createInfo, nullptr);
         }
 
         /** @ref cu_renderer_create() */
+        CU_NODISCARD_RESULT
         inline Result init(const Window& window, const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
             return cu_renderer_create(this, &createInfo, &window.get());
         }
 
         /** @ref cu_renderer_recreate_swapchain() */
+        CU_NODISCARD_RESULT
         inline Result recreate_swapchain()
         {
             return cu_renderer_recreate_swapchain(this);
         }
 
         /** @ref cu_renderer_begin_frame() */
+        CU_NODISCARD_RESULT
         inline Result begin_frame(CommandBuffer& commandBuffer)
         {
             return cu_renderer_begin_frame(this, &commandBuffer.get());
         }
 
         /** @ref cu_renderer_submit_frame() */
+        CU_NODISCARD_RESULT
         inline Result submit_frame()
         {
             return cu_renderer_submit_frame(this);
@@ -151,16 +156,18 @@ namespace cu {
         }
 
         /** @ref cu_renderer_get_config() */
-        inline Config& get_config() {
+        inline Config& get_config()
+        {
             return _config;
         }
 
         /** @ref cu_renderer_get_config() */
-        inline const Config& get_config() const {
+        inline const Config& get_config() const
+        {
             return _config;
         }
 
-        /** @ref cu_renderer_get_formats() */
+        /** @ref cu_renderer_get_format() */
         inline VkFormat get_format() const
         {
             return cu_renderer_get_format(this);

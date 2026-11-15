@@ -7,27 +7,30 @@
 namespace cu {
     /** @brief A version. */
     struct Version {
-        uint16_t major; /**< The version major. */
+        /** @brief The version major. */
+        uint16_t major;
 
-        uint16_t minor; /**< The version minor. */
+        /** @brief The version minor. */
+        uint16_t minor;
 
-        uint16_t patch; /**< The version patch. */
+        /** @brief The version patch. */
+        uint16_t patch;
 
-        uint16_t tweak; /**< The version tweak. */
+        /** @brief The version tweak. */
+        uint16_t tweak;
 
-        /** @brief Creates a version with a major minor patch and tweak version of 0.
-         */
+        /** @brief Creates a version with a major, minor, patch, and tweak of 0. */
         constexpr Version()
             : major{}, minor{}, patch{}, tweak{}
         {
         }
 
         /**
-         * @brief Creates a version with the given major minor and patch.
+         * @brief Creates a version with the given major, minor, patch, and tweak.
          * @param major The version major.
-         * @param minor The version minor (ignore for 0).
-         * @param patch The version patch (ignore for 0).
-         * @param tweak The version tweak (ignore for 0).
+         * @param minor The version minor. Defaults to 0.
+         * @param patch The version patch. Defaults to 0.
+         * @param tweak The version tweak. Defaults to 0.
          */
         constexpr Version(
             const uint16_t major,
@@ -40,7 +43,6 @@ namespace cu {
 
         /**
          * @brief Returns the version as a `uint32_t` Vulkan-style version.
-         * @return The version as a `uint32_t` Vulkan-style version.
          * @note This does not use the version's tweak value.
          */
         constexpr uint32_t vk_version() const
@@ -48,6 +50,7 @@ namespace cu {
             return VK_MAKE_API_VERSION(0, major, minor, patch);
         }
 
+        /** @brief Converts to a C-style version. */
         constexpr operator CuVersion() const
         {
             return CuVersion{

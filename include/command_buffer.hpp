@@ -115,7 +115,7 @@ namespace cu {
     public:
         /**
          * @brief Creates the command buffer.
-         * @param commandBuffer The command buffer handle.
+         * @param commandBuffer The command buffer handle to wrap.
          */
         inline CommandBuffer(const VkCommandBuffer commandBuffer)
         {

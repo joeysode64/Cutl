@@ -117,10 +117,8 @@ namespace cu {
                 return *this;
             }
 
-            /**
-             * @brief Initializes the context with the builder.
-             * @return The result of the context's initialization.
-             */
+            /** @brief Initializes the context with the builder. */
+            CU_NODISCARD_RESULT
             inline Result build() const
             {
                 return Context::init(*this);
@@ -133,7 +131,8 @@ namespace cu {
             return *cu_context_get();
         }
 
-        /** @ref cu_context_init()  */
+        /** @ref cu_context_init() */
+        CU_NODISCARD_RESULT
         static inline Result init(const CreateInfo& createInfo = DEFAULT_CREATE_INFO)
         {
             return cu_context_init(&createInfo);

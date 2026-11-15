@@ -12,20 +12,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 /** @brief The format of the renderer's depth image. */
 constexpr VkFormat DEPTH_FORMAT = VK_FORMAT_D32_SFLOAT;
 
 /**
  * @brief Creates the renderer's MSAA and depth images, which share a single allocation.
- * @param [in, out] pRenderer A pointer to the renderer.
- * @param nMsaaSamples The number of MSAA samples.
+ * @param[in out] pRenderer A pointer to the renderer. Must not be null.
+ * @param nMsaaSamples The number of MSAA samples. No MSAA image is created if 1.
  * @param enableDepth Whether to create a depth image.
- * @return The result of creating the images.
  * @warning Depends on the renderer's swapchain as well as its extent and format to be set.
  * @note On failure, anything already created is released by `renderer_destroy_images`.
  */
+CU_NODISCARD_RESULT
 static CuResult renderer_create_images(
     CuRenderer* const pRenderer,
     const uint32_t nMsaaSamples,
@@ -85,7 +84,8 @@ static CuResult renderer_create_images(
     dbg_log_create(pRenderer->_imageMemory);
 
     if (enableMsaa) {
-        cu_try_vk(vkBindImageMemory(gContext._device, pRenderer->_msaaImage, pRenderer->_imageMemory, 0));
+        cu_try_vk(
+            vkBindImageMemory(gContext._device, pRenderer->_msaaImage, pRenderer->_imageMemory, 0));
 
         cu_try(create_image_view(
             &pRenderer->_msaaImageView,
@@ -112,7 +112,7 @@ static CuResult renderer_create_images(
 
 /**
  * @brief Destroys the renderer's MSAA and depth images and their allocation.
- * @param [in, out] pRenderer A pointer to the renderer.
+ * @param[in out] pRenderer A pointer to the renderer. Must not be null.
  */
 static void renderer_destroy_images(CuRenderer* const pRenderer)
 {
@@ -130,17 +130,15 @@ static void renderer_destroy_images(CuRenderer* const pRenderer)
 
 /**
  * @brief Creates the renderer's swapchain images.
- * @param [in, out] pRenderer A pointer to the renderer.
- * @return The result of creating the renderer's swapchain images.
+ * @param[in out] pRenderer A pointer to the renderer. Must not be null.
  */
+CU_NODISCARD_RESULT
 static CuResult renderer_create_swapchain_images(CuRenderer* const pRenderer)
 {
     uint32_t nImages = 0;
-    cu_try_vk(vkGetSwapchainImagesKHR(
-        gContext._device, pRenderer->_swapchain, &nImages, nullptr));
+    cu_try_vk(vkGetSwapchainImagesKHR(gContext._device, pRenderer->_swapchain, &nImages, nullptr));
     VkImage images[nImages];
-    cu_try_vk(vkGetSwapchainImagesKHR(
-        gContext._device, pRenderer->_swapchain, &nImages, images));
+    cu_try_vk(vkGetSwapchainImagesKHR(gContext._device, pRenderer->_swapchain, &nImages, images));
 
     allocate_n(pRenderer->_pSwapchainImages, nImages);
     pRenderer->_nSwapchainImages = nImages;
@@ -166,8 +164,8 @@ static CuResult renderer_create_swapchain_images(CuRenderer* const pRenderer)
 }
 
 /**
- * @brief Destroys the swapchain images.
- * @param [in, out] pSwapchainImages A pointer to the swapchain images.
+ * @brief Destroys the renderer's swapchain images.
+ * @param[in out] pRenderer A pointer to the renderer. Must not be null.
  */
 static void renderer_destroy_swapchain_images(CuRenderer* const pRenderer)
 {
@@ -183,7 +181,7 @@ static void renderer_destroy_swapchain_images(CuRenderer* const pRenderer)
 
 /**
  * @brief Destroys the renderer's frame in flight objects.
- * @param [in, out] pRenderer A pointer to the renderer.
+ * @param[in out] pRenderer A pointer to the renderer. Must not be null.
  */
 static void renderer_destroy_frames(CuRenderer* const pRenderer)
 {
@@ -206,10 +204,10 @@ static void renderer_destroy_frames(CuRenderer* const pRenderer)
 
 /**
  * @brief Creates the renderer's frame in flight objects.
- * @param [in, out] pRenderer A pointer to the renderer.
- * @param n The number of frame in flight objects to create.
- * @return The result of creating the frames.
+ * @param[in out] pRenderer A pointer to the renderer. Must not be null.
+ * @param n The number of frame in flight objects to create. Must not be 0.
  */
+CU_NODISCARD_RESULT
 static CuResult renderer_create_frames(CuRenderer* const pRenderer, const uint32_t n)
 {
     allocate_n(pRenderer->_pFramesInFlight, n);
@@ -539,9 +537,8 @@ void cu_renderer_start_rendering(
     // Convert depth image if active.
     const bool depthActive = pRenderer->_depthImage != VK_NULL_HANDLE;
     if (depthActive) {
-        const VkPipelineStageFlags2 depthStages =
-            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
-            VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+        const VkPipelineStageFlags2 depthStages = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+                                                  VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
         cu_cmd_image_barrier(
             commandBuffer,
             pRenderer->_depthImage,
@@ -560,7 +557,11 @@ void cu_renderer_start_rendering(
         .color.float32 = {0.0F, 0.0F, 0.0F, 1.0F},
     };
     const VkClearValue depthStencilClearValue = {
-        .depthStencil = { .depth = 1.0f, .stencil = 0, },
+        .depthStencil =
+            {
+                .depth = 1.0f,
+                .stencil = 0,
+            },
     };
     const VkImageView imageView =
         msaaActive ? pRenderer->_msaaImageView : pSwapchainImage->_imageView;

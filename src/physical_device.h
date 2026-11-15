@@ -8,14 +8,26 @@
 
 /** @brief A physical device's info. */
 typedef struct PhysicalDeviceInfo_T {
-    VkPhysicalDevice handle; /**< The physical device handle. */
+    /** @brief The physical device handle. */
+    VkPhysicalDevice handle;
 
-    CuPhysicalDeviceMemoryInfo memoryInfo; /**< The memory info. */
+    /** @brief The physical device's memory type info. */
+    CuPhysicalDeviceMemoryInfo memoryInfo;
 
-    uint32_t iQueueFamily; /**< The index of the main queue family. */
+    /**
+     * @brief The index of the main queue family. This queue supports graphics, transfer, compute,
+     * and presentation.
+     */
+    uint32_t iQueueFamily;
 } PhysicalDeviceInfo;
 
-/** @brief Returns a bitmask of the best-fit memory types. */
+/**
+ * @brief Returns a bitmask of the best-fit memory types.
+ * @param pMemoryInfo A pointer to the physical device's memory type info. Must not be null.
+ * @param mProperties A bitmap of the required memory properties.
+ * @param mAllowed A bitmask of the memory types to choose from, e.g.
+ * `VkMemoryRequirements::memoryTypeBits`.
+ */
 uint32_t find_memory_types(
     const CuPhysicalDeviceMemoryInfo* pMemoryInfo,
     VkMemoryPropertyFlags mProperties,
@@ -23,7 +35,8 @@ uint32_t find_memory_types(
 
 /**
  * @brief Chooses the best-fit physical device.
- * @param [out] pPhysicalDeviceInfo A pointer to the physical device info.
- * @param instance The Vulkan intance handle.
+ * @param[out] pPhysicalDeviceInfo A pointer to the physical device info. Must not be null.
+ * @param instance The Vulkan instance to choose from.
  */
+CU_NODISCARD_RESULT
 CuResult choose_physical_device(PhysicalDeviceInfo* pPhysicalDeviceInfo, VkInstance instance);

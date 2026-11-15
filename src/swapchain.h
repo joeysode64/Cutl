@@ -8,26 +8,30 @@
 
 /**
  * @brief A swapchain's information.
- * @note Used for the return value of `cu_vk_create_swapchain`.
+ * @note Used for the return value of `create_swapchain`.
  */
 typedef struct CuSwapchainInfo_T {
-    VkSwapchainKHR _handle; /**< The swapchain handle. */
+    /** @brief The swapchain handle. */
+    VkSwapchainKHR _handle;
 
-    VkExtent2D _extent; /**< The swapchain's extent. */
+    /** @brief The swapchain's extent. */
+    VkExtent2D _extent;
 
-    VkFormat _format; /**< The surface's format. */
+    /** @brief The surface's format. */
+    VkFormat _format;
 } CuSwapchainInfo;
 
 /**
  * @brief Creates a swapchain.
- * @param [out] pSwapchainInfo A pointer to the swapchain info.
- * @param minSwapchainImages The minimum number of swapchain images.
- * @param pWindow A pointer to the target window, or null for headless.
- * @param surface The surface handle.
- * @param preferredPresentMode The preferred present mode.
- * @param oldSwapchain The old swapchain handle, or null for none.
- * @return The result of creating the swapchain.
+ * @param[out] pSwapchainInfo A pointer to the swapchain info. Must not be null.
+ * @param minSwapchainImages The minimum number of swapchain images. Clamped to the surface's
+ * capabilities.
+ * @param pWindow A pointer to the target window. If null, the swapchain is headless.
+ * @param surface The surface to create the swapchain for.
+ * @param preferredPresentMode The preferred present mode. Falls back to FIFO if unsupported.
+ * @param oldSwapchain The swapchain being replaced, or `VK_NULL_HANDLE` for none.
  */
+CU_NODISCARD_RESULT
 CuResult create_swapchain(
     CuSwapchainInfo* pSwapchainInfo,
     uint32_t minSwapchainImages,

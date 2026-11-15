@@ -31,7 +31,7 @@
 
 /**
  * @brief Logs a note.
- * @param msg The note.
+ * @param msg The note's format string. Must be a string literal.
  */
 #define dbg_log_note(msg, ...) dbg_log(ANSI_BLUE "Note:" ANSI_RESET " " msg, __VA_ARGS__)
 
@@ -49,7 +49,7 @@
 
 /**
  * @brief Logs a failed operation.
- * @param r The result.
+ * @param r The `CuResult` the operation failed with.
  */
 #define dbg_log_fail(r)                                                                            \
     dbg_log(ANSI_RED "Error:" ANSI_RESET " `%s` failed (%u:%i)", __func__, (r).t, (r).v)
@@ -64,6 +64,6 @@
 
 /**
  * @brief Logs a warning.
- * @param msg The message.
+ * @param msg The message. Must be a string literal.
  */
 #define dbg_log_warning(msg) dbg_log(ANSI_YELLOW "Warning:" ANSI_RESET " " msg)

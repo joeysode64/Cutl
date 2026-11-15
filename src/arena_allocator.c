@@ -13,10 +13,10 @@
 
 /**
  * @brief Returns whether the arena slot has room for the allocation.
- * @param [in] pArena A pointer to the arena.
- * @param i The index of the arena slot.
- * @param z The size of the allocation.
- * @return Whetehr the allocation will fit in the arena slot.
+ * @param[in] pArena A pointer to the arena. Must not be null.
+ * @param i The index of the arena slot. Must be less than `VK_MAX_MEMORY_TYPES`.
+ * @param z The size of the allocation in bytes.
+ * @note An unallocated slot is always considered to have room.
  */
 static bool does_arena_slot_have_room(const CuArena* pArena, const size_t i, const size_t z)
 {
@@ -26,10 +26,11 @@ static bool does_arena_slot_have_room(const CuArena* pArena, const size_t i, con
 
 /**
  * @brief Allocates the arena slot.
- * @param [in, out] pArena A pointer to the arena.
- * @param i The index of the arena slot and memory type.
- * @return The result of the allocation.
+ * @param[in out] pArena A pointer to the arena. Must not be null.
+ * @param i The index of the arena slot and memory type. Must be less than `VK_MAX_MEMORY_TYPES`.
+ * @note The slot's memory is mapped if its memory type is host visible.
  */
+CU_NODISCARD_RESULT
 static CuResult allocate_slot(CuArena* const pArena, const size_t i)
 {
     CuArenaSlot* const pSlot = &pArena->_slots[i];
@@ -46,15 +47,15 @@ static CuResult allocate_slot(CuArena* const pArena, const size_t i)
 
 /**
  * @brief Allocates data from the arena slot into the allocation.
- * @param [out] pAllocation A pointer to the allocation.
- * @param [out] ppData A pointer to the mapped data.
- * @param [in, out] pArena a pointer to the arena.
- * @param i The index of the arena slot and memory type.
- * @param size The allocation's size.
- * @param align The allocation's alignment.
- * @return The result of the allocation.
+ * @param[out] pAllocation A pointer to the allocation. Must not be null.
+ * @param[out] ppData A pointer to the mapped data. Ignored if null or if the slot isn't mapped.
+ * @param[in out] pArena A pointer to the arena. Must not be null.
+ * @param i The index of the arena slot and memory type. Must be less than `VK_MAX_MEMORY_TYPES`.
+ * @param size The allocation's size in bytes.
+ * @param align The allocation's alignment in bytes. Must be a power of 2.
  * @note This will allocate the slot if it hasn't been already.
  */
+CU_NODISCARD_RESULT
 static CuResult allocate_to_slot(
     CuAllocation* const pAllocation,
     void** const ppData,
@@ -100,6 +101,7 @@ void cu_arena_destroy(CuArena* const pArena)
     }
 }
 
+CU_NODISCARD_RESULT
 CuResult arena_allocate(
     CuAllocation* const pAllocation,
     void** const ppData,

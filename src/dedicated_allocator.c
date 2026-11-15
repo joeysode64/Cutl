@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
+CU_NODISCARD_RESULT
 CuResult dedicated_allocator_allocate(
     CuAllocation* const pAllocation,
     void** const ppData,

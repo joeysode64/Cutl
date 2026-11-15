@@ -25,7 +25,7 @@ static PFN_vkCreateDebugUtilsMessengerEXT fCreateDebugMessenger = nullptr;
 /** @brief The callback for destroying a debug messenger. */
 static PFN_vkDestroyDebugUtilsMessengerEXT fDestroyDebugMessenger = nullptr;
 
-/** @brief Prints a warning if the context is not termminated at exit. */
+/** @brief Prints a warning if the context is not terminated at exit. */
 static void context_unterminated_warn()
 {
     if (cu_context_is_initialized()) {
@@ -35,10 +35,10 @@ static void context_unterminated_warn()
 
 /**
  * @brief The debug messenger callback.
- * @param severity The message's severity.
- * @param types A bitmask of the message's types.
- * @param pCallbackData A pointer to the message's callback data.
- * @param pUserData The user data pointer given at the messenger's creation.
+ * @param _severity The message's severity. Unused.
+ * @param _types A bitmask of the message's types. Unused.
+ * @param pCallbackData A pointer to the message's callback data. Never null.
+ * @param _pUserData The user data pointer given at the messenger's creation. Unused.
  * @return Always `VK_FALSE`.
  */
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_messenger_callback(
@@ -72,10 +72,7 @@ static bool get_debug_messenger_fns()
     return true;
 }
 
-/**
- * @brief Creates the global context's debug messenger.
- * @return The result of creating the debug messenger.
- */
+/** @brief Creates the global context's debug messenger. */
 static VkResult create_debug_messenger()
 {
     cu_assert(get_debug_messenger_fns(), VK_ERROR_EXTENSION_NOT_PRESENT);
@@ -115,8 +112,7 @@ static const char** get_instance_extensions(
 
 /**
  * @brief Creates the global context's Vulkan instance.
- * @param pCreateInfo A pointer to the context's create info.
- * @return The result of creating the instance.
+ * @param pCreateInfo A pointer to the context's create info. Must not be null.
  */
 static VkResult create_instance(const CuContextCreateInfo* const pCreateInfo)
 {
@@ -172,8 +168,8 @@ static const char** get_device_extensions(
 
 /**
  * @brief Creates the global context's logical device.
- * @param pCreateInfo A pointer to the context create info.
- * @return The result of creating the device.
+ * @param pCreateInfo A pointer to the context's create info. Must not be null.
+ * @note The physical device must already be chosen.
  */
 static VkResult create_device(const CuContextCreateInfo* const pCreateInfo)
 {
@@ -237,10 +233,7 @@ static VkResult create_device(const CuContextCreateInfo* const pCreateInfo)
     return vkCreateDevice(gContext._physicalDevice, &createInfo, nullptr, &gContext._device);
 }
 
-/**
- * @brief Creates the global context's command pool.
- * @return The result of creating the command pool.
- */
+/** @brief Creates the global context's command pool. */
 static VkResult create_command_pool()
 {
     const VkCommandPoolCreateInfo createInfo = {
@@ -254,10 +247,9 @@ static VkResult create_command_pool()
 
 /**
  * @brief Creates the global context's descriptor pool.
- * @param nSamplerDescriptors The number of sampler descriptors.
  * @param nSampledImageDescriptors The number of sampled image descriptors.
+ * @param nSamplerDescriptors The number of sampler descriptors.
  * @param nStorageImageDescriptors The number of storage image descriptors.
- * @return The result of creating the descriptor pool.
  */
 static VkResult create_descriptor_pool(
     const uint32_t nSampledImageDescriptors,
@@ -293,10 +285,9 @@ static VkResult create_descriptor_pool(
 
 /**
  * @brief Creates the global context's descriptor set layout.
- * @param nSamplerDescriptors The number of sampler descriptors.
  * @param nSampledImageDescriptors The number of sampled image descriptors.
+ * @param nSamplerDescriptors The number of sampler descriptors.
  * @param nStorageImageDescriptors The number of storage image descriptors.
- * @return the result of creating the descriptor set layout.
  */
 static VkResult create_descriptor_set_layout(
     const uint32_t nSampledImageDescriptors,
@@ -353,10 +344,7 @@ static VkResult create_descriptor_set_layout(
         gContext._device, &createInfo, nullptr, &gContext._descriptorSetLayout);
 }
 
-/**
- * @brief Creates the global context's descriptor set.
- * @return The result of creating the descriptor set.
- */
+/** @brief Creates the global context's descriptor set. */
 static VkResult allocate_descriptor_set()
 {
     const VkDescriptorSetAllocateInfo allocateInfo = {

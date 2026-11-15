@@ -8,11 +8,14 @@
 
 /** @brief A staging buffer. */
 typedef struct CuStagingBuffer_T {
-    void* _pData; /**< A pointer to the buffer's mapped memory. */
+    /** @brief A pointer to the buffer's mapped memory. */
+    void* _pData;
 
-    VkBuffer _buffer; /**< The buffer handle. */
+    /** @brief The buffer handle. */
+    VkBuffer _buffer;
 
-    CuAllocation _allocation; /**< The buffer memory allocation. */
+    /** @brief The buffer memory allocation. */
+    CuAllocation _allocation;
 } CuStagingBuffer;
 
 #ifdef __cplusplus
@@ -21,26 +24,26 @@ extern "C" {
 
 /**
  * @brief Creates a staging buffer.
- * @param [out] pStagingBuffer A pointer to the staging buffer.
- * @param z The size of the staging buffer's data.
- * @param mode The allocation mode.
- * @return The result of creating the staging buffer.
+ * @param[out] pStagingBuffer A pointer to the staging buffer. Must not be null.
+ * @param z The size of the staging buffer in bytes. Must not be 0.
+ * @param mode The allocation mode to allocate the buffer's memory with.
  */
+CU_NODISCARD_RESULT
 CuResult cu_staging_buffer_create(CuStagingBuffer* pStagingBuffer, size_t z, CuAllocationMode mode);
 
 /**
  * @brief Destroys the staging buffer.
- * @param [in, out] pStagingBuffer A pointer to the staging buffer.
- * @param mode The allocation mode.
+ * @param[in out] pStagingBuffer A pointer to the staging buffer. Must not be null.
+ * @param mode The allocation mode the buffer was created with.
  */
 void cu_staging_buffer_destroy(CuStagingBuffer* pStagingBuffer, CuAllocationMode mode);
 
 /**
  * @brief Copies data into the staging buffer.
- * @param [in, out] pStagingBuffer A pointer to the staging buffer.
- * @param p A pointer to the data to copy from.
- * @param z The size of the data to copy.
- * @param o The offset to write the data to.
+ * @param[in out] pStagingBuffer A pointer to the staging buffer. Must not be null.
+ * @param p A pointer to the data to copy from. Must not be null.
+ * @param z The size of the data to copy in bytes. `o + z` must not exceed the buffer's size.
+ * @param o The offset into the buffer to write the data to in bytes.
  */
 void cu_staging_buffer_copy(CuStagingBuffer* pStagingBuffer, const void* p, size_t z, size_t o);
 

@@ -20,12 +20,14 @@ namespace cu {
             cu_task_destroy(this);
         }
 
+        /** @brief Creates an uninitialized task. */
         inline Task()
             : Wrapper{}, CommandBufferWrapper{}
         {
         }
 
         /** @ref cu_task_create() */
+        CU_NODISCARD_RESULT
         inline Result init()
         {
             const Result result = cu_task_create(this);
@@ -34,12 +36,14 @@ namespace cu {
         }
 
         /** @ref cu_task_begin() */
+        CU_NODISCARD_RESULT
         inline Result begin()
         {
             return cu_task_begin(this);
         }
 
         /** @ref cu_task_submit() */
+        CU_NODISCARD_RESULT
         inline Result submit()
         {
             return cu_task_submit(this);

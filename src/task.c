@@ -12,9 +12,10 @@
 
 /**
  * @brief Creates a fence.
- * @param [out] pFence The fence to create.
- * @return The result of creating the fence.
+ * @param[out] pFence A pointer to the fence. Must not be null.
+ * @note The fence is created signaled.
  */
+CU_NODISCARD_RESULT
 static CuResult create_fence(VkFence* const pFence)
 {
     const VkFenceCreateInfo createInfo = {

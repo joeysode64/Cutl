@@ -9,8 +9,7 @@
 #include <string.h>
 #include <vulkan/vulkan.h>
 
-/** @brief Returns a bitmask of the memory types that contain all the memory
- * properties. */
+/** @brief Returns a bitmask of the memory types that contain all the memory properties. */
 static uint32_t get_memory_types(
     const CuPhysicalDeviceMemoryInfo* const pMemoryInfo,
     const VkMemoryPropertyFlags flags)
@@ -52,8 +51,7 @@ static bool does_physical_device_support_extensions(const VkPhysicalDevice physi
     return true;
 }
 
-/** @brief Returns whether the physical device supports all the required
- * features. */
+/** @brief Returns whether the physical device supports all the required features. */
 static bool does_physical_device_support_features(const VkPhysicalDevice physicalDevice)
 {
     VkPhysicalDeviceVulkan14Features features1_4 = {
@@ -95,8 +93,7 @@ static bool is_physical_device_suitable(const VkPhysicalDevice physicalDevice)
            does_physical_device_support_features(physicalDevice);
 }
 
-/** @brief Returns whether the queue family at the index supports presentation.
- */
+/** @brief Returns whether the queue family at the index supports presentation. */
 static bool queue_family_supports_presentation(
     const uint32_t i,
     const VkInstance instance,
@@ -116,7 +113,13 @@ static bool queue_family_supports_presentation(
 #endif
 }
 
-/** @brief Choose the queue family. Returns whether one was found. */
+/**
+ * @brief Chooses the queue family.
+ * @param[out] piQueueFamily A pointer to the queue family index. Must not be null.
+ * @param instance The Vulkan instance handle.
+ * @param physicalDevice The physical device to choose from.
+ * @return Whether a suitable queue family was found.
+ */
 static bool choose_queue_family(
     uint32_t* const piQueueFamily,
     const VkInstance instance,

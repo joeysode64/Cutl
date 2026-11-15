@@ -40,8 +40,8 @@ CuResult cu_image_create(
         pImage->_allocation._memory,
         pImage->_allocation._offset));
 
-    cu_try_catch(create_image_view(
-        &pImage->_imageView, pImage->_image, format, VK_IMAGE_ASPECT_COLOR_BIT));
+    cu_try_catch(
+        create_image_view(&pImage->_imageView, pImage->_image, format, VK_IMAGE_ASPECT_COLOR_BIT));
     dbg_log_create(pImage->_imageView);
 
     return CU_SUCCESS;

@@ -22,12 +22,12 @@ constexpr VkExtent2D PREFERRED_HEADLESS_EXTENT = {
 
 /**
  * @brief Chooses a surface format for the surface.
- * @param [out] pSurfaceFormat A pointer to the surface format.
- * @param surface The surface handle.
- * @return The result of choosing a surface format.
- * @note Chooses The first 32-bit format with a non-linear SRGB color space, or
+ * @param[out] pSurfaceFormat A pointer to the surface format. Must not be null.
+ * @param surface The surface to choose a format for.
+ * @note Chooses the first 32-bit format with a non-linear SRGB color space, or
  * the first surface format if none are found.
  */
+CU_NODISCARD_RESULT
 static CuResult choose_surface_format(
     VkSurfaceFormatKHR* const pSurfaceFormat,
     const VkSurfaceKHR surface)
@@ -58,12 +58,12 @@ static CuResult choose_surface_format(
 
 /**
  * @brief Chooses the present mode for the surface.
- * @param [out] pPresentMode A pointer to the present mode.
- * @param surface The surface handle.
- * @param targetPresentMode The target present mode.
- * @return The result of choosing a present mode.
+ * @param[out] pPresentMode A pointer to the present mode. Must not be null.
+ * @param surface The surface to choose a present mode for.
+ * @param targetPresentMode The present mode to choose if supported.
  * @note Chooses the target present mode if present, falls back to FIFO.
  */
+CU_NODISCARD_RESULT
 static CuResult choose_present_mode(
     VkPresentModeKHR* const pPresentMode,
     const VkSurfaceKHR surface,
@@ -87,9 +87,8 @@ static CuResult choose_present_mode(
 
 /**
  * @brief Returns the preferred extent clamped within the surface capabilities.
- * @param pCapabilities A pointer to the capabilities.
- * @param preferred The preferred extent.
- * @return The preferred extent clamped within the surface capabilities.
+ * @param pCapabilities A pointer to the surface capabilities. Must not be null.
+ * @param preferred The extent to use if the surface doesn't define one.
  */
 static VkExtent2D get_extent(
     const VkSurfaceCapabilitiesKHR* const pCapabilities,
@@ -116,8 +115,7 @@ static VkExtent2D get_extent(
 /**
  * @brief Returns the number of swapchain images to request.
  * @param minSwapchainImages The minimum number of swapchain images.
- * @param pCapabilities A pointer to the surface capabilities.
- * @return The number of swapchain images to request.
+ * @param pCapabilities A pointer to the surface capabilities. Must not be null.
  */
 static uint32_t get_n_swapchain_images(
     const uint32_t minSwapchainImages,

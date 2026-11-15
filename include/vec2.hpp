@@ -7,9 +7,11 @@
 namespace cu {
     /** @brief A 2-dimensional vector. */
     template <Num T> struct Vec2 {
-        T x; /**< The x factor. */
+        /** @brief The x component. */
+        T x;
 
-        T y; /**< The y factor. */
+        /** @brief The y component. */
+        T y;
 
         /** @brief Creates a vector with an x and y of 0. */
         constexpr Vec2()
@@ -18,8 +20,8 @@ namespace cu {
         }
 
         /**
-         * @brief Creates a vector with the given x and y value.
-         * @param xy The x and y value.
+         * @brief Creates a vector with both components set to the same value.
+         * @param xy The value of both x and y.
          */
         constexpr Vec2(const T xy)
             : x{xy}, y{xy}
@@ -27,7 +29,7 @@ namespace cu {
         }
 
         /**
-         * @brief Creates a vector with the given x and y value.
+         * @brief Creates a vector with the given x and y values.
          * @param x The x value.
          * @param y The y value.
          */
@@ -37,9 +39,8 @@ namespace cu {
         }
 
         /**
-         * @brief Returns the cross product of the two vectors.
-         * @param rhs The other vector.
-         * @return The cross product of the two vectors.
+         * @brief Returns the dot product of the two vectors.
+         * @param rhs The vector on the right-hand side.
          */
         constexpr T dot(const Vec2<T> rhs) const
         {
@@ -49,7 +50,6 @@ namespace cu {
         /**
          * @brief Returns the distance between the vectors squared.
          * @param v The other vector.
-         * @return The distance between the vectors squared.
          */
         constexpr T dst_sqr(const Vec2<T> v) const
         {
@@ -61,7 +61,6 @@ namespace cu {
         /**
          * @brief Returns the distance between the vectors.
          * @param v The other vector.
-         * @return The distance between the vectors.
          */
         constexpr T dst(const Vec2<T> v) const
             requires Float<T>
@@ -69,19 +68,13 @@ namespace cu {
             return sqrt(dst_sqr(v));
         }
 
-        /**
-         * @brief Returns the vector's magnitude squared.
-         * @return The vector's magnitude squared.
-         */
+        /** @brief Returns the vector's magnitude squared. */
         constexpr T mag_sqr() const
         {
             return (x * x) + (y * y);
         }
 
-        /**
-         * @brief Returns the vector's magnitude.
-         * @return The vector's magnitude.
-         */
+        /** @brief Returns the vector's magnitude. */
         constexpr T mag() const
             requires Float<T>
         {
@@ -90,7 +83,7 @@ namespace cu {
 
         /**
          * @brief Returns the vector normalized.
-         * @return The vector normalized.
+         * @warning The vector must not have a magnitude of 0.
          */
         constexpr Vec2<T> normalized() const
             requires Float<T>
@@ -98,17 +91,17 @@ namespace cu {
             return *this / mag();
         }
 
-        /** @brief Normalizes the vector. */
+        /**
+         * @brief Normalizes the vector.
+         * @warning The vector must not have a magnitude of 0.
+         */
         constexpr void normalize()
             requires Float<T>
         {
             *this /= mag();
         }
 
-        /**
-         * @brief Returns the vector converted to the given type.
-         * @return The vector converted to the given type.
-         */
+        /** @brief Returns the vector converted to the given type. */
         template <Num U> constexpr Vec2<U> as() const
         {
             Vec2<U>{static_cast<U>(x), static_cast<U>(y)};

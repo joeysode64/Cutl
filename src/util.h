@@ -25,20 +25,15 @@
 /**
  * @brief Returns a `CuResult` Cutl error with the given `CuError`.
  * @param e The `CuError`.
- * @return A `CuResult` Cutl error with the given `CuError`.
  */
 #define cu_error(e) ((CuResult){.t = CU_RESULT_TYPE_ERROR, .v = (e)})
 
-/**
- * @brief Returns a `CuResult` C standard error from `errno`.
- * @return A `CuResult` C standard error from `errno`.
- */
+/** @brief Returns a `CuResult` C standard error from `errno`. */
 #define cu_std_error() ((CuResult){.t = CU_RESULT_TYPE_STD, .v = errno})
 
 /**
  * @brief Returns a `CuResult` Vulkan error with the given `VkResult`.
  * @param r The `VkResult`.
- * @return A `CuResult` Vulkan error with the given `VkResult`.
  */
 #define cu_vk_error(r) ((CuResult){.t = CU_RESULT_TYPE_VULKAN, .v = (r)})
 
@@ -46,23 +41,19 @@
  * @brief Returns a `CuResult` with the given `VkResult`, properly matching
  * success values.
  * @param r The `VkResult`.
- * @return The `VkResult`'s `CuResult` equivalent.
  */
 #define cu_vk_result(r) ((r) == VK_SUCCESS ? CU_SUCCESS : cu_vk_error(r))
 
-/**
- * @brief Returns a `CuResult` GLFW error with `glfwGetError`.
- * @return The `CuResult` from `glfwGetError`.
- */
+/** @brief Returns a `CuResult` GLFW error with `glfwGetError`. */
 #define cu_glfw_error() ((CuResult){.t = CU_REUSLT_TYPE_GLFW, .v = glfwGetError(nullptr)})
 
-/** @return The smaller of the two values. */
+/** @brief Returns the smaller of the two values. */
 #define min(a, b) ((a) <= (b) ? (a) : (b))
 
-/** @return The larger of the two values. */
+/** @brief Returns the larger of the two values. */
 #define max(a, b) ((a) >= (b) ? (a) : (b))
 
-/** @return The value clamped between the min and max. */
+/** @brief Returns the value clamped between the min and max. */
 #define clamp(v, a, b) max(a, min(v, b))
 
 /** @brief Returns the length of the array. */
@@ -71,8 +62,7 @@
 /** @brief Returns whether the two values have any matching 1-bits. */
 #define ones_overlap(a, b) (((a) & (b)) != 0)
 
-/** @brief Returns whether the first value contains all the bits of the second
- * value. */
+/** @brief Returns whether the first value contains all the bits of the second value. */
 #define ones_match(a, b) (((a) & (b)) == (b))
 
 /**
@@ -81,24 +71,21 @@
  */
 #define align_up(v, a) (((v) + (a) - 1) & ~((a) - 1))
 
-/** @brief Tries to allocate the size and returns `CU_ERROR_BAD_ALLOC` if it
- * fails. */
+/** @brief Tries to allocate the size and returns `CU_ERROR_BAD_ALLOC` if it fails. */
 #define allocate_z(p, z)                                                                           \
     p = (typeof(*p)*)calloc(z, 1);                                                                 \
     if (p == nullptr) {                                                                            \
         return cu_error(CU_ERROR_BAD_ALLOC);                                                       \
     }
 
-/** @brief Tries to allocate to the elements and returns `CU_ERROR_BAD_ALLOC` if
- * it fails. */
+/** @brief Tries to allocate to the elements and returns `CU_ERROR_BAD_ALLOC` if it fails. */
 #define allocate_n(p, n)                                                                           \
     p = (typeof(*p)*)calloc(n, sizeof(*p));                                                        \
     if (p == nullptr) {                                                                            \
         return cu_error(CU_ERROR_BAD_ALLOC);                                                       \
     }
 
-/** @brief Tries to allocate to the pointer and returns `CU_ERROR_BAD_ALLOC` if
- * it fails. */
+/** @brief Tries to allocate to the pointer and returns `CU_ERROR_BAD_ALLOC` if it fails. */
 #define allocate(p) allocate_n(p, 1)
 
 /**
@@ -150,8 +137,7 @@
         goto FAIL;                                                                                 \
     }
 
-/** @brief Asserts the given expression is true, and if it's not, returns the
- * given value. */
+/** @brief Asserts the given expression is true, and if it's not, returns the given value. */
 #define cu_assert(e, r)                                                                            \
     if (!(e)) {                                                                                    \
         return (r);                                                                                \

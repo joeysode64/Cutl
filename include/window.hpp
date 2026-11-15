@@ -21,6 +21,7 @@ namespace cu {
         }
 
         /** @ref cu_window_create() */
+        CU_NODISCARD_RESULT
         inline Result init(const uint32_t w, const uint32_t h, const char* const title)
         {
             return cu_window_create(this, w, h, title);

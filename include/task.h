@@ -10,9 +10,11 @@
  * @note This type can be used as a command buffer.
  */
 typedef struct CuTask_T {
-    VkCommandBuffer _commandBuffer; /**< The command buffer handle. */
+    /** @brief The command buffer handle. */
+    VkCommandBuffer _commandBuffer;
 
-    VkFence _taskFinished; /**< The "task finished" fence handle. */
+    /** @brief The "task finished" fence handle. */
+    VkFence _taskFinished;
 } CuTask;
 
 #ifdef __cplusplus
@@ -21,49 +23,49 @@ extern "C" {
 
 /**
  * @brief Creates a task.
- * @param [out] pTask A pointer to the task.
- * @return The result of creating the task.
+ * @param[out] pTask A pointer to the task. Must not be null.
  */
+CU_NODISCARD_RESULT
 CuResult cu_task_create(CuTask* pTask);
 
 /**
- * @brief Destroys ta task.
- * @param [in, out] pTask A pointer to the task.
+ * @brief Destroys a task.
+ * @param[in out] pTask A pointer to the task. Must not be null.
+ * @note Waits for the task to finish running first.
  */
 void cu_task_destroy(CuTask* pTask);
 
 /**
  * @brief Begins the task for command insertion.
- * @param [in] pTask A pointer to the task.
- * @return The result of beginning the task.
+ * @param[in] pTask A pointer to the task. Must not be null or currently running.
  */
+CU_NODISCARD_RESULT
 CuResult cu_task_begin(const CuTask* pTask);
 
 /**
  * @brief Ends the task's command insertions and submits it.
- * @param [in] pTask A pointer to the task.
- * @return The result of ending and submitting the task.
+ * @param[in] pTask A pointer to the task. Must not be null and must have been begun.
  */
+CU_NODISCARD_RESULT
 CuResult cu_task_submit(const CuTask* pTask);
 
 /**
  * @brief Returns whether the task is currently running.
- * @param [in] pTask A pointer to the task.
- * @return Whether the task is currently running.
+ * @param[in] pTask A pointer to the task. Must not be null.
  */
 bool cu_task_is_running(const CuTask* pTask);
 
 /**
  * @brief Waits for the task to finish running, if it is.
- * @param [in] pTask A pointer to the task.
- * @param timeout The maximum number of nanoseconds to wait.
+ * @param[in] pTask A pointer to the task. Must not be null.
+ * @param timeout The maximum number of nanoseconds to wait. Use `UINT64_MAX` to wait
+ * indefinitely.
  */
 void cu_task_await(const CuTask* pTask, uint64_t timeout);
 
 /**
  * @brief Returns the task's command buffer.
- * @param [in] pTask A pointer to the task.
- * @return The task's command buffer.
+ * @param[in] pTask A pointer to the task. Must not be null.
  * @warning The command buffer is only open between `cu_task_begin` and `cu_task_submit`.
  */
 inline static VkCommandBuffer cu_task_get_command_buffer(const CuTask* const pTask)

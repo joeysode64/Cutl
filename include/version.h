@@ -5,13 +5,17 @@
 
 /** @brief A version. */
 typedef struct CuVersion_T {
-    uint16_t major; /**< The version major. */
+    /** @brief The version major. */
+    uint16_t major;
 
-    uint16_t minor; /**< The version minor */
+    /** @brief The version minor. */
+    uint16_t minor;
 
-    uint16_t patch; /**< The version patch. */
+    /** @brief The version patch. */
+    uint16_t patch;
 
-    uint16_t tweak; /**< The version tweak. */
+    /** @brief The version tweak. */
+    uint16_t tweak;
 } CuVersion;
 
 #ifdef __cplusplus
@@ -20,8 +24,7 @@ extern "C" {
 
 /**
  * @brief Returns the version as a `uint32_t` Vulkan-style version.
- * @param [in] pVersion A pointer to the version.
- * @return The version as a `uint32_t` Vulkan-style version.
+ * @param[in] pVersion A pointer to the version. Must not be null.
  * @note This does not use the version's tweak value.
  */
 static inline uint32_t cu_version_vk_version(const CuVersion* pVersion)

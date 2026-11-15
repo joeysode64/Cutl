@@ -46,7 +46,7 @@ int main()
         .nVert = vert.n,
         .pFrag = frag.data,
         .nFrag = frag.n,
-        .pFormats = (VkFormat[]){ cu_renderer_get_format(&renderer) },
+        .pFormats = (VkFormat[]){cu_renderer_get_format(&renderer)},
         .nFormats = 1,
         .rasterizationSamples = 1,
         .depthTestEnable = true,

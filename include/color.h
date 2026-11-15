@@ -4,13 +4,17 @@
 
 /** @brief An RGBA color. */
 typedef struct {
-    uint8_t r; /**< The red value. */
+    /** @brief The red value. */
+    uint8_t r;
 
-    uint8_t g; /**< The green value. */
+    /** @brief The green value. */
+    uint8_t g;
 
-    uint8_t b; /**< The blue value. */
+    /** @brief The blue value. */
+    uint8_t b;
 
-    uint8_t a; /**< The alpha value. */
+    /** @brief The alpha value. */
+    uint8_t a;
 } CuRGBA;
 
 /** @brief A black RGBA value. */

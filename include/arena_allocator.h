@@ -9,18 +9,23 @@
 
 /** @brief An arena allocator slot. */
 typedef struct CuArenaSlot_T {
-    VkDeviceMemory _memory; /**< The memory allocation handle. */
+    /** @brief The memory allocation handle. */
+    VkDeviceMemory _memory;
 
-    void* _pData; /**< A pointer to the mapped memory if relevant. */
+    /** @brief A pointer to the mapped memory (if relevant). */
+    void* _pData;
 
-    VkDeviceSize _used; /**< The number of bytes used by the slot. */
+    /** @brief The number of bytes already used in the slot. */
+    VkDeviceSize _used;
 } CuArenaSlot;
 
-/** @brief A Vulkan arena allocator. */
+/** @brief A Vulkan memory arena allocator. */
 typedef struct CuArena_T {
-    CuArenaSlot _slots[VK_MAX_MEMORY_TYPES]; /**< The allocation slots. */
+    /** @brief The allocation slots. */
+    CuArenaSlot _slots[VK_MAX_MEMORY_TYPES];
 
-    VkDeviceSize _size; /**< The size of the slots' allocations. */
+    /** @brief The size of the arena's slots. */
+    VkDeviceSize _size;
 } CuArena;
 
 /** @brief The arena allocator callbacks. */
@@ -28,8 +33,7 @@ extern const CuAllocatorFns CU_ARENA_ALLOCATOR_FNS;
 
 /**
  * @brief Returns an allocation mode for the arena.
- * @param pArena A pointer to the arena allocator.
- * @return An allocation mode for the arena.
+ * @param pArena A pointer to the arena allocator. Must not be null.
  */
 #define cu_arena_mode(pArena)                                                                      \
     ((CuAllocationMode){                                                                           \
@@ -43,15 +47,15 @@ extern "C" {
 
 /**
  * @brief Creates the arena allocator.
- * @param [out] pArena A pointer to the arena.
+ * @param[out] pArena A pointer to the arena. Must not be null.
  * @param size The size of the arena's slots.
- * @return The result of the allocation.
  */
+CU_NODISCARD_RESULT
 CuResult cu_arena_create(CuArena* pArena, size_t size);
 
 /**
  * @brief Destroys the arena allocator.
- * @param [in, out] pArena A pointer to the arena.
+ * @param[in out] pArena A pointer to the arena. Must not be null.
  * @warning This makes all allocations depending on the arena become invalid.
  */
 void cu_arena_destroy(CuArena* pArena);
