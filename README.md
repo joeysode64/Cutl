@@ -2,8 +2,6 @@
 
 Cutl is a thin Vulkan engine that provides ease of creation, usage, and destruction of Vulkan objects.
 
-It is implemented in C but has a C++ wrapper.
-
 It is currently pre-1.0.
 
 ## Requirements
@@ -114,7 +112,6 @@ Before version 1.0:
 - Add the ability for users to use their own physical device and swapchain format/present mode judge functions
 - ~~Add the ability to include custom extensions~~
 - Add template shaders
-- Finish C++ wrapper
 
 After version 1.0:
 - Ditch GLFW for custom multi-platform window handler

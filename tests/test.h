@@ -32,15 +32,6 @@
 /** @brief The success messgae. */
 #define SUCCESS_MSG " " ANSI_GREEN "Test passed!" ANSI_RESET
 
-#if defined(__cplusplus)
-    /**
-     * @brief Prints a success message and returns a success code.
-     * @warning Must be called from the main function.
-     */
-    #define success()                                                                              \
-        atexit([] { fprintf(stderr, SUCCESS_MSG "\n"); });                                         \
-        return EXIT_SUCCESS;
-#else
 /**
  * @brief Prints a success message and returns a success code.
  * @warning Must be called from the main function.
@@ -48,7 +39,6 @@
     #define success()                                                                              \
         fprintf(stderr, SUCCESS_MSG "\n");                                                         \
         return EXIT_SUCCESS;
-#endif
 
 /**
  * @brief Queries the expression and fails if it returns an error.
