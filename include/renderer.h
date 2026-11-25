@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 /** @brief A swapchain image. */
 typedef struct CuSwapchainImage_T {
@@ -39,8 +40,14 @@ typedef struct CuRendererConfig_T {
     /** @brief The preferred present mode. */
     VkPresentModeKHR preferredPresentMode;
 
-    /** @brief Whether to create a depth image. */
+    /** @brief The depth/stenctil image format, or `VK_FORMAT_UNDEFINED` for none.  */
+    VkFormat depthStencilFormat;
+
+    /** @brief Whether to do depth testing */
     bool enableDepth;
+
+    /** @brief Whether to do stencil testing. */
+    bool enableStencil;
 } CuRendererConfig;
 
 /** @brief A renderer. */
@@ -78,11 +85,11 @@ typedef struct CuRenderer_T {
     /** @brief The MSAA image view handle. */
     VkImageView _msaaImageView;
 
-    /** @brief The depth image handle. */
-    VkImage _depthImage;
+    /** @brief The depth/stencil image handle. */
+    VkImage _depthStencilImage;
 
-    /** @brief The depth image view handle. */
-    VkImageView _depthImageView;
+    /** @brief The depth/stencil image view handle. */
+    VkImageView _depthStencilImageView;
 
     /** @brief The memory allocation shared by the MSAA and depth images. */
     VkDeviceMemory _imageMemory;
@@ -127,10 +134,24 @@ typedef struct CuRendererCreateInfo_T {
     uint32_t nMsaaSamples;
 
     /**
+     * @brief The depth/stenctil image format, or `VK_FORMAT_UNDEFINED` for none.
+     * @note Default is `VK_FORMAT_UNDEFINED` (none).
+     */
+    VkFormat depthStencilFormat;
+
+    /**
      * @brief Whether to create a depth image.
      * @note Default is false.
+     * @warning Requires `.depthStencilFormat` to be a valid depth format.
      */
     bool enableDepth;
+
+    /**
+     * @brief Whether to enable stencil testing.
+     * @note Default is false.
+     * @warning Requires `.depthStencilFormat` to be a valid stencil format.
+     */
+    bool enableStencil;
 } CuRendererCreateInfo;
 
 /** @brief The default renderer create info. */
@@ -139,7 +160,9 @@ constexpr CuRendererCreateInfo CU_DEFAULT_RENDERER_CREATE_INFO = {
     .minSwapchainImages = 3,
     .preferredPresentMode = VK_PRESENT_MODE_FIFO_KHR,
     .nMsaaSamples = 1,
+    .depthStencilFormat = VK_FORMAT_UNDEFINED,
     .enableDepth = false,
+    .enableStencil = false,
 };
 
 #ifdef __cplusplus

@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include <stdint.h>
+#include <vulkan/vulkan_core.h>
 
 /** @brief How much the oscillation advances per frame. */
 constexpr float ANGLE_STEP = 0.05F;
@@ -24,6 +25,7 @@ int main()
     query(cu_window_create(&window, WIN_W, WIN_H, "Depth Test"));
 
     CuRendererCreateInfo rendererCreateInfo = CU_DEFAULT_RENDERER_CREATE_INFO;
+    rendererCreateInfo.depthStencilFormat = VK_FORMAT_D32_SFLOAT;
     rendererCreateInfo.enableDepth = true;
 
     CuRenderer renderer = {};

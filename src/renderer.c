@@ -13,14 +13,11 @@
 #include <stdlib.h>
 #include <vulkan/vulkan.h>
 
-/** @brief The format of the renderer's depth image. */
-constexpr VkFormat DEPTH_FORMAT = VK_FORMAT_D32_SFLOAT;
-
 /**
  * @brief Creates the renderer's MSAA and depth images, which share a single allocation.
  * @param[in out] pRenderer A pointer to the renderer. Must not be null.
  * @param nMsaaSamples The number of MSAA samples. No MSAA image is created if 1.
- * @param enableDepth Whether to create a depth image.
+ * @param depthStencilFormat The depth/stencil image format, or `VK_FORMAT_UNDEFINED` for none.
  * @warning Depends on the renderer's swapchain as well as its extent and format to be set.
  * @note On failure, anything already created is released by `renderer_destroy_images`.
  */
@@ -28,16 +25,17 @@ CU_NODISCARD_RESULT
 static CuResult renderer_create_images(
     CuRenderer* const pRenderer,
     const uint32_t nMsaaSamples,
-    const bool enableDepth)
+    const VkFormat depthStencilFormat)
 {
     pRenderer->_msaaImage = VK_NULL_HANDLE;
     pRenderer->_msaaImageView = VK_NULL_HANDLE;
-    pRenderer->_depthImage = VK_NULL_HANDLE;
-    pRenderer->_depthImageView = VK_NULL_HANDLE;
+    pRenderer->_depthStencilImage = VK_NULL_HANDLE;
+    pRenderer->_depthStencilImageView = VK_NULL_HANDLE;
     pRenderer->_imageMemory = VK_NULL_HANDLE;
 
     const bool enableMsaa = nMsaaSamples > 1;
-    if (!enableMsaa && !enableDepth) {
+    const bool enableDepthStencil = depthStencilFormat != VK_FORMAT_UNDEFINED;
+    if (!enableMsaa && !enableDepthStencil) {
         return CU_SUCCESS;
     }
 
@@ -62,18 +60,19 @@ static CuResult renderer_create_images(
     }
 
     VkDeviceSize depthOffset = 0;
-    if (enableDepth) {
+    if (enableDepthStencil) {
         cu_try(create_image(
-            &pRenderer->_depthImage,
+            &pRenderer->_depthStencilImage,
             extent.width,
             extent.height,
-            DEPTH_FORMAT,
+            depthStencilFormat,
             nMsaaSamples,
             VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT));
-        dbg_log_create(pRenderer->_depthImage);
+        dbg_log_create(pRenderer->_depthStencilImage);
 
         VkMemoryRequirements memoryRequirements = {};
-        vkGetImageMemoryRequirements(gContext._device, pRenderer->_depthImage, &memoryRequirements);
+        vkGetImageMemoryRequirements(
+            gContext._device, pRenderer->_depthStencilImage, &memoryRequirements);
         depthOffset = align_up(size, memoryRequirements.alignment);
         size = depthOffset + memoryRequirements.size;
         mMemoryTypes &= memoryRequirements.memoryTypeBits;
@@ -95,16 +94,16 @@ static CuResult renderer_create_images(
         dbg_log_create(pRenderer->_msaaImageView);
     }
 
-    if (enableDepth) {
+    if (enableDepthStencil) {
         cu_try_vk(vkBindImageMemory(
-            gContext._device, pRenderer->_depthImage, pRenderer->_imageMemory, depthOffset));
+            gContext._device, pRenderer->_depthStencilImage, pRenderer->_imageMemory, depthOffset));
 
         cu_try(create_image_view(
-            &pRenderer->_depthImageView,
-            pRenderer->_depthImage,
-            DEPTH_FORMAT,
+            &pRenderer->_depthStencilImageView,
+            pRenderer->_depthStencilImage,
+            depthStencilFormat,
             VK_IMAGE_ASPECT_DEPTH_BIT));
-        dbg_log_create(pRenderer->_depthImageView);
+        dbg_log_create(pRenderer->_depthStencilImageView);
     }
 
     return CU_SUCCESS;
@@ -116,10 +115,10 @@ static CuResult renderer_create_images(
  */
 static void renderer_destroy_images(CuRenderer* const pRenderer)
 {
-    vkDestroyImageView(gContext._device, pRenderer->_depthImageView, nullptr);
-    dbg_log_destroy(pRenderer->_depthImageView);
-    vkDestroyImage(gContext._device, pRenderer->_depthImage, nullptr);
-    dbg_log_destroy(pRenderer->_depthImage);
+    vkDestroyImageView(gContext._device, pRenderer->_depthStencilImageView, nullptr);
+    dbg_log_destroy(pRenderer->_depthStencilImageView);
+    vkDestroyImage(gContext._device, pRenderer->_depthStencilImage, nullptr);
+    dbg_log_destroy(pRenderer->_depthStencilImage);
     vkDestroyImageView(gContext._device, pRenderer->_msaaImageView, nullptr);
     dbg_log_destroy(pRenderer->_msaaImageView);
     vkDestroyImage(gContext._device, pRenderer->_msaaImage, nullptr);
@@ -262,17 +261,21 @@ CuResult cu_renderer_create(
 
     cu_try_catch(renderer_create_frames(pRenderer, pCreateInfo->maxFramesInFlight));
 
-    cu_try_catch(
-        renderer_create_images(pRenderer, pCreateInfo->nMsaaSamples, pCreateInfo->enableDepth));
+    cu_try_catch(renderer_create_images(
+        pRenderer, pCreateInfo->nMsaaSamples, pCreateInfo->depthStencilFormat));
 
     cu_try_catch(create_semaphore(&pRenderer->_timelineSemaphore, VK_SEMAPHORE_TYPE_TIMELINE, 0));
     dbg_log_create(pRenderer->_timelineSemaphore);
 
     pRenderer->_pWindow = pWindow;
-    pRenderer->_config.nSwapchainImages = pCreateInfo->minSwapchainImages;
-    pRenderer->_config.nMsaaSamples = pCreateInfo->nMsaaSamples;
-    pRenderer->_config.preferredPresentMode = pCreateInfo->preferredPresentMode;
-    pRenderer->_config.enableDepth = pCreateInfo->enableDepth;
+    pRenderer->_config = (CuRendererConfig){
+        .nSwapchainImages = pCreateInfo->minSwapchainImages,
+        .nMsaaSamples = pCreateInfo->nMsaaSamples,
+        .preferredPresentMode = pCreateInfo->preferredPresentMode,
+        .depthStencilFormat = pCreateInfo->depthStencilFormat,
+        .enableDepth = pCreateInfo->enableDepth,
+        .enableStencil = pCreateInfo->enableStencil,
+    };
 
     pRenderer->_frameCounter = (uint64_t)pRenderer->_nFramesInFlight - 1;
     pRenderer->_iSwapchainImage = 0;
@@ -534,14 +537,15 @@ void cu_renderer_start_rendering(
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     }
 
-    // Convert depth image if active.
-    const bool depthActive = pRenderer->_depthImage != VK_NULL_HANDLE;
-    if (depthActive) {
+    // Convert depth/stencil image if active.
+    const bool depthStencilActive =
+        pRenderer->_config.enableDepth || pRenderer->_config.enableStencil;
+    if (depthStencilActive) {
         const VkPipelineStageFlags2 depthStages = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
                                                   VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
         cu_cmd_image_barrier(
             commandBuffer,
-            pRenderer->_depthImage,
+            pRenderer->_depthStencilImage,
             VK_IMAGE_ASPECT_DEPTH_BIT,
             depthStages,
             VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
@@ -582,10 +586,10 @@ void cu_renderer_start_rendering(
         .storeOp = storeOp,
         .clearValue = colorClearValue,
     };
-    const VkRenderingAttachmentInfo depthAttachment = {
+    const VkRenderingAttachmentInfo depthStencilAttachment = {
         .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
         .pNext = nullptr,
-        .imageView = pRenderer->_depthImageView,
+        .imageView = pRenderer->_depthStencilImageView,
         .imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
         .resolveMode = VK_RESOLVE_MODE_NONE,
         .resolveImageView = VK_NULL_HANDLE,
@@ -603,8 +607,8 @@ void cu_renderer_start_rendering(
         .viewMask = 0,
         .colorAttachmentCount = 1,
         .pColorAttachments = &colorAttachment,
-        .pDepthAttachment = depthActive ? &depthAttachment : nullptr,
-        .pStencilAttachment = nullptr,
+        .pDepthAttachment = pRenderer->_config.enableDepth ? &depthStencilAttachment : nullptr,
+        .pStencilAttachment = pRenderer->_config.enableStencil ? &depthStencilAttachment : nullptr,
     };
     vkCmdBeginRendering(commandBuffer, &renderingInfo);
 }

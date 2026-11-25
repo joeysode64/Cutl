@@ -36,9 +36,9 @@
  * @brief Prints a success message and returns a success code.
  * @warning Must be called from the main function.
  */
-    #define success()                                                                              \
-        fprintf(stderr, SUCCESS_MSG "\n");                                                         \
-        return EXIT_SUCCESS;
+#define success()                                                                                  \
+    fprintf(stderr, SUCCESS_MSG "\n");                                                             \
+    return EXIT_SUCCESS;
 
 /**
  * @brief Queries the expression and fails if it returns an error.
