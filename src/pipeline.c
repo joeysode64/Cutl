@@ -189,13 +189,13 @@ CuResult cu_graphics_pipeline_create(
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .depthTestEnable = pCreateInfo->depthTestEnable ? VK_TRUE : VK_FALSE,
-        .depthWriteEnable = pCreateInfo->depthWriteEnable ? VK_TRUE : VK_FALSE,
+        .depthTestEnable = pCreateInfo->depthTestEnable,
+        .depthWriteEnable = pCreateInfo->depthWriteEnable,
         .depthCompareOp = pCreateInfo->depthCompareOp,
         .depthBoundsTestEnable = VK_FALSE,
-        .stencilTestEnable = VK_FALSE,
-        .front = {},
-        .back = {},
+        .stencilTestEnable = pCreateInfo->enableStencil,
+        .front = pCreateInfo->stencilFront,
+        .back = pCreateInfo->stencilBack,
         .minDepthBounds = pCreateInfo->minDepthBounds,
         .maxDepthBounds = pCreateInfo->maxDepthBounds,
     };
@@ -228,8 +228,10 @@ CuResult cu_graphics_pipeline_create(
         .viewMask = 0,
         .colorAttachmentCount = pCreateInfo->nFormats,
         .pColorAttachmentFormats = pCreateInfo->pFormats,
-        .depthAttachmentFormat = VK_FORMAT_D32_SFLOAT,
-        .stencilAttachmentFormat = VK_FORMAT_UNDEFINED,
+        .depthAttachmentFormat =
+            pCreateInfo->depthTestEnable ? pCreateInfo->depthStencilFormat : VK_FORMAT_UNDEFINED,
+        .stencilAttachmentFormat =
+            pCreateInfo->enableStencil ? pCreateInfo->depthStencilFormat : VK_FORMAT_UNDEFINED,
     };
     const VkDynamicState dynamicStates[] = {
         VK_DYNAMIC_STATE_VIEWPORT,

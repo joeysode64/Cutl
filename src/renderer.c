@@ -14,10 +14,23 @@
 #include <vulkan/vulkan.h>
 
 /**
+ * @brief Gets the depth/stencil image aspects to use.
+ * @param enableDepth Whether depth testing is enabled.
+ * @param enableStencil Whether stencil testing is enabled.
+ * @return The depth and/or stencil aspect bits.
+ */
+static VkImageAspectFlags depth_stencil_aspects(const bool enableDepth, const bool enableStencil)
+{
+    return (enableDepth ? VK_IMAGE_ASPECT_DEPTH_BIT : 0) |
+           (enableStencil ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);
+}
+
+/**
  * @brief Creates the renderer's MSAA and depth images, which share a single allocation.
  * @param[in out] pRenderer A pointer to the renderer. Must not be null.
  * @param nMsaaSamples The number of MSAA samples. No MSAA image is created if 1.
  * @param depthStencilFormat The depth/stencil image format, or `VK_FORMAT_UNDEFINED` for none.
+ * @param depthStencilAspects The aspects of the depth/stencil image view.
  * @warning Depends on the renderer's swapchain as well as its extent and format to be set.
  * @note On failure, anything already created is released by `renderer_destroy_images`.
  */
@@ -25,7 +38,8 @@ CU_NODISCARD_RESULT
 static CuResult renderer_create_images(
     CuRenderer* const pRenderer,
     const uint32_t nMsaaSamples,
-    const VkFormat depthStencilFormat)
+    const VkFormat depthStencilFormat,
+    const VkImageAspectFlags depthStencilAspects)
 {
     pRenderer->_msaaImage = VK_NULL_HANDLE;
     pRenderer->_msaaImageView = VK_NULL_HANDLE;
@@ -102,7 +116,7 @@ static CuResult renderer_create_images(
             &pRenderer->_depthStencilImageView,
             pRenderer->_depthStencilImage,
             depthStencilFormat,
-            VK_IMAGE_ASPECT_DEPTH_BIT));
+            depthStencilAspects));
         dbg_log_create(pRenderer->_depthStencilImageView);
     }
 
@@ -262,7 +276,10 @@ CuResult cu_renderer_create(
     cu_try_catch(renderer_create_frames(pRenderer, pCreateInfo->maxFramesInFlight));
 
     cu_try_catch(renderer_create_images(
-        pRenderer, pCreateInfo->nMsaaSamples, pCreateInfo->depthStencilFormat));
+        pRenderer,
+        pCreateInfo->nMsaaSamples,
+        pCreateInfo->depthStencilFormat,
+        depth_stencil_aspects(pCreateInfo->enableDepth, pCreateInfo->enableStencil)));
 
     cu_try_catch(create_semaphore(&pRenderer->_timelineSemaphore, VK_SEMAPHORE_TYPE_TIMELINE, 0));
     dbg_log_create(pRenderer->_timelineSemaphore);
@@ -334,7 +351,10 @@ CuResult cu_renderer_recreate_swapchain(CuRenderer* const pRenderer)
 
     renderer_destroy_images(pRenderer);
     cu_try(renderer_create_images(
-        pRenderer, pRenderer->_config.nMsaaSamples, pRenderer->_config.enableDepth));
+        pRenderer,
+        pRenderer->_config.nMsaaSamples,
+        pRenderer->_config.depthStencilFormat,
+        depth_stencil_aspects(pRenderer->_config.enableDepth, pRenderer->_config.enableStencil)));
 
     return CU_SUCCESS;
 }
@@ -546,14 +566,14 @@ void cu_renderer_start_rendering(
         cu_cmd_image_barrier(
             commandBuffer,
             pRenderer->_depthStencilImage,
-            VK_IMAGE_ASPECT_DEPTH_BIT,
+            depth_stencil_aspects(pRenderer->_config.enableDepth, pRenderer->_config.enableStencil),
             depthStages,
             VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             depthStages,
             VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
                 VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     }
 
     // Begin rendering.
@@ -590,7 +610,7 @@ void cu_renderer_start_rendering(
         .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
         .pNext = nullptr,
         .imageView = pRenderer->_depthStencilImageView,
-        .imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+        .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
         .resolveMode = VK_RESOLVE_MODE_NONE,
         .resolveImageView = VK_NULL_HANDLE,
         .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,

@@ -75,15 +75,40 @@ typedef struct {
 
     /**
      * @brief The minimum depth bound.
-     * @note Default is 0.0.
+     * @note Default is 0.
      */
     float minDepthBounds;
 
     /**
      * @brief The maximum depth bound.
-     * @note Default is 1.0.
+     * @note Default is 1.
      */
     float maxDepthBounds;
+
+    /**
+     * @brief The depth/stencil attachment format. Must match the renderer's.
+     * @note Default is `VK_FORMAT_UNDEFINED`. It is used as the depth attachment format when depth
+     * testing is enabled and as the stencil attachment format when stencil testing is enabled.
+     */
+    VkFormat depthStencilFormat;
+
+    /**
+     * @brief Whether the enable stencil testing.
+     * @note Default is false.
+     */
+    bool enableStencil;
+
+    /**
+     * @brief The front stencil operation.
+     * @brief Default is 0 for all.
+     */
+    VkStencilOpState stencilFront;
+
+    /**
+     * @brief The back stencil operation.
+     * @brief Default is 0 for all.
+     */
+    VkStencilOpState stencilBack;
 } CuGraphicsPipelineCreateInfo;
 
 /**
@@ -103,6 +128,10 @@ constexpr CuGraphicsPipelineCreateInfo CU_DEFAULT_GRAPHICS_PIPELINE_CREATE_INFO 
     .depthCompareOp = VK_COMPARE_OP_NEVER,
     .minDepthBounds = 0.0F,
     .maxDepthBounds = 1.0F,
+    .depthStencilFormat = VK_FORMAT_UNDEFINED,
+    .enableStencil = false,
+    .stencilFront = {},
+    .stencilBack = {},
 };
 
 #ifdef __cplusplus

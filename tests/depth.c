@@ -54,6 +54,7 @@ int main()
         .depthTestEnable = true,
         .depthWriteEnable = true,
         .depthCompareOp = VK_COMPARE_OP_LESS,
+        .depthStencilFormat = rendererCreateInfo.depthStencilFormat,
     };
     CuGraphicsPipeline graphicsPipeline = {};
     query(cu_graphics_pipeline_create(
